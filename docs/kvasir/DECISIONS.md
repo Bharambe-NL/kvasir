@@ -46,3 +46,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D038 | 2026-10-31 | P1 decision 5: review questions use two formats chosen by card phase. New, learning and relearning cards get a cue-and-recall question; review-phase cards get an applied scenario. The learner always self-rates (Again, Hard, Good, Easy) after seeing the answer | Sagar | |
 | D039 | 2026-10-31 | Review questions are pre-generated in the background under the shared background-LLM semaphore and stored append-only in `data/learner/questions.jsonl`, one per card per review cycle | Sagar | |
 | D040 | 2026-10-31 | The review generator runs on the cheap model slot | Sagar | |
+| D041 | 2026-10-31 | P1 decision 6: the review queue shows at most 20 new cards and at most 200 reviews in all per day (local day) | Sagar | |
+| D042 | 2026-10-31 | A card whose generated question is not ready (generating, failed, or no model configured) shows the proposition name as the cue and reveals the full statement; the generated question replaces it once stored | Sagar | |
+| D043 | 2026-10-31 | The review page is reached from a third sidebar row, "Review", below Teaching and Practice | Sagar | |
+| D044 | 2026-10-31 | No typed answers on the review page: think, reveal with Space, rate with keys 1 to 4 | Sagar | |
