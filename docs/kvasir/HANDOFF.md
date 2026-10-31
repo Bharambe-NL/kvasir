@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1.
-- Task: P0-2 Identity rename (#3). All plan commits done; waiting for Sagar's review.
-- Branch: `p0/rename`
-- PR: #8, closes #3
+- Task: P0-2 Identity rename (#3) merged via #8. Next task: P0-3 Release plumbing (#4), not started.
+- Branch: none open
+- PR: none open
 
 ## Done
 
@@ -19,16 +19,15 @@ Updated by Claude Code at the end of each session. Read this first.
 - Phase P0 opened: milestone 1, labels `phase`, `task` and `P0`, tracking issue #1, task issues #2 to #6. Roadmap PR #7 merged.
 - P0-1 (#2) closed with the CI evidence and ticked in #1.
 - P0-2: decisions D011 to D018 taken (P0 decisions 2 to 5, plus four found during investigation). Plan approved on #3. All plan commits pushed to #8, plus a fix for the page title ("Learning Harness", which the brief's grep misses). Local gates green apart from the known firewall test; rename grep clean against the allow-list; `desktop:dev` shows the Kvasir title and uses `Kvasir-dev`.
+- P0-2 reviewed and approved by Sagar, squash merged as #8, ticked in #1.
 
 ## Next
 
-1. After Sagar approves #8: squash merge, tick P0-2 in #1.
-2. Start P0-3 with `/kv-task P0-3`.
-3. Set branch protection on `main` (require a PR and passing checks), once Sagar agrees.
+1. Start P0-3 with `/kv-task P0-3`. See the P0-3 notes below.
+2. Set branch protection on `main` (require a PR and passing checks), once Sagar agrees.
 
 ## Waiting for Sagar
 
-- Review of #8 (user-facing text, README, package metadata).
 - Branch protection on `main`: set it in GitHub settings, or ask Claude to set it with `gh`.
 - Whether the two prompts that call the agent "a learning harness" (`src/agent/system-prompt.md`, `src/agent/prompts/practice/00-base.md`) should change. Prompt wording; best handled with P0-5.
 
