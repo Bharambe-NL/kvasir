@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P1 Retention and the learner layer (in progress). Milestone "P1 Retention and the learner layer", tracking issue #13, task issues #14 to #20.
-- Task: P1-1 Learner contracts (#14). Plan approved on #14; the PR waits for Sagar's contract review.
+- Task: P1-1 Learner contracts (#14). Implementation done; waiting for Sagar's contract review.
 - Branch: `p1/learner-contracts`
-- PR: draft, linked to #14
+- PR: #22 (ready for review)
 
 ## Done
 
@@ -15,16 +15,17 @@ Updated by Claude Code at the end of each session. Read this first.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
 - Phase P1 opened: milestone 2, label `P1`, tracking issue #13, task issues #14 to #20. Roadmap PR #21 merged. Self-merge for P1 allowed (D029).
 - P1 decisions 1 and 2: D007 confirmed (D030); one review card is one proposition, keyed by node id (D031).
+- P1-1 built on #22: `ReviewEntry` and the derived `CardState` (`src/core/contracts/learner.ts`), `LearnerStore` and the read-only `GraphReader` (`src/core/ports.ts`), the fs adapter (`src/store/learner.ts`, `data/learner/reviews.jsonl`), wiring in `src/server/stores.ts`, two ESLint zones, 16 new tests, and the architecture doc (Memory system, plus a correction of stale practice entries).
 
 ## Next
 
-1. Finish P1-1 per the plan on #14: contracts, port, `GraphReader`, adapter, wiring, ESLint zones, tests, architecture doc.
-2. Mark the PR ready and wait for Sagar's contract review. P1-2 to P1-7 code against the merged contracts.
+1. After Sagar approves #22: squash merge, tick P1-1 in #13.
+2. Then P1-2 Scheduler (#15). Ask P1 decision 3 (FSRS library) at its start.
 
 ## Waiting for Sagar
 
 - P1 open decisions 3 to 6, each at the start of the task that needs it.
-- Review of the P1-1 contracts PR when it is ready.
+- Review of #22, the P1-1 contracts (it defines a contract and a new store format, so it is not self-merged).
 
 Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, recorded in #13).
 
@@ -40,4 +41,5 @@ Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, record
 - `desktop:dev` points Electron at `next dev`, so the server uses the repo `data/` folder. Packaged builds use `~/Library/Application Support/Kvasir/data`.
 - Extraction writes the graph only once a chat has at least `graph.extractionChunkTokens` (default 4096) uncovered tokens of teacher prose. Short sessions show no graph yet.
 - Python skill tests: `python3 -B -m unittest discover -s tests/skills` (53 pass on Python 3.9.6). CI does not run them.
+- The brief's `src/core/contracts/practice.ts` and `src/core/practice.ts` do not exist; practice is a chat kind. Architecture section 7 now carries a note; parts of it still describe the earlier problem-set design.
 - The upstream mark component and types keep code names `LhMark` and `LhMarkerMessage`. They do not reach the user.
