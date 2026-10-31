@@ -20,6 +20,7 @@ import type {
 	JobRecord,
 	ExtractionRunUsage,
 	ReviewEntry,
+	ReviewExclusion,
 	ReviewQuestion,
 	PlanTree,
 	Position,
@@ -151,6 +152,10 @@ export interface LearnerStore {
 	appendQuestion(question: ReviewQuestion): void;
 	/** Every well-formed question line, in append order. */
 	readQuestions(): ReviewQuestion[];
+	/** Append one review opt-out toggle (P1-8, D055). */
+	appendExclusion(entry: ReviewExclusion): void;
+	/** Every well-formed exclusion line, in append order. */
+	readExclusions(): ReviewExclusion[];
 }
 
 // ─── JobStore — background sub-agent jobs (data/jobs) ─────────────────────────

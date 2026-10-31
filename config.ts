@@ -83,6 +83,8 @@ export const LEARNER_FILES = {
 	reviews: path.join(PATHS.learner, "reviews.jsonl"),
 	/** Generated review questions (D039), one per card per review cycle. */
 	questions: path.join(PATHS.learner, "questions.jsonl"),
+	/** Review opt-out toggles per birth session (P1-8, D055). */
+	exclusions: path.join(PATHS.learner, "exclusions.jsonl"),
 } as const;
 
 /**

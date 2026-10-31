@@ -14,7 +14,14 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { LEARNER_FILES } from "../../config.ts";
-import { isReviewEntry, isReviewQuestion, type ReviewEntry, type ReviewQuestion } from "../core/contracts/learner.ts";
+import {
+	isReviewEntry,
+	isReviewExclusion,
+	isReviewQuestion,
+	type ReviewEntry,
+	type ReviewExclusion,
+	type ReviewQuestion,
+} from "../core/contracts/learner.ts";
 import type { LearnerStore } from "../core/ports.ts";
 
 function appendLine(file: string, record: unknown): void {
@@ -54,5 +61,11 @@ export const learnerStore: LearnerStore = {
 	},
 	readQuestions(): ReviewQuestion[] {
 		return readRawLines(LEARNER_FILES.questions).filter(isReviewQuestion);
+	},
+	appendExclusion(entry: ReviewExclusion): void {
+		appendLine(LEARNER_FILES.exclusions, entry);
+	},
+	readExclusions(): ReviewExclusion[] {
+		return readRawLines(LEARNER_FILES.exclusions).filter(isReviewExclusion);
 	},
 };
