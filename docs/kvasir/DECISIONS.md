@@ -42,3 +42,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D034 | 2026-10-31 | Scheduler keeps the FSRS short-term steps: new cards return after 1 and 10 minutes, a forgotten card after 10 minutes, then day-based scheduling | Sagar | |
 | D035 | 2026-10-31 | Interval fuzz is off: the same reviews always give the same schedule. Clumping is handled by the daily limit (P1 decision 6) | Sagar | |
 | D036 | 2026-10-31 | P1 decision 4: every proposition in the graph gets a review card automatically, introduced at its createdAt. The per-birth-session opt-out becomes its own task, P1-8 | Sagar | |
+| D037 | 2026-10-31 | Repository interactions limited to collaborators for six months (until 2027-04-30), after an automated account (`basic-AKB`) posted task reports on the public P1 issues. Its 7 comments were deleted; copies kept outside the repo | Sagar | |
