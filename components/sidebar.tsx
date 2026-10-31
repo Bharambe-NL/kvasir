@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { MenuShell } from "@/components/menu-shell";
 import { DeleteSessionDialog } from "@/components/delete-session-dialog";
 import type { ChatDeleteMode } from "@/src/core";
-import { DumbbellIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import { DumbbellIcon, LayersIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import { ActivitySection } from "@/components/activity-dock";
 import { CoverageMenuBlock } from "@/components/extraction-coverage";
 import { LhMark } from "@/components/lh-mark";
@@ -716,6 +716,16 @@ function SessionsSidebar() {
 						<DumbbellIcon className="size-3" />
 						Practice
 						<span className="sr-only">create a new practice session</span>
+					</button>
+					<button
+						type="button"
+						data-testid="open-review"
+						onClick={() => router.push("/review")}
+						className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider transition-colors hover:bg-accent hover:text-foreground ${pathname === "/review" ? "bg-accent text-foreground" : "text-muted-foreground"}`}
+					>
+						<LayersIcon className="size-3" />
+						Review
+						<span className="sr-only">open spaced review</span>
 					</button>
 				</div>
 

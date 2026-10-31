@@ -50,6 +50,9 @@ export interface ServerEvents {
 	 *  the chat; the client mirrors it by disabling the composer/dock
 	 *  submit. */
 	"compaction-changed": { chatId: string; running: boolean };
+	/** The Memory system's learner state changed (Kvasir P1-5): a review was
+	 *  recorded or a review question was stored. Open review views refetch. */
+	"reviews-changed": Record<string, never>;
 }
 
 export type ServerEventType = keyof ServerEvents;
@@ -66,6 +69,7 @@ export const SERVER_EVENT_TYPES = [
 	"subscriptions-changed",
 	"record-changed",
 	"compaction-changed",
+	"reviews-changed",
 ] as const satisfies readonly ServerEventType[];
 
 /** One notification: the type discriminates the payload. */
