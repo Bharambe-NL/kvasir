@@ -37,7 +37,7 @@ Updated by Claude Code at the end of each session. Read this first.
 
 - All P1 open decisions are taken (D030, D031, D032, D036, D038, D041).
 
-Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, recorded in #13).
+Self-merge is allowed in P1 (D029, recorded in #13) and P2 (D057, recorded in #37) for PRs that need no review from Sagar.
 
 ## Notes
 
