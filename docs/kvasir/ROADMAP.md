@@ -29,7 +29,7 @@ Then tag the release on `main` and close the phase milestone.
 
 | Phase | Status | Gate date |
 |---|---|---|
-| P0 | In progress | |
+| P0 | Done | 2026-10-31 |
 | P1 | Not started | |
 | P2 | Not started | |
 | P3 | Not started | |
