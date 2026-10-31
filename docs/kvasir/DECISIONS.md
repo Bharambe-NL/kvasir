@@ -43,3 +43,6 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D035 | 2026-10-31 | Interval fuzz is off: the same reviews always give the same schedule. Clumping is handled by the daily limit (P1 decision 6) | Sagar | |
 | D036 | 2026-10-31 | P1 decision 4: every proposition in the graph gets a review card automatically, introduced at its createdAt. The per-birth-session opt-out becomes its own task, P1-8 | Sagar | |
 | D037 | 2026-10-31 | Repository interactions limited to collaborators for six months (until 2027-04-30), after an automated account (`basic-AKB`) posted task reports on the public P1 issues. Its 7 comments were deleted | Sagar | |
+| D038 | 2026-10-31 | P1 decision 5: review questions use two formats chosen by card phase. New, learning and relearning cards get a cue-and-recall question; review-phase cards get an applied scenario. The learner always self-rates (Again, Hard, Good, Easy) after seeing the answer | Sagar | |
+| D039 | 2026-10-31 | Review questions are pre-generated in the background under the shared background-LLM semaphore and stored append-only in `data/learner/questions.jsonl`, one per card per review cycle | Sagar | |
+| D040 | 2026-10-31 | The review generator runs on the cheap model slot | Sagar | |

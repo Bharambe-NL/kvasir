@@ -4,7 +4,7 @@
  * semantics live here. No IO.
  */
 
-import type { ReviewEntry } from "./contracts/learner.ts";
+import type { CardState, QuestionFormat, ReviewEntry, ReviewQuestion } from "./contracts/learner.ts";
 
 /** The ledger with retried appends removed: the first line for each id
  *  wins, append order is kept. */
@@ -17,4 +17,21 @@ export function uniqueReviews(entries: readonly ReviewEntry[]): ReviewEntry[] {
 		out.push(entry);
 	}
 	return out;
+}
+
+/** The stored question for a card's current review cycle: the latest one
+ *  generated for (nodeId, cycle), or null when none exists yet. */
+export function questionFor(nodeId: string, cycle: number, questions: readonly ReviewQuestion[]): ReviewQuestion | null {
+	let found: ReviewQuestion | null = null;
+	for (const q of questions) {
+		if (q.nodeId !== nodeId || q.cycle !== cycle) continue;
+		if (!found || Date.parse(q.generatedAt) >= Date.parse(found.generatedAt)) found = q;
+	}
+	return found;
+}
+
+/** The question format for a card (D038): a cue while the memory is still
+ *  forming, an applied scenario once the card is in the review phase. */
+export function formatFor(state: Pick<CardState, "phase">): QuestionFormat {
+	return state.phase === "review" ? "scenario" : "cue";
 }

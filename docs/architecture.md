@@ -29,7 +29,7 @@ Hold the architecture along two orthogonal axes:
 | **Workbench** — background labor | `data/jobs/*.json` | job runner, researcher/demo-builder/visual-maker, steer delivery |
 | **Library** — world model | `data/graph/*` ledgers | extraction pipeline (sole graph writer), derivation, birth-session clusters |
 | **Practice**: practice sessions | no store of its own | practice sessions are chat records with `kind: "practice"` (in `data/chats`); each problem targets one proposition (§7) |
-| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review ledger; cards derived by `src/core/cards.ts` (one per proposition), schedules by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
+| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review and question ledgers; review questions written ahead by `src/agent/subagents/review-generator.ts` (cue or scenario by card phase, inside the shared background-LLM semaphore); cards derived by `src/core/cards.ts` (one per proposition), schedules by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
 | **Stage** — presentation shell | nothing server-side | components/, graph canvas, docks — pure consumer via `/api/*` |
 | **Machine room** — host | process + config | Electron main, standalone Next server, `config.ts`, data-dir seam, BYOK keys |
 
@@ -240,6 +240,8 @@ flowchart TB
 
     subgraph MEMORY["MEMORY: learner state (owns data/learner; Kvasir P1)"]
         REVIEWS["review ledger: data/learner/reviews.jsonl (append-only)"]
+        QUESTIONS["question ledger: data/learner/questions.jsonl (append-only)"]
+        RGEN["review generator: agent/subagents/review-generator.ts<br/>cue or scenario by card phase; shared background-LLM semaphore"]
         CARDS["card source: core/cards.ts<br/>one card per proposition, introduced at createdAt; deleted nodes go inert"]
         SCHED["schedules: derived at read, never stored<br/>core/schedule.ts: FSRS via ts-fsrs 5.4.2, pure, fuzz off"]
     end
@@ -271,6 +273,8 @@ flowchart TB
     CARDS -->|"reads nodes and chains [GraphReader, read only]"| GRAPHDATA
     CARDS --> SCHED
     SCHED --> REVIEWS
+    RGEN -->|"due cards without a question for their cycle [withBgLlmSlot]"| CARDS
+    RGEN -->|"appends questions [injected appendQuestion]"| QUESTIONS
     UI -->|"GET /api/graph (read) · PUT positions (sanctioned exception) · POST import"| DERIVE
     HOST -.->|"hosts every server-side system"| TURN
 ```

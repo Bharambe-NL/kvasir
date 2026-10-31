@@ -20,6 +20,7 @@ import type {
 	JobRecord,
 	ExtractionRunUsage,
 	ReviewEntry,
+	ReviewQuestion,
 	PlanTree,
 	Position,
 	CoverageEntry,
@@ -136,7 +137,7 @@ export interface GraphStore {
  */
 export type GraphReader = Pick<GraphStore, "readNodes" | "readChains">;
 
-// ─── LearnerStore — the Memory system's review ledger (data/learner) ─────────
+// ─── LearnerStore — the Memory system's ledgers (data/learner) ─────────────
 // The only learner evidence (D030, D031). Append-only; card state is derived
 // at read time (core). The store never decides: reads return raw lines in
 // append order, and dedup by id is core/learner.ts uniqueReviews.
@@ -146,6 +147,10 @@ export interface LearnerStore {
 	appendReview(entry: ReviewEntry): void;
 	/** Every well-formed review line, in append order. */
 	readReviews(): ReviewEntry[];
+	/** Append one generated question (D039). */
+	appendQuestion(question: ReviewQuestion): void;
+	/** Every well-formed question line, in append order. */
+	readQuestions(): ReviewQuestion[];
 }
 
 // ─── JobStore — background sub-agent jobs (data/jobs) ─────────────────────────

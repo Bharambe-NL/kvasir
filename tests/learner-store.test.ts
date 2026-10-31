@@ -84,6 +84,43 @@ describe("LearnerStore adapter", () => {
 	});
 });
 
+describe("questions ledger (P1-4, D039)", () => {
+	const question = (id: string, nodeId: string) => ({
+		id,
+		nodeId,
+		cycle: 0,
+		format: "cue" as const,
+		prompt: "a cue",
+		answer: "the proposition",
+		generatedAt: "2026-10-31T09:00:00.000Z",
+		model: "faux:test",
+	});
+
+	it("reads [] before any question exists, then round-trips appends in order", () => {
+		assert.deepEqual(learnerStore.readQuestions(), []);
+		const a = question("rq_a", "n_1");
+		const b = question("rq_b", "n_2");
+		learnerStore.appendQuestion(a);
+		learnerStore.appendQuestion(b);
+		assert.deepEqual(learnerStore.readQuestions(), [a, b]);
+		assert.equal(path.dirname(LEARNER_FILES.questions), PATHS.learner);
+	});
+
+	it("skips corrupt and wrong-shape question lines", () => {
+		const before = learnerStore.readQuestions();
+		fs.appendFileSync(LEARNER_FILES.questions, '{"id":"rq_torn",\n');
+		fs.appendFileSync(LEARNER_FILES.questions, `${JSON.stringify({ ...question("rq_bad", "n_3"), format: "quiz" })}\n`);
+		const c = question("rq_c", "n_3");
+		learnerStore.appendQuestion(c);
+		assert.deepEqual(learnerStore.readQuestions(), [...before, c]);
+	});
+
+	it("keeps reviews and questions in separate files", () => {
+		assert.notEqual(LEARNER_FILES.questions, LEARNER_FILES.reviews);
+		assert.equal(learnerStore.readReviews().some((r) => (r as { id: string }).id.startsWith("rq_")), false);
+	});
+});
+
 describe("the Memory system never writes to the graph (D030)", () => {
 	it("leaves data/graph/ byte-identical across learner writes and reads", () => {
 		fs.mkdirSync(PATHS.graph, { recursive: true });

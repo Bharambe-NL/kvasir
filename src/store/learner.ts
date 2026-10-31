@@ -1,6 +1,7 @@
 /**
  * LearnerStore — the fs JSONL adapter for the Memory system (D030).
- *   reviews.jsonl   ReviewEntry — one line per review, append-only
+ *   reviews.jsonl     ReviewEntry    — one line per review, append-only
+ *   questions.jsonl   ReviewQuestion — one line per generated question (D039)
  *
  * Implements core/ports.ts LearnerStore. data/learner/* is exclusively this
  * adapter's, and this adapter touches nothing else: never data/graph/ (the
@@ -13,7 +14,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { LEARNER_FILES } from "../../config.ts";
-import { isReviewEntry, type ReviewEntry } from "../core/contracts/learner.ts";
+import { isReviewEntry, isReviewQuestion, type ReviewEntry, type ReviewQuestion } from "../core/contracts/learner.ts";
 import type { LearnerStore } from "../core/ports.ts";
 
 function appendLine(file: string, record: unknown): void {
@@ -47,5 +48,11 @@ export const learnerStore: LearnerStore = {
 	},
 	readReviews(): ReviewEntry[] {
 		return readRawLines(LEARNER_FILES.reviews).filter(isReviewEntry);
+	},
+	appendQuestion(question: ReviewQuestion): void {
+		appendLine(LEARNER_FILES.questions, question);
+	},
+	readQuestions(): ReviewQuestion[] {
+		return readRawLines(LEARNER_FILES.questions).filter(isReviewQuestion);
 	},
 };

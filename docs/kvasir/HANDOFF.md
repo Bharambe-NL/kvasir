@@ -5,7 +5,7 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P1 Retention and the learner layer (in progress). Milestone "P1 Retention and the learner layer", tracking issue #13, task issues #14 to #20.
-- Task: P1-3 Card source (#16) merged via #25. Next task: P1-4 Review generator (#17), not started.
+- Task: P1-4 Review generator (#17) merged via #26 after Sagar's review. Next task: P1-5 Review UI (#18), not started.
 - Branch: none open
 - PR: none open
 
@@ -15,17 +15,18 @@ Updated by Claude Code at the end of each session. Read this first.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
 - Phase P1 opened: milestone 2, label `P1`, tracking issue #13, task issues #14 to #20. Roadmap PR #21 merged. Self-merge for P1 allowed (D029).
 - P1 decisions 1 and 2: D007 confirmed (D030); one review card is one proposition, keyed by node id (D031).
+- P1-4 merged via #26 (contract and prompt approved by Sagar): `ReviewQuestion` and the questions ledger, `questionFor` and `formatFor` (`src/core/learner.ts`), the `reviewGenerator` role (cheap slot), `generateDueQuestions` in `src/agent/subagents/review-generator.ts` with its prompt as a module constant (the extraction idiom, so it does not appear in the prompt-override settings). D038 (cue-and-recall for new, learning and relearning cards; applied scenario for review cards), D039 (pre-generated questions stored in `data/learner/questions.jsonl`), D040 (cheap slot). Plan approved on #17.
 - P1-3 merged via #25: `src/core/cards.ts` (`deriveCards` gives one card per proposition plus the inert ids of deleted nodes; `dueCards`; the derived `ReviewCard` type). D036 (every proposition gets a card automatically; the per-session opt-out is new task P1-8, issue #24, row added to the brief). Golden graph: 278 propositions, so 278 cards.
 - P1-2 merged via #23: decisions D032 to D035 (`ts-fsrs` 5.4.2 pinned, retention 0.90, FSRS short-term steps, fuzz off). `src/core/schedule.ts`: `scheduleCard(nodeId, reviews, introducedAt)` replays a node's reviews; `previewRatings` gives the state per rating; `isDue`. 13 fixed-clock tests.
 - P1-1 merged via #22 (contracts approved by Sagar): `ReviewEntry` and the derived `CardState` (`src/core/contracts/learner.ts`), `LearnerStore` and the read-only `GraphReader` (`src/core/ports.ts`), the fs adapter (`src/store/learner.ts`, `data/learner/reviews.jsonl`), wiring in `src/server/stores.ts`, two ESLint zones, 16 new tests, and the architecture doc (Memory system, plus a correction of stale practice entries).
 
 ## Next
 
-1. Start P1-4 Review generator (#17) with `/kv-task P1-4`. Ask P1 decision 5 (review question format, with sketches of each) at its start.
+1. Start P1-5 Review UI (#18) with `/kv-task P1-5`. It asks P1 decision 6 (daily limit), wires `deriveCards`, `generateDueQuestions` and the review ledger into a route and the `/review` page.
 
 ## Waiting for Sagar
 
-- P1 open decisions 5 and 6, each at the start of the task that needs it.
+- P1 open decision 6 (daily limit), at the start of P1-5.
 
 Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, recorded in #13).
 

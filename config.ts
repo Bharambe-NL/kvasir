@@ -55,7 +55,9 @@ export type ModelRole =
 	| "visualMaker"
 	| "pdfReader"
 	| "extractor"
-	| "auditor";
+	| "auditor"
+	/** Writes review questions for the Memory system (P1-4, D040). */
+	| "reviewGenerator";
 
 /**
  * The LIVE graph store (src/store/graph.ts) — owned by the app's extraction
@@ -79,6 +81,8 @@ export const LEDGER_FILES = {
  */
 export const LEARNER_FILES = {
 	reviews: path.join(PATHS.learner, "reviews.jsonl"),
+	/** Generated review questions (D039), one per card per review cycle. */
+	questions: path.join(PATHS.learner, "questions.jsonl"),
 } as const;
 
 /**
