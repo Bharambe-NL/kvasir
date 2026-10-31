@@ -1,14 +1,20 @@
 {
-	"name": "learnharness",
+	"name": "kvasir",
 	"version": "0.4.0",
 	"license": "AGPL-3.0-only",
 	"author": {
-		"name": "Amos Blomqvist",
-		"email": "255718537+amosblomqvist@users.noreply.github.com"
+		"name": "Sagar Bharambe",
+		"email": "220577379+Bharambe-NL@users.noreply.github.com"
 	},
-	"homepage": "https://github.com/amosblomqvist/learnharness",
-	"desktopName": "learnharness.desktop",
-	"description": "An agent harness for learning: adaptive teaching, practice, and a persistent knowledge graph.",
+	"contributors": [
+		{
+			"name": "Amos Blomqvist",
+			"email": "255718537+amosblomqvist@users.noreply.github.com"
+		}
+	],
+	"homepage": "https://github.com/Bharambe-NL/kvasir",
+	"desktopName": "kvasir.desktop",
+	"description": "A personal learning system: adaptive teaching, practice, and a persistent knowledge graph.",
 	"type": "module",
 	"private": true,
 	"main": "electron/main.cjs",

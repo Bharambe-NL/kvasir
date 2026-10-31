@@ -70,7 +70,7 @@ function fixture({ packaged = true, updaterMissing = false } = {}) {
 	}
 	const app = Object.assign(new EventEmitter(), {
 		isPackaged: packaged,
-		name: "LearnHarness",
+		name: "Kvasir",
 		setName() {},
 		getPath: () => userData,
 		setPath: (_: string, value: string) => { userData = value; },
