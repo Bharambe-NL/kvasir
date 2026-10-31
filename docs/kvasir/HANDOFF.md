@@ -7,12 +7,13 @@ Updated by Claude Code at the end of each session. Read this first.
 - Phases in progress:
   - P1 Retention and the learner layer: every task is merged (P1-1 to P1-8). The gate waits for two weeks of real use. Milestone 2, tracking issue #13.
   - P2 Regulation grounding: opened 2026-10-31, runs alongside P1 (the roadmap allows it). Milestone 3, tracking issue #37, task issues #31 to #36.
-- Task: P2-2 merged via #40. Next: P2-3 Citation extraction (#33), not started.
-- Branch: `main`
-- PR: none open
+- Task: P2-3 Citation extraction (#33) is in progress; plan and prompt approved on #33.
+- Branch: `p2/citation-extraction`
+- PR: P2-3 draft, linked to #33
 
 ## Done
 
+- P2-3 started: D068 (cite by unit label), D069 (one or more citations), D070 (quote check: exact after folding whitespace, quotes and dashes; at least 4 words; failures sent back), D071 (import route and button in P2-3), D072 (Official Journal version date is the act's date), D073 (duplicate version refused), D074 (PDF and Markdown ask for a label, prefilled with the file name), D075 (Markdown stays notes unless "Cite as source"). Plan approved on #33.
 - P2-2 merged via #40 (contracts approved by Sagar): `SourceUnit`, `ParsedSource`, `LoadedSource` and the `SourceLoader` port; `src/server/source-loader.ts` (format detection), `src/server/sources.ts` (`parseSource`), `src/server/source-pdf.ts` (`pdfLines`), and the parsers in `src/core/source-parse/` (`eurlex.ts`, `pdf.ts`, `markdown.ts`). `tests/source-parse.test.ts`: DORA 64 articles and 106 recitals, PSD2 117 articles, 113 recitals and 2 annexes, EBA/GL/2019/04 paragraphs 1 to 98 from Section 3.1. Decisions D064 (EUR-Lex paths are the full hierarchy), D065 (recitals, articles and annexes are citable), D066 (PDF and Markdown follow the document's numbering; page fallback), D067 (DORA and PSD2 from Cellar, EBA/GL/2019/04 PDF, committed under `tests/fixtures/sources/`). Plan approved on #32.
 - P2-1 merged via #39 (contracts and ledger formats approved by Sagar): `src/core/contracts/sources.ts` (`DocumentVersion`, `SourceDocument`, `Citation`, guards), `src/core/sources.ts` (`sourceDocuments`, `citationsFor`, `versionLabel`), `src/core/source-ids.ts` (`eurlexSourceId`, `fileSourceId`, `versionIdFor`, `contentHashOf`), `GraphStore.appendDocumentVersion`/`readDocumentVersions`/`appendCitation`/`readCitations` with `LEDGER_FILES.documents` and `.citations`. Nothing writes the ledgers until P2-3. Decisions D058 (EUR-Lex HTML, PDF with text, Markdown), D059 (citation `{ sourceId, version, path, quote }`, verbatim quote), D060 (CELEX plus consolidation date; else content hash plus label), D061 (removed text: mark outdated, keep visible), D062 (no Eryndal or Hugin in P2; loader behind a port), D063 (`data/graph/documents.jsonl` and `citations.jsonl` behind `GraphStore`). Plan approved on #31.
 - Phase P2 opened (roadmap PR #38 merged, D057 self-merge allowed): milestone 3, label `P2`, tracking issue #37, task issues #31 to #36 (P2-1 to P2-6).
@@ -32,7 +33,7 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. P2-3 Citation extraction (#33): run `/kv-task P2-3`. It adds the sources front door to extraction, using `parseSource`.
+1. Finish P2-3 per the plan on #33: citations on findings and in the merger, the source view and quote check, the sources extractor and `importSource`, `POST /api/sources/import`, the import dialog, tests.
 2. In parallel, Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
 
 ## Waiting for Sagar
