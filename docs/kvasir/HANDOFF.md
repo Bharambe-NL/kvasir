@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P1 Retention and the learner layer (in progress). Milestone "P1 Retention and the learner layer", tracking issue #13, task issues #14 to #20.
-- Task: P1-5 Review UI (#18) merged via #27 after Sagar's review. Next task: P1-6 Home signals (#19).
-- Branch: none open
-- PR: none open
+- Task: P1-6 Home signals (#19). Plan approved on #19; the PR waits for Sagar's review (user-facing text).
+- Branch: `p1/home-signals`
+- PR: draft, linked to #19
 
 ## Done
 
@@ -15,6 +15,7 @@ Updated by Claude Code at the end of each session. Read this first.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
 - Phase P1 opened: milestone 2, label `P1`, tracking issue #13, task issues #14 to #20. Roadmap PR #21 merged. Self-merge for P1 allowed (D029).
 - P1 decisions 1 and 2: D007 confirmed (D030); one review card is one proposition, keyed by node id (D031).
+- P1-6 started: D045 (heat = current recall chance), D046 (red < 70%, amber 70 to 90%, green >= 90%), D047 (Retention toggle in the graph toolbar, remembered in local storage), D048 (due count on the sidebar row and a toolbar chip). Plan approved on #19.
 - P1-5 merged via #27 (text approved by Sagar): `src/core/review-queue.ts` (queue within limits, measured retention), `src/core/review-view.ts` (wire types, `formatInterval`), `src/server/review.ts` (`reviewQueueView`, `recordReview`, background generation), `reviews-changed`, `GET`/`POST /api/review`, `/review` page, sidebar Review row. Walked through by keyboard in the browser on a golden copy. D041 (20 new and 200 total reviews per local day), D042 (proposition name as fallback cue), D043 (sidebar Review row), D044 (think, reveal with Space, rate with 1 to 4). Plan approved on #18.
 - P1-4 merged via #26 (contract and prompt approved by Sagar): `ReviewQuestion` and the questions ledger, `questionFor` and `formatFor` (`src/core/learner.ts`), the `reviewGenerator` role (cheap slot), `generateDueQuestions` in `src/agent/subagents/review-generator.ts` with its prompt as a module constant (the extraction idiom, so it does not appear in the prompt-override settings). D038 (cue-and-recall for new, learning and relearning cards; applied scenario for review cards), D039 (pre-generated questions stored in `data/learner/questions.jsonl`), D040 (cheap slot). Plan approved on #17.
 - P1-3 merged via #25: `src/core/cards.ts` (`deriveCards` gives one card per proposition plus the inert ids of deleted nodes; `dueCards`; the derived `ReviewCard` type). D036 (every proposition gets a card automatically; the per-session opt-out is new task P1-8, issue #24, row added to the brief). Golden graph: 278 propositions, so 278 cards.
@@ -23,7 +24,8 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. P1-6 Home signals (#19): due count on the home page and sidebar Review row, retention heat overlay on the graph canvas.
+1. Finish P1-6 per the plan on #19: `retrievability`, `heatBand`, `reviewSummary` and `/api/review/summary`, canvas heat, sidebar count, toolbar chip and Retention toggle, tests.
+2. Mark the PR ready and wait for Sagar's review. Then P1-7 Teacher hook (#20) and P1-8 Card opt-out (#24).
 
 ## Waiting for Sagar
 
