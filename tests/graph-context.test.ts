@@ -8,7 +8,7 @@
  * marker); `details` feeds the transcript's collapsible
  * GraphContextCard (render-practice pins live in the render suite).
  *
- * The route pin drives POST /api/chats under an isolated LH_DATA_DIR
+ * The route pin drives POST /api/chats under an isolated KV_DATA_DIR
  * (the birth-stamp discipline): picks ride the CREATION, the marker
  * lands as message[0], and the chains derive from the live graph
  * snapshot.
@@ -22,7 +22,7 @@ import { after, describe, it } from "node:test";
 
 // ── the seam, BEFORE any config-loading import ──────────────────────────────
 const TMP_DATA = fs.mkdtempSync(path.join(os.tmpdir(), "lh-graph-context-"));
-process.env.LH_DATA_DIR = TMP_DATA;
+process.env.KV_DATA_DIR = TMP_DATA;
 
 const { newGraphContextMessage } = await import("../src/core/native-messages.ts");
 const { toLlmMessages } = await import("../src/core/native-messages.ts");

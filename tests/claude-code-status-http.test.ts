@@ -4,7 +4,7 @@ import { claudeCodeInstallationResponse as respond } from "../src/server/claude-
 const claudeCodeInstallationResponse: typeof respond = (request, inspect) => respond(request, inspect, () => true);
 
 function request(headers: Record<string, string> = {}) {
-	return new Request("http://localhost:3000/api/claude-code", { headers: { "x-learnharness-claude-code": "1", ...headers } });
+	return new Request("http://localhost:3000/api/claude-code", { headers: { "x-kvasir-claude-code": "1", ...headers } });
 }
 const status = { state: "not-found" as const, version: null, minimumVersion: "2.1.259" };
 
@@ -13,7 +13,7 @@ for (const headers of [
 	{ "sec-fetch-site": "cross-site" },
 	{ origin: "http://localhost:3000", "sec-fetch-site": "cross-site" },
 	{ origin: "null" },
-	{ "x-learnharness-claude-code": "" },
+	{ "x-kvasir-claude-code": "" },
 ] as Record<string, string>[]) test(`unsafe status request ${JSON.stringify(headers)} never invokes the probe`, async () => {
 	let probes = 0;
 	const response = await claudeCodeInstallationResponse(request(headers), async () => { probes++; return status; });

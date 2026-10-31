@@ -12,7 +12,7 @@ import { discoverModels, mergeManualModels, syncCustomProvider } from "./custom-
 import { parseCustomModelOverridesBody } from "./settings-body.ts";
 import { CustomBodyLimitError, readBoundedJson } from "./custom-provider-body.ts";
 
-const revisionKey = Symbol.for("learnharness.custom-provider-revision");
+const revisionKey = Symbol.for("kvasir.custom-provider-revision");
 const globals = globalThis as typeof globalThis & { [revisionKey]?: Buffer };
 const secret = globals[revisionKey] ??= randomBytes(32);
 const failure = (error: string, status = 400) => Response.json({ error }, { status });
@@ -48,7 +48,7 @@ export function customProviderGet(request: Request): Response {
 }
 
 function authorized(request: Request): boolean {
-	const desktop = process.env.LH_DESKTOP_SERVER === "1" || Boolean(process.env.LH_DESKTOP_API_SECRET);
+	const desktop = process.env.KV_DESKTOP_SERVER === "1" || Boolean(process.env.KV_DESKTOP_API_SECRET);
 	if (desktop) return desktopAPIAuthorized(request.headers);
 	const origin = request.headers.get("origin");
 	if (!origin || origin === "null") return false;

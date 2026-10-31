@@ -22,7 +22,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 
 const parentMessages = on(process, "message");
 const HOLD_INTERVAL_MS = 60_000;
-const BRIDGE_SERVER_NAME = "learnharness";
+const BRIDGE_SERVER_NAME = "kvasir";
 
 function writeLine(line) {
 	return new Promise((resolve) => process.stdout.write(`${line}\n`, resolve));

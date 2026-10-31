@@ -11,16 +11,16 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "lh-chatgpt-native-"));
-process.env.LH_DATA_DIR = path.join(scratch, "data");
-process.env.LH_AUTH_FILE = path.join(scratch, "auth.json");
-fs.writeFileSync(process.env.LH_AUTH_FILE, "{}");
+process.env.KV_DATA_DIR = path.join(scratch, "data");
+process.env.KV_AUTH_FILE = path.join(scratch, "auth.json");
+fs.writeFileSync(process.env.KV_AUTH_FILE, "{}");
 const { runPiTurn } = await import("../src/server/pi/ui-stream.ts");
 import { newUserMessage, newNextMessage, newThinkingMessage, newAnswerResult, reconstructRequestCause, concludedByDismissalPair, type LhMessage } from "../src/core/native-messages.ts";
 
 const originalSend = Object.getOwnPropertyDescriptor(process, "send");
 const originalConnected = Object.getOwnPropertyDescriptor(process, "connected");
 const realFetch = globalThis.fetch;
-const desktopMarker = process.env.LH_DESKTOP_SERVER, desktopSecret = process.env.LH_DESKTOP_API_SECRET;
+const desktopMarker = process.env.KV_DESKTOP_SERVER, desktopSecret = process.env.KV_DESKTOP_API_SECRET;
 const model = piModels().getModel("openai", "gpt-5") as Model<"openai-responses">;
 let epoch = 1, revision = 1, background = true;
 let cut: "lease" | "payload" | "full" | "afterFetch" | "none" = "none";
@@ -32,7 +32,7 @@ function revoke(full = false) {
  ipc({ channel: "lh:chatgpt", kind: "state", stamp: { epoch, authorityRevision: epoch, revision: ++revision }, status: status(), invalidate: full ? "all" : "background" });
 }
 before(() => {
- process.env.LH_DESKTOP_SERVER = "1"; process.env.LH_DESKTOP_API_SECRET = "d".repeat(64);
+ process.env.KV_DESKTOP_SERVER = "1"; process.env.KV_DESKTOP_API_SECRET = "d".repeat(64);
  Object.defineProperty(process, "connected", { configurable: true, value: true });
  Object.defineProperty(process, "send", { configurable: true, value: (m: any, callback?: () => void) => {
   if (m.op === "lease") {
@@ -52,7 +52,7 @@ before(() => {
   fetches++;
   if (cut === "afterFetch") { cut = "none"; revoke(); throw new Error("admitted local abort"); }
   if (toolFirst && fetches === 1) {
-   const call = { type: "function_call", id: "fc_again", call_id: "call_again", name: "again", namespace: "learnharness", arguments: "{}", status: "completed" };
+   const call = { type: "function_call", id: "fc_again", call_id: "call_again", name: "again", namespace: "kvasir", arguments: "{}", status: "completed" };
    return new Response([{ type: "response.output_item.added", output_index: 0, item: call }, { type: "response.output_item.done", output_index: 0, item: call }, { type: "response.completed", response: { status: "completed", output: [call], usage: { input_tokens: 4, output_tokens: 2, total_tokens: 6 } } }].map((e) => `data: ${JSON.stringify(e)}\n\n`).join(""), { headers: { "content-type": "text/event-stream" } });
   }
   const item = { id: "msg_native", type: "message", role: "assistant", content: [{ type: "output_text", text: "Accepted learner", annotations: [] }] };
@@ -61,8 +61,8 @@ before(() => {
  };
 });
 after(() => {
- if (desktopMarker === undefined) delete process.env.LH_DESKTOP_SERVER; else process.env.LH_DESKTOP_SERVER = desktopMarker;
- if (desktopSecret === undefined) delete process.env.LH_DESKTOP_API_SECRET; else process.env.LH_DESKTOP_API_SECRET = desktopSecret;
+ if (desktopMarker === undefined) delete process.env.KV_DESKTOP_SERVER; else process.env.KV_DESKTOP_SERVER = desktopMarker;
+ if (desktopSecret === undefined) delete process.env.KV_DESKTOP_API_SECRET; else process.env.KV_DESKTOP_API_SECRET = desktopSecret;
  globalThis.fetch = realFetch;
  fs.rmSync(scratch, { recursive: true, force: true });
  if (originalSend) Object.defineProperty(process, "send", originalSend); else delete process.send;

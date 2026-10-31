@@ -23,7 +23,7 @@ function windowOptions(platform: string, env: Record<string, string> = {}) {
 		once() {}
 	}
 	const electron = {
-		app: { setName() {}, getPath: () => "/fixture/LearnHarness", setPath() {}, requestSingleInstanceLock: () => false, quit() {} },
+		app: { setName() {}, getPath: () => "/fixture/Kvasir", setPath() {}, requestSingleInstanceLock: () => false, quit() {} },
 		BrowserWindow: FakeWindow,
 		session: { defaultSession: { setPermissionRequestHandler() {}, setPermissionCheckHandler() {} } },
 	};
@@ -63,7 +63,7 @@ describe("desktop window chrome", () => {
 
 	it("only the external dev shell receives the web subscription transport marker", () => {
 		assert.equal(windowOptions("darwin").webPreferences.additionalArguments, undefined);
-		assert.deepEqual(windowOptions("darwin", { LH_DEV_URL: "http://localhost:3000" }).webPreferences.additionalArguments, ["--lh-web-subscriptions"]);
+		assert.deepEqual(windowOptions("darwin", { KV_DEV_URL: "http://localhost:3000" }).webPreferences.additionalArguments, ["--lh-web-subscriptions"]);
 	});
 
 	it("dev preload routes opaque sign-in actions through its narrow external-browser channel", async () => {
@@ -161,10 +161,10 @@ describe("desktop packaging policy", () => {
 
 	it("deb has public maintainer metadata and a matching desktop identity", () => {
 		const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-		assert.equal(pkg.author.name, "Amos Blomqvist");
-		assert.equal(pkg.author.email, "255718537+amosblomqvist@users.noreply.github.com");
-		assert.equal(pkg.homepage, "https://github.com/amosblomqvist/learnharness");
-		assert.equal(pkg.desktopName, "learnharness.desktop");
+		assert.equal(pkg.author.name, "Sagar Bharambe");
+		assert.equal(pkg.author.email, "220577379+Bharambe-NL@users.noreply.github.com");
+		assert.equal(pkg.homepage, "https://github.com/Bharambe-NL/kvasir");
+		assert.equal(pkg.desktopName, "kvasir.desktop");
 	});
 });
 

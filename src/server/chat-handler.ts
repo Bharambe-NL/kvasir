@@ -433,7 +433,7 @@ export async function handleChatInput(
 		onUsage: collectUsage,
 		toolToggles: effective.agent.tools,
 		// Debug (owner, 2026-10-04): teacher/prober raw provider events under
-		// LH_PROVIDER_EVENTS=1 (provider-events.ts); no-op otherwise.
+		// KV_PROVIDER_EVENTS=1 (provider-events.ts); no-op otherwise.
 		chatId,
 		// The prompt-override switches (P2, 2026-09-19): same resolution
 		// point as the tool delta — the agent layer composes the system
@@ -524,15 +524,15 @@ export async function handleChatInput(
 			input.type === "steers" ? new Set(appends.map((message) => message.id)) : undefined);
 		// Debug recorder run marker (owner, 2026-10-04): correlates the
 		// JSONL event stream with the record's turns; no-op unless
-		// LH_PROVIDER_EVENTS=1.
+		// KV_PROVIDER_EVENTS=1.
 		providerEventNote(chatId, "turn", `run start (base: ${agentMessages.length} messages)`);
 		const handle = runPiTurn({
 			agent: constructed,
 			requestCycle,
 			// The coalescing window seam (COMPACTION LAW, 2026-10-09): tests
-			// tighten it via LH_UPDATE_FLUSH_MS; production rides the 100ms
+			// tighten it via KV_UPDATE_FLUSH_MS; production rides the 100ms
 			// default in ui-stream.
-			...(process.env.LH_UPDATE_FLUSH_MS ? { updateFlushMs: Number(process.env.LH_UPDATE_FLUSH_MS) } : {}),
+			...(process.env.KV_UPDATE_FLUSH_MS ? { updateFlushMs: Number(process.env.KV_UPDATE_FLUSH_MS) } : {}),
 			// THE LACAN FIX (2026-10-04): seed the uniquifier with every
 			// tool-call id the record already holds — a provider that resets
 			// ids per response (DeepSeek) then gets fresh unique ids for this

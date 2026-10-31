@@ -9,7 +9,7 @@ import { chatGPTHistory, chatGPTPayload } from "../src/agent/chatgpt-stream.ts";
 const originalSend = Object.getOwnPropertyDescriptor(process, "send");
 const originalConnected = Object.getOwnPropertyDescriptor(process, "connected");
 const realFetch = globalThis.fetch;
-const desktopMarker = process.env.LH_DESKTOP_SERVER, desktopSecret = process.env.LH_DESKTOP_API_SECRET;
+const desktopMarker = process.env.KV_DESKTOP_SERVER, desktopSecret = process.env.KV_DESKTOP_API_SECRET;
 const originalKey = process.env.OPENAI_API_KEY;
 let leaseError: string | null = null;
 let requests: { authorization: string | null; body: Record<string, any>; url: string }[] = [];
@@ -18,7 +18,7 @@ const ipc = (value: unknown) => (process.emit as (name: string, value: unknown) 
 const model = piModels().getModel("openai", "gpt-5") as Model<"openai-responses">;
 const status = { available: true, pending: false, allowBackgroundUse: false, activeId: "scratch-account", accounts: [{ id: "scratch-account", email: "dummy@example.invalid", registration: "oaiapp_scratch", connected: true, planEnabled: true, background: false }], error: null };
 before(async () => {
-	process.env.LH_DESKTOP_SERVER = "1"; process.env.LH_DESKTOP_API_SECRET = "d".repeat(64);
+	process.env.KV_DESKTOP_SERVER = "1"; process.env.KV_DESKTOP_API_SECRET = "d".repeat(64);
 	assert(model);
 	process.env.OPENAI_API_KEY = "sk-scratch-must-never-be-used";
 	Object.defineProperty(process, "connected", { configurable: true, value: true });
@@ -38,8 +38,8 @@ before(async () => {
 	};
 });
 after(() => {
-	if (desktopMarker === undefined) delete process.env.LH_DESKTOP_SERVER; else process.env.LH_DESKTOP_SERVER = desktopMarker;
-	if (desktopSecret === undefined) delete process.env.LH_DESKTOP_API_SECRET; else process.env.LH_DESKTOP_API_SECRET = desktopSecret;
+	if (desktopMarker === undefined) delete process.env.KV_DESKTOP_SERVER; else process.env.KV_DESKTOP_SERVER = desktopMarker;
+	if (desktopSecret === undefined) delete process.env.KV_DESKTOP_API_SECRET; else process.env.KV_DESKTOP_API_SECRET = desktopSecret;
 	globalThis.fetch = realFetch;
 	if (originalSend) Object.defineProperty(process, "send", originalSend); else delete process.send;
 	if (originalConnected) Object.defineProperty(process, "connected", originalConnected); else delete (process as { connected?: boolean }).connected;
@@ -58,7 +58,7 @@ test("catalog intersects supported capabilities, without inventing model limits"
 
 test("alias resolves only OAuth; native Responses body is stateless/namespaced, image/history preserved and logical output retained", async () => {
 	requests = [];
-	const tool = { type: "function_call", id: "fc_scratch", call_id: "call_scratch", name: "scratch_tool", namespace: "learnharness", arguments: '{"value":"yes"}', status: "completed" };
+	const tool = { type: "function_call", id: "fc_scratch", call_id: "call_scratch", name: "scratch_tool", namespace: "kvasir", arguments: '{"value":"yes"}', status: "completed" };
 	const reasoning = { type: "reasoning", id: "rs_scratch", summary: [], encrypted_content: "scratch-encrypted-reasoning" };
 	responseEvents = [{ type: "response.created", response: { id: "resp_scratch" } }, { type: "response.output_item.added", output_index: 0, item: reasoning }, { type: "response.output_item.done", output_index: 0, item: reasoning }, { type: "response.output_item.added", output_index: 1, item: tool }, { type: "response.output_item.done", output_index: 1, item: tool }, complete([reasoning, tool])];
 	const engine = piEngineForSpec({ provider: "chatgpt", id: model.id }, false);
@@ -76,7 +76,7 @@ test("alias resolves only OAuth; native Responses body is stateless/namespaced, 
 	assert.equal(body.input[1].content[1].type, "input_image");
 	assert.equal(body.tools[0].type, "namespace"); assert.equal(body.tools[0].tools[0].name, "scratch_tool");
 	const call = result.content.find((block) => block.type === "toolCall")!;
-	assert.equal(call.id, "call_scratch|fc_scratch"); assert.equal(call.namespace, "learnharness");
+	assert.equal(call.id, "call_scratch|fc_scratch"); assert.equal(call.namespace, "kvasir");
 	const thinking = result.content.find((block) => block.type === "thinking")!;
 	assert.equal(thinking.thinkingSignature, JSON.stringify(reasoning));
 	const history = normalizeContext({ messages: [...context().messages, result, { role: "toolResult", toolCallId: call.id, toolName: call.name, isError: false, content: [{ type: "text", text: "Scratch tool result" }], timestamp: 2 }] });
@@ -84,7 +84,7 @@ test("alias resolves only OAuth; native Responses body is stateless/namespaced, 
 	await engine.streamFn(engine.model, history).result();
 	const replay = requests[1]!.body.input;
 	assert(replay.some((item: any) => item.encrypted_content === "scratch-encrypted-reasoning"));
-	assert(replay.some((item: any) => item.type === "function_call" && item.id === "fc_scratch" && item.namespace === "learnharness"));
+	assert(replay.some((item: any) => item.type === "function_call" && item.id === "fc_scratch" && item.namespace === "kvasir"));
 	assert(replay.some((item: any) => item.type === "function_call_output" && item.call_id === "call_scratch"));
 });
 

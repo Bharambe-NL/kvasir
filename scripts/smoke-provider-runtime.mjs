@@ -99,7 +99,7 @@ async function probe(standalone) {
 			models.setProvider(provider);
 			const model = provider.getModels().find((candidate) => candidate.api === api);
 			assert.ok(model, `${name}: missing ${api} catalog model`);
-			const sentinel = `LH_OFFLINE_ON_PAYLOAD_${randomUUID()}`;
+			const sentinel = `KV_OFFLINE_ON_PAYLOAD_${randomUUID()}`;
 			let reached = 0;
 			const result = await models.streamSimple(model, { messages: [{ role: "user", content: "Offline initialization only", timestamp: 0 }] }, {
 				apiKey: "dummy-offline-provider-gate-not-a-key",
@@ -128,7 +128,7 @@ async function probe(standalone) {
 			for (const model of provider.getModels()) {
 				if (seenApis.has(model.api)) continue;
 				seenApis.add(model.api);
-				const sentinel = `LH_OFFLINE_SUBSCRIPTION_${randomUUID()}`;
+				const sentinel = `KV_OFFLINE_SUBSCRIPTION_${randomUUID()}`;
 				let reached = 0;
 				const result = await provider.streamSimple({ ...model, ...(auth.baseUrl ? { baseUrl: auth.baseUrl } : {}) }, { messages: [{ role: "user", content: "Offline initialization only", timestamp: 0 }] }, {
 					...auth, maxRetries: 0, onPayload() { reached++; throw new Error(sentinel); },

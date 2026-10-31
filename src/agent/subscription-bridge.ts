@@ -17,7 +17,7 @@ export function nativeSubscriptionId(logicalId: string): NativeSubscriptionProvi
 	return NATIVE_SUBSCRIPTIONS.find((entry) => entry.logicalId === logicalId)?.providerId;
 }
 function desktopConnected(): boolean {
-	return process.env.LH_DESKTOP_SERVER === "1" && (process.env.LH_DESKTOP_API_SECRET?.length ?? 0) >= 64 && typeof process.send === "function" && process.connected === true;
+	return process.env.KV_DESKTOP_SERVER === "1" && (process.env.KV_DESKTOP_API_SECRET?.length ?? 0) >= 64 && typeof process.send === "function" && process.connected === true;
 }
 function runtimeConnected(): boolean { return desktopConnected() || webSubscriptionsEnabled(); }
 function notify(state: State) { for (const listener of state.listeners) { try { listener(); } catch { /* observer isolation */ } } }

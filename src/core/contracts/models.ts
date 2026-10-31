@@ -21,7 +21,7 @@ export interface ModelCatalogEntry {
 	 * thinkingLevelMap — e.g. GLM-5.3-flash: low|high|max). The thinking
 	 * picker lists exactly these; anything else is a lie. */
 	supportedLevels: ThinkingLevel[];
-	/** Null when LearnHarness cannot estimate prices for this connection. */
+	/** Null when Kvasir cannot estimate prices for this connection. */
 	cost: { input: number; output: number; cacheRead: number; cacheWrite: number } | null;
 	/** Null for native CLI aliases whose effective limits are session-specific. */
 	contextWindow: number | null;

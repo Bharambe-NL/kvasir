@@ -70,7 +70,7 @@ function fixture({ packaged = true, updaterMissing = false } = {}) {
 	}
 	const app = Object.assign(new EventEmitter(), {
 		isPackaged: packaged,
-		name: "LearnHarness",
+		name: "Kvasir",
 		setName() {},
 		getPath: () => userData,
 		setPath: (_: string, value: string) => { userData = value; },
@@ -100,7 +100,7 @@ function fixture({ packaged = true, updaterMissing = false } = {}) {
 			};
 			return mainRequire(id);
 		},
-		process: { argv: [], env: { LH_DEV_URL: "http://127.0.0.1:9000" }, platform: "darwin", on() {} },
+		process: { argv: [], env: { KV_DEV_URL: "http://127.0.0.1:9000" }, platform: "darwin", on() {} },
 		__dirname: path.dirname(mainFile), URL,
 		setInterval: (callback: () => void, delay: number) => intervals.push({ callback, delay }),
 		setTimeout() {},

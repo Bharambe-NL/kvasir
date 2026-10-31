@@ -22,7 +22,7 @@ export function customAuthState(inspectKey = false, requiredConfig?: CustomProvi
 		if (!inspectKey || (requiredConfig && !customBindingMatches(requiredConfig, snapshot.binding))) return result;
 		result.fileKey = snapshot.fileKey();
 		const record = authEnvRecord();
-		const envKey = process.env.LH_IGNORE_ENV_KEYS !== "1" && record.realEnv.has(CUSTOM_PROVIDER.envVar) ? process.env[CUSTOM_PROVIDER.envVar] : undefined;
+		const envKey = process.env.KV_IGNORE_ENV_KEYS !== "1" && record.realEnv.has(CUSTOM_PROVIDER.envVar) ? process.env[CUSTOM_PROVIDER.envVar] : undefined;
 		result.source = envKey !== undefined ? "env" : result.fileKey !== undefined ? "file" : "none";
 		result.key = (envKey ?? result.fileKey)?.trim() || undefined;
 		return result;

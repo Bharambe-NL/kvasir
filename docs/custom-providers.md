@@ -1,6 +1,6 @@
 # Custom and local models
 
-LearnHarness supports **one custom OpenAI-compatible endpoint with multiple models**.
+Kvasir supports **one custom OpenAI-compatible endpoint with multiple models**.
 The setup and Settings UI are based on PR #62 by Daniel Buckner and Abhishek Thakur.
 Pi owns inference, message conversion, tools, streaming, and reasoning-effort handling.
 
@@ -9,7 +9,7 @@ Pi owns inference, message conversion, tools, streaming, and reasoning-effort ha
 1. Open **Settings → Providers → + Add a provider → Custom endpoint**. The same
    editor is available from the first-run provider picker.
 2. Enter the server's complete API base URL, for example
-   `http://localhost:11434/v1`. LearnHarness does **not** append `/v1`.
+   `http://localhost:11434/v1`. Kvasir does **not** append `/v1`.
 3. Choose **Keyless** or **API key**:
    - **Keyless** never uses a saved or environment custom-provider key for
      authentication. Pi's OpenAI client receives an internal dummy credential.
@@ -78,7 +78,7 @@ real-model image-understanding quality.
 
 Nonsecret configuration is stored in the existing `settings.json.customProvider`;
 file-saved credentials use the existing `auth.json` key seam. A reserved internal
-string entry, `__learnharness_custom_provider_binding`, binds authorization to the
+string entry, `__kvasir_custom_provider_binding`, binds authorization to the
 endpoint, mode, and a random nonsecret `credentialBindingId` in custom settings.
 The file key and its binding are published in one existing atomic auth-map write.
 The internal entry is not an environment variable or an editable/displayed key.

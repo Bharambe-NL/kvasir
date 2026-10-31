@@ -5,7 +5,7 @@ import { delimiter, join } from "node:path";
 import test, { after, type TestContext } from "node:test";
 
 const testData = mkdtempSync(join(tmpdir(), "lh-cli-opt-in-data-"));
-process.env.LH_DATA_DIR = testData;
+process.env.KV_DATA_DIR = testData;
 after(() => rmSync(testData, { recursive: true, force: true }));
 const { SETTINGS_FILE } = await import("../config.ts");
 const { PUT } = await import("../app/api/settings/[section]/route.ts");
@@ -74,7 +74,7 @@ test("default off even with an installed binary; section writes toggle availabil
 
 test("off cannot launch a version probe even through an otherwise authorized HTTP request", async (t) => {
 	setup(t);
-	const request = new Request("http://test/api/claude-code", { headers: { "x-learnharness-claude-code": "1" } });
+	const request = new Request("http://test/api/claude-code", { headers: { "x-kvasir-claude-code": "1" } });
 	const response = await claudeCodeInstallationResponse(request, async () => assert.fail("disabled CLI must not execute"));
 	assert.equal(response.status, 403);
 });

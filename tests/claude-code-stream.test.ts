@@ -171,7 +171,7 @@ function toToolUseMessage(toolUses: ToolUse[]): string[] {
 			streamEvent({
 				type: "content_block_start",
 				index,
-				content_block: { type: "tool_use", id: toolUse.id, name: `mcp__learnharness__${toolUse.name}`, input: {} },
+				content_block: { type: "tool_use", id: toolUse.id, name: `mcp__kvasir__${toolUse.name}`, input: {} },
 			}),
 			streamEvent({
 				type: "content_block_delta",
@@ -226,7 +226,7 @@ function getText(message: AssistantMessage): string {
 
 function getMcpUrl(call: RunCall): string {
 	const mcpConfig = JSON.parse(call.mcpConfig) as { mcpServers: Record<string, { url: string }> };
-	const url = mcpConfig.mcpServers.learnharness?.url;
+	const url = mcpConfig.mcpServers.kvasir?.url;
 	assert.ok(url);
 	return url;
 }
@@ -277,7 +277,7 @@ test("toClaudeArgs includes every isolation flag from Global Constraints", () =>
 		effort: "high",
 		systemPromptFile: "/private/system-prompt.md",
 		mcpConfigFile: "/private/mcp.json",
-		allowedTools: ["mcp__learnharness__read", "mcp__learnharness__write"],
+		allowedTools: ["mcp__kvasir__read", "mcp__kvasir__write"],
 	} as const;
 
 	assert.deepEqual(toClaudeArgs({ ...input, allowedTools: [...input.allowedTools] }), [
@@ -308,7 +308,7 @@ test("toClaudeArgs includes every isolation flag from Global Constraints", () =>
 		"--permission-prompts",
 		"none",
 		"--allowedTools",
-		"mcp__learnharness__read,mcp__learnharness__write",
+		"mcp__kvasir__read,mcp__kvasir__write",
 	]);
 
 	assert.equal(toClaudeArgs({ ...input, allowedTools: [] }).includes("--allowedTools"), false);
@@ -400,7 +400,7 @@ test("unsupported native tool intent fails without exposing executable calls", a
 		streamEvent({
 			type: "content_block_start",
 			index: 0,
-			content_block: { type: "tool_use", id: "toolu_a", name: "mcp__learnharness__nope", input: {} },
+			content_block: { type: "tool_use", id: "toolu_a", name: "mcp__kvasir__nope", input: {} },
 		}),
 		streamEvent({ type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: '{"path": ' } }),
 		streamEvent({ type: "content_block_stop", index: 0 }),
@@ -572,7 +572,7 @@ test("cwd is an empty temp dir; prompt and mcp config live in a separate private
 	assert.equal(call.mcpConfigMode, 0o600);
 
 	const mcpConfig = JSON.parse(call.mcpConfig) as { mcpServers: Record<string, { url: string }> };
-	assert.match(mcpConfig.mcpServers.learnharness?.url ?? "", /^http:\/\/127\.0\.0\.1:\d+\/mcp$/);
+	assert.match(mcpConfig.mcpServers.kvasir?.url ?? "", /^http:\/\/127\.0\.0\.1:\d+\/mcp$/);
 });
 
 test("spawns with the model alias, effort, bridge tools, MCP_TOOL_TIMEOUT and the caller's HOME", async (t) => {
@@ -580,7 +580,7 @@ test("spawns with the model alias, effort, bridge tools, MCP_TOOL_TIMEOUT and th
 	const call = getOnlyCall(calls);
 	assert.equal(getFlagValue(call.args, "--model"), "opus");
 	assert.equal(getFlagValue(call.args, "--effort"), "xhigh");
-	assert.equal(getFlagValue(call.args, "--allowedTools"), "mcp__learnharness__read,mcp__learnharness__get_weather");
+	assert.equal(getFlagValue(call.args, "--allowedTools"), "mcp__kvasir__read,mcp__kvasir__get_weather");
 	assert.equal(call.env.MCP_TOOL_TIMEOUT, "1800000");
 	assert.equal(call.env.HOME, process.env.HOME);
 	assert.equal(call.env.CLAUDE_CONFIG_DIR, process.env.CLAUDE_CONFIG_DIR);
@@ -605,7 +605,7 @@ test("preserves existing CLI environment authentication without a subscription g
 	assert.equal(call.env.ANTHROPIC_AUTH_TOKEN, "token-test");
 });
 
-test("does not inject credentials reflected only from LearnHarness's key store", async (t) => {
+test("does not inject credentials reflected only from Kvasir's key store", async (t) => {
 	const name = "ANTHROPIC_API_KEY";
 	const record = authEnvRecord();
 	const saved = process.env[name];
@@ -617,7 +617,7 @@ test("does not inject credentials reflected only from LearnHarness's key store",
 	record.fillGap.add(name);
 	const { calls } = await runScenario(t, readFixtureLines("text.jsonl"));
 	assert.equal(getOnlyCall(calls).env[name], undefined);
-	assert.equal(process.env[name], "lh-only-key", "other LearnHarness providers keep their env reflection");
+	assert.equal(process.env[name], "lh-only-key", "other Kvasir providers keep their env reflection");
 });
 
 test("writes one user prompt after local-only control initialization and summary request", async (t) => {
@@ -740,7 +740,7 @@ test("a CLI-rejected malformed call is not exposed for execution", async (t) => 
 		streamEvent({
 			type: "content_block_start",
 			index: 0,
-			content_block: { type: "tool_use", id: "toolu_bad_json", name: "mcp__learnharness__read", input: {} },
+			content_block: { type: "tool_use", id: "toolu_bad_json", name: "mcp__kvasir__read", input: {} },
 		}),
 		streamEvent({ type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: '{"path": ' } }),
 		streamEvent({ type: "content_block_stop", index: 0 }),
@@ -909,7 +909,7 @@ for (const asyncVersionFailure of [false, true]) test(`${asyncVersionFailure ? "
 	let resources: { cwd: string; privateDir: string; url: string } | undefined;
 	const stream = createClaudeCodeStreamFunction((args, options) => {
 		const config = JSON.parse(readFileSync(getFlagValue(args, "--mcp-config"), "utf8"));
-		resources = { cwd: options.cwd, privateDir: dirname(getFlagValue(args, "--mcp-config")), url: config.mcpServers.learnharness.url };
+		resources = { cwd: options.cwd, privateDir: dirname(getFlagValue(args, "--mcp-config")), url: config.mcpServers.kvasir.url };
 		if (asyncVersionFailure) return Promise.reject(new ClaudeLaunchError("Claude Code requires an update"));
 		throw new Error("synthetic spawn failure");
 	});

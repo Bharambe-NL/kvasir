@@ -612,7 +612,7 @@ function continueLiveProcess(turn: ClaudeTurn, owner: symbol, sessionId: string 
 
 function toClaudeEnv(): NodeJS.ProcessEnv {
 	// Preserve native CLI auth/routing, including launch-environment credentials.
-	// Claude Code chooses the account and billing method, not LearnHarness.
+	// Claude Code chooses the account and billing method, not Kvasir.
 	return { ...externalCliEnv(), MCP_TOOL_TIMEOUT: String(MCP_TOOL_TIMEOUT_MS) };
 }
 

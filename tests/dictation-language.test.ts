@@ -59,7 +59,7 @@ describe("Nova-3 dictation language contract", () => {
 });
 
 const testData = mkdtempSync(path.join(tmpdir(), "lh-dictation-settings-"));
-process.env.LH_DATA_DIR = testData;
+process.env.KV_DATA_DIR = testData;
 after(() => { rmSync(testData, { recursive: true, force: true }); });
 const { readSettings, writeSettings } = await import("../src/store/settings.ts");
 

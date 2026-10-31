@@ -16,3 +16,11 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D008 | 2026-10-31 | Repository is `Bharambe-NL/kvasir`, private until the P0 gate passes. Local clone at `~/Code/kvasir` | Sagar | |
 | D009 | 2026-10-31 | Commits use the GitHub noreply address `220577379+Bharambe-NL@users.noreply.github.com` | Sagar | |
 | D010 | 2026-10-31 | Claude Code may self-merge P0 PRs that need no review from Sagar, once CI is green. Recorded in tracking issue #1 | Sagar | |
+| D011 | 2026-10-31 | P0 decision 2: keep the upstream subscription sign-ins (ChatGPT, GitHub Copilot, Grok) | Sagar | |
+| D012 | 2026-10-31 | P0 decision 3: rename every `LH_*` environment variable to `KV_*`, with no fallback to the old names | Sagar | |
+| D013 | 2026-10-31 | P0 decision 4: `appId` `nl.bharambe.kvasir`, product name `Kvasir`, data folder `Kvasir` (and `Kvasir-dev` for `desktop:dev`) | Sagar | |
+| D014 | 2026-10-31 | P0 decision 5: keep the upstream icons and DMG background as the P0 placeholder; a Kvasir icon comes in a later task | Sagar | |
+| D015 | 2026-10-31 | P0-2 leaves `release.yml`, `notify-website.yml`, the bug and question issue templates, the `publish` block and `docs/desktop-release.md` to P0-3; the full rename grep is checked at the P0 gate | Sagar | |
+| D016 | 2026-10-31 | Internal names (HTTP headers, MCP bridge server name, ChatGPT tool namespace, user agent, env binding, symbol key) are renamed to `kvasir` too | Sagar | |
+| D017 | 2026-10-31 | No migration from the LearnHarness data folder; Kvasir starts with its own empty folder and both apps can run side by side | Sagar | |
+| D018 | 2026-10-31 | The build-pack docs (`docs/kvasir/`, `CLAUDE.md`, `scripts/bootstrap-kvasir.sh`) may name LearnHarness as lineage and join the rename grep allow-list | Sagar | |
