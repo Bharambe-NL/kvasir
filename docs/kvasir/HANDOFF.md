@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P1 Retention and the learner layer (in progress). Milestone "P1 Retention and the learner layer", tracking issue #13, task issues #14 to #20.
-- Task: P1-7 Teacher hook (#20) merged via #29. Next task: P1-8 Card opt-out (#24), not started.
-- Branch: `main`
-- PR: none open
+- Task: P1-8 Card opt-out (#24) is in progress; plan approved on #24.
+- Branch: `p1/card-opt-out`
+- PR: P1-8 draft, linked to #24
 
 ## Done
 
@@ -15,6 +15,7 @@ Updated by Claude Code at the end of each session. Read this first.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
 - Phase P1 opened: milestone 2, label `P1`, tracking issue #13, task issues #14 to #20. Roadmap PR #21 merged. Self-merge for P1 allowed (D029).
 - P1 decisions 1 and 2: D007 confirmed (D030); one review card is one proposition, keyed by node id (D031).
+- P1-8 started: D053 (control on Chains table cluster rows and the sidebar menu), D054 (exclusion reaches queue, due count, heat, memory tool and pre-generation; reviews stay), D055 (`data/learner/exclusions.jsonl` toggle events, last wins), D056 ("Exclude from review" / "Include in review", "Not in review" tag). Plan approved on #24.
 - P1-7 merged via #29 (tool description and settings text approved by Sagar): `agent.memoryTools` and `memoryToolsEnabled` (`src/core/settings-resolution.ts`), `list_weak_propositions` in `src/agent/tools/memory.ts` over a read-only `MemoryToolContext`, wired into the prober and teacher by `memoryContext()` in `src/server/chat-handler.ts`, the Memory tools settings row under Graph tools. `tests/memory-tools.test.ts` builds the real teacher registry, lists the weak cards and checks `data/graph/` and `data/learner/` are byte-identical after the call. Decisions D049 (prober and teacher), D050 (own Memory tools toggle, default on, needs the graph), D051 (recall below 80%, weakest 15), D052 (names, recall, lapses, last review, id; no statements). Plan approved on #20.
 - P1-6 merged via #28 (text approved by Sagar): `retrievability` (`src/core/schedule.ts`), `heatBand` and `ReviewSummary` (`src/core/review-view.ts`), `reviewSummary` and `GET /api/review/summary`, canvas heat (`CanvasData.heat`, `HEAT_COLORS`), `components/review/use-review-summary.ts` and `retention-controls.tsx`, the sidebar count and toolbar chip. Checked in the browser on a seeded golden copy: overlay on shows all three band colours on the canvas, off shows none, and every graph file stays byte-identical. D045 (heat = current recall chance), D046 (red < 70%, amber 70 to 90%, green >= 90%), D047 (Retention toggle in the graph toolbar, remembered in local storage), D048 (due count on the sidebar row and a toolbar chip). Plan approved on #19.
 - P1-5 merged via #27 (text approved by Sagar): `src/core/review-queue.ts` (queue within limits, measured retention), `src/core/review-view.ts` (wire types, `formatInterval`), `src/server/review.ts` (`reviewQueueView`, `recordReview`, background generation), `reviews-changed`, `GET`/`POST /api/review`, `/review` page, sidebar Review row. Walked through by keyboard in the browser on a golden copy. D041 (20 new and 200 total reviews per local day), D042 (proposition name as fallback cue), D043 (sidebar Review row), D044 (think, reveal with Space, rate with 1 to 4). Plan approved on #18.
@@ -25,7 +26,7 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. P1-8 Card opt-out (#24): run `/kv-task P1-8`.
+1. Finish P1-8 per the plan on #24: the `ReviewExclusion` contract and ledger, `deriveCards` exclusions, `/api/review/exclusions`, the Chains table and sidebar controls, tests.
 2. Then the P1 gate, after two weeks of real use.
 
 ## Waiting for Sagar
