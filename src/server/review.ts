@@ -20,10 +20,10 @@ import { emit } from "../core/events.ts";
 import { getGraph } from "../core/graph.ts";
 import { questionFor, uniqueReviews } from "../core/learner.ts";
 import { buildQueue, measuredRetention } from "../core/review-queue.ts";
-import type { ReviewQueueItem, ReviewQueueView } from "../core/review-view.ts";
-import { previewRatings } from "../core/schedule.ts";
+import type { ReviewQueueItem, ReviewQueueView, ReviewSummary } from "../core/review-view.ts";
+import { previewRatings, retrievability } from "../core/schedule.ts";
 import { resolveRoleSpec } from "../core/settings-resolution.ts";
-export type { ReviewQueueItem, ReviewQueueView };
+export type { ReviewQueueItem, ReviewQueueView, ReviewSummary };
 import { piEngineForSpec, type PiEngine } from "../agent/models.ts";
 import { generateDueQuestions, type RelatedStatement } from "../agent/subagents/review-generator.ts";
 import { providerKeyPresent } from "./keys.ts";
@@ -124,6 +124,23 @@ export function reviewQueueView(nowDate: Date = new Date(), options: { generate?
 		};
 	});
 	return { now, items, stats, retention: measuredRetention(cards, reviews, now) };
+}
+
+/** The home signals (P1-6): today's due count (the review page's queue,
+ *  limits included) and the current recall chance of every reviewed live
+ *  card (D045). A pure read: no generation, no writes, no events. */
+export function reviewSummary(nowDate: Date = new Date()): ReviewSummary {
+	const now = nowDate.toISOString();
+	const reviews = stores.learnerStore.readReviews();
+	const { cards } = deriveCards(graphReader, reviews);
+	const { queue } = buildQueue(cards, reviews, now, localDayStart(nowDate));
+	const heat: Record<string, number> = {};
+	for (const card of cards) {
+		if (card.state.reps === 0) continue;
+		const r = retrievability(card.nodeId, reviews, card.introducedAt, now);
+		if (r !== null) heat[card.nodeId] = r;
+	}
+	return { due: queue.length, heat };
 }
 
 export type RecordReviewResult =
