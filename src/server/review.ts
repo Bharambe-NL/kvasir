@@ -13,36 +13,21 @@
  * Both emit "reviews-changed" so open review views refetch.
  */
 
-import type { CardPhase, QuestionFormat, ReviewEntry, ReviewQuestion, ReviewRating } from "../core/contracts/learner.ts";
+import type { ReviewEntry, ReviewQuestion, ReviewRating } from "../core/contracts/learner.ts";
 import { REVIEW_RATINGS } from "../core/contracts/learner.ts";
 import { deriveCards, type ReviewCard } from "../core/cards.ts";
 import { emit } from "../core/events.ts";
 import { getGraph } from "../core/graph.ts";
 import { questionFor, uniqueReviews } from "../core/learner.ts";
-import { buildQueue, measuredRetention, type QueueStats, type Retention } from "../core/review-queue.ts";
+import { buildQueue, measuredRetention } from "../core/review-queue.ts";
+import type { ReviewQueueItem, ReviewQueueView } from "../core/review-view.ts";
 import { previewRatings } from "../core/schedule.ts";
 import { resolveRoleSpec } from "../core/settings-resolution.ts";
+export type { ReviewQueueItem, ReviewQueueView };
 import { piEngineForSpec, type PiEngine } from "../agent/models.ts";
 import { generateDueQuestions, type RelatedStatement } from "../agent/subagents/review-generator.ts";
 import { providerKeyPresent } from "./keys.ts";
 import { graphReader, stores } from "./stores.ts";
-
-export interface ReviewQueueItem {
-	nodeId: string;
-	name: string;
-	phase: CardPhase;
-	/** The generated question, or the D042 fallback ("fallback"). */
-	question: { format: QuestionFormat | "fallback"; prompt: string; answer: string };
-	/** ISO due time each rating would give if rated now. */
-	previews: Record<ReviewRating, string>;
-}
-
-export interface ReviewQueueView {
-	now: string;
-	items: ReviewQueueItem[];
-	stats: QueueStats;
-	retention: Retention | null;
-}
 
 const newId = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${crypto.randomUUID().slice(0, 8)}`;
 
