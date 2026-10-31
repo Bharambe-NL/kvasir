@@ -10,26 +10,34 @@
  *   queue starts background generation for items without a question.
  * - recordReview: appends one review, idempotent by id, and refuses a node
  *   that is no longer a card.
- * Both emit "reviews-changed" so open review views refetch.
+ * - setReviewExclusion (P1-8): opts a birth session out of review or back
+ *   in (D053 to D055). Every read here leaves excluded sessions' cards out.
+ * All three emit "reviews-changed" so open review views refetch.
  */
 
-import type { ReviewEntry, ReviewQuestion, ReviewRating } from "../core/contracts/learner.ts";
+import type { ReviewEntry, ReviewExclusion, ReviewQuestion, ReviewRating } from "../core/contracts/learner.ts";
 import { REVIEW_RATINGS } from "../core/contracts/learner.ts";
 import { deriveCards, type ReviewCard } from "../core/cards.ts";
 import { emit } from "../core/events.ts";
 import { getGraph } from "../core/graph.ts";
-import { questionFor, uniqueReviews } from "../core/learner.ts";
+import { birthSessionOf } from "../core/session-clusters.ts";
+import { excludedSessions, questionFor, uniqueReviews } from "../core/learner.ts";
 import { buildQueue, measuredRetention } from "../core/review-queue.ts";
-import type { ReviewQueueItem, ReviewQueueView, ReviewSummary } from "../core/review-view.ts";
+import type { ReviewExclusionsView, ReviewQueueItem, ReviewQueueView, ReviewSummary } from "../core/review-view.ts";
 import { previewRatings, retrievability } from "../core/schedule.ts";
 import { resolveRoleSpec } from "../core/settings-resolution.ts";
-export type { ReviewQueueItem, ReviewQueueView, ReviewSummary };
+export type { ReviewExclusionsView, ReviewQueueItem, ReviewQueueView, ReviewSummary };
 import { piEngineForSpec, type PiEngine } from "../agent/models.ts";
 import { generateDueQuestions, type RelatedStatement } from "../agent/subagents/review-generator.ts";
 import { providerKeyPresent } from "./keys.ts";
 import { graphReader, stores } from "./stores.ts";
 
 const newId = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${crypto.randomUUID().slice(0, 8)}`;
+
+/** The birth sessions currently out of review (D055). */
+function currentExclusions(): Set<string> {
+	return excludedSessions(stores.learnerStore.readExclusions());
+}
 
 /** Local midnight of `now` (the server runs on the learner's machine). */
 function localDayStart(now: Date): string {
@@ -106,7 +114,7 @@ export function reviewQueueView(nowDate: Date = new Date(), options: { generate?
 	const now = nowDate.toISOString();
 	const reviews = stores.learnerStore.readReviews();
 	const questions = stores.learnerStore.readQuestions();
-	const { cards } = deriveCards(graphReader, reviews);
+	const { cards } = deriveCards(graphReader, reviews, currentExclusions());
 	const { queue, stats } = buildQueue(cards, reviews, now, localDayStart(nowDate));
 	if (options.generate !== false) startGeneration(queue, questions, now);
 
@@ -132,7 +140,7 @@ export function reviewQueueView(nowDate: Date = new Date(), options: { generate?
 export function reviewSummary(nowDate: Date = new Date()): ReviewSummary {
 	const now = nowDate.toISOString();
 	const reviews = stores.learnerStore.readReviews();
-	const { cards } = deriveCards(graphReader, reviews);
+	const { cards } = deriveCards(graphReader, reviews, currentExclusions());
 	const { queue } = buildQueue(cards, reviews, now, localDayStart(nowDate));
 	const heat: Record<string, number> = {};
 	for (const card of cards) {
@@ -160,11 +168,45 @@ export function recordReview(body: unknown, nowDate: Date = new Date()): RecordR
 	const id = typeof b.id === "string" && b.id.length > 0 ? b.id : newId("rev");
 	const reviews = uniqueReviews(stores.learnerStore.readReviews());
 	if (reviews.some((r) => r.id === id)) return { ok: true, duplicate: true };
-	if (!getGraph(graphReader).nodes.some((n) => n.id === nodeId)) {
+	const node = getGraph(graphReader).nodes.find((n) => n.id === nodeId);
+	if (!node) {
 		return { ok: false, status: 409, error: "that proposition is no longer in the graph" };
+	}
+	const birth = birthSessionOf(node);
+	if (birth !== null && currentExclusions().has(birth)) {
+		return { ok: false, status: 409, error: "that proposition's session is excluded from review" };
 	}
 	const entry: ReviewEntry = { id, nodeId, rating: rating as ReviewRating, reviewedAt: nowDate.toISOString() };
 	stores.learnerStore.appendReview(entry);
 	emit("reviews-changed", {});
 	return { ok: true, duplicate: false };
+}
+
+/** The birth sessions currently out of review, sorted (P1-8). */
+export function reviewExclusions(): ReviewExclusionsView {
+	return { excluded: [...currentExclusions()].sort() };
+}
+
+export type SetReviewExclusionResult =
+	| { ok: true; changed: boolean; excluded: boolean }
+	| { ok: false; status: 400; error: string };
+
+/** Opt one birth session out of review, or back in (D053 to D055). The
+ *  session must be a known chat or the birth session of a proposition in
+ *  the graph. Appends a line only when the state changes, so a repeat is a
+ *  no-op. Reviews are never touched. */
+export function setReviewExclusion(body: unknown, nowDate: Date = new Date()): SetReviewExclusionResult {
+	const b = (typeof body === "object" && body !== null ? body : {}) as Record<string, unknown>;
+	const sessionId = typeof b.sessionId === "string" ? b.sessionId.trim() : "";
+	if (!sessionId) return { ok: false, status: 400, error: "sessionId is required" };
+	if (typeof b.excluded !== "boolean") return { ok: false, status: 400, error: "excluded must be true or false" };
+	const known =
+		stores.chatStore.getChat(sessionId) !== null || getGraph(graphReader).nodes.some((n) => birthSessionOf(n) === sessionId);
+	if (!known) return { ok: false, status: 400, error: "unknown session" };
+	const current = currentExclusions().has(sessionId);
+	if (current === b.excluded) return { ok: true, changed: false, excluded: current };
+	const entry: ReviewExclusion = { id: newId("rx"), sessionId, excluded: b.excluded, at: nowDate.toISOString() };
+	stores.learnerStore.appendExclusion(entry);
+	emit("reviews-changed", {});
+	return { ok: true, changed: true, excluded: b.excluded };
 }

@@ -155,6 +155,7 @@ function memoryContext(): MemoryToolContext {
 	return {
 		graph: graphReader,
 		readReviews: () => stores.learnerStore.readReviews(),
+		readExclusions: () => stores.learnerStore.readExclusions(),
 		now: () => new Date().toISOString(),
 	};
 }

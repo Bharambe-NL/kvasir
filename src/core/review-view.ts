@@ -58,3 +58,8 @@ export function formatInterval(fromIso: string, toIso: string): string {
 	const years = Math.round((days / 365) * 10) / 10;
 	return `${years} y`;
 }
+
+/** GET /api/review/exclusions (P1-8): the birth sessions out of review. */
+export interface ReviewExclusionsView {
+	excluded: string[];
+}
