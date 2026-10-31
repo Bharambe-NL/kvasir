@@ -59,10 +59,11 @@ export function chunkUnits(labelled: readonly LabelledUnit[], budget: number): S
 	const chunks: LabelledUnit[][] = [];
 	let current: LabelledUnit[] = [];
 	let size = 0;
+	// A chunk closes only once it holds something citable: context lines
+	// alone (a chapter heading) carry forward into the next chunk.
 	const flush = () => {
-		if (current.some((u) => u.label)) chunks.push(current);
-		else if (current.length && chunks.length) chunks.at(-1)!.push(...current);
-		else if (current.length) chunks.push(current);
+		if (!current.some((u) => u.label)) return;
+		chunks.push(current);
 		current = [];
 		size = 0;
 	};
@@ -81,6 +82,11 @@ export function chunkUnits(labelled: readonly LabelledUnit[], budget: number): S
 		}
 	}
 	flush();
+	if (current.length) {
+		// Trailing context with nothing to cite joins the last chunk.
+		if (chunks.length) chunks.at(-1)!.push(...current);
+		else chunks.push(current);
+	}
 	return chunks.map((units) => ({
 		units,
 		citable: new Map(units.filter((u) => u.label).map((u) => [u.label!, u.unit])),
