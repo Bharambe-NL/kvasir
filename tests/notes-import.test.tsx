@@ -9,6 +9,9 @@ import { parseHTML } from "linkedom";
 import { NotesImportErrors, parseNotesImportResults, postNotesImport, useNotesImport, type NotesImportResult } from "../components/notes-import.tsx";
 
 // Real hook/React state, isolated DOM and wholly stubbed import transport.
+// Kvasir P2-3: Markdown now opens the version-label dialog first (D074,
+// D075), so these notes-route tests use .txt files, which go straight to
+// notes; the Markdown path is covered at the end of this file.
 const dom = parseHTML("<html><body></body></html>");
 Object.assign(globalThis, { window: dom.window, document: dom.document, IS_REACT_ACT_ENVIRONMENT: true });
 const originalFetch = globalThis.fetch;
@@ -39,8 +42,8 @@ afterEach(async () => {
 	host = undefined;
 	globalThis.fetch = originalFetch;
 });
-const files = [new File(["one"], "same.md"), new File(["two"], "same.md")];
-const completed = (requestIndex = 0): NotesImportResult => ({ requestIndex, filePath: "same.md", ok: true, outcome: "completed", stats: { nodes: 0, chains: 0 } });
+const files = [new File(["one"], "same.txt"), new File(["two"], "same.txt")];
+const completed = (requestIndex = 0): NotesImportResult => ({ requestIndex, filePath: "same.txt", ok: true, outcome: "completed", stats: { nodes: 0, chains: 0 } });
 
 it("maps out-of-order responses by index, not duplicate basenames", () => {
 	const results = [completed(1), { ...completed(0), stats: { nodes: 7 } }];
@@ -51,7 +54,7 @@ for (const [name, results] of [
 	["duplicate index", [completed(), completed()]],
 	["missing row", [completed()]],
 	["out-of-range index", [completed(), completed(2)]],
-	["wrong filename", [{ ...completed(), filePath: "different.md" }, completed(1)]],
+	["wrong filename", [{ ...completed(), filePath: "different.txt" }, completed(1)]],
 	["missing stats", [{ ...completed(), stats: undefined }, completed(1)]],
 	["unknown outcome", [{ ...completed(), outcome: "unchanged" }, completed(1)]],
 	["conflicting ok", [{ ...completed(), ok: false }, completed(1)]],
@@ -87,7 +90,7 @@ for (const kind of ["network", "non-JSON", "non-2xx", "malformed"] as const) it(
 });
 
 for (const outcome of ["completed", "failed", "partial", "aborted", "busy"] as const) it(`${outcome} leaves only escaped raw failure text, without results or controls`, async () => {
-	const file = new File(["notes"], "<script>notes.md");
+	const file = new File(["notes"], "<script>notes.txt");
 	const result: NotesImportResult = { ...completed(), filePath: file.name, outcome, ok: outcome === "completed", error: "<img>synthetic failure", code: "provider_key_missing", provider: "openai", missing: ["OPENAI_API_KEY"], slots: ["cheap", "strong"] };
 	globalThis.fetch = async () => Response.json({ results: [result] });
 	await mount();
@@ -97,13 +100,13 @@ for (const outcome of ["completed", "failed", "partial", "aborted", "busy"] as c
 	assert.equal(finishes, 1);
 	const html = host!.innerHTML;
 	assert.doesNotMatch(html, /<button|<section|<ul|border|bg-card|rounded|shadow|Retry|Dismiss|Import complete|new propositions|Saved changes|Import stopped|already being imported/);
-	assert.deepEqual(Object.keys(current).sort(), ["errors", "importing", "onImportFiles"], "no retained rows, Files, retry or dismiss API");
+	assert.deepEqual(Object.keys(current).sort(), ["errors", "importing", "onImportFiles", "sourceDialog"], "no retained rows, Files, retry or dismiss API; the sources dialog props (Kvasir P2-3)");
 	if (outcome === "completed") {
 		assert.equal(html, "");
 		assert.deepEqual(current.errors, []);
 	} else {
 		assert.deepEqual(current.errors, [`${file.name}: ${result.error}\nprovider_key_missing — openai — OPENAI_API_KEY — cheap, strong`]);
-		assert.match(html, /&lt;script&gt;notes.md: &lt;img&gt;synthetic failure/);
+		assert.match(html, /&lt;script&gt;notes.txt: &lt;img&gt;synthetic failure/);
 		assert.match(html, /provider_key_missing — openai — OPENAI_API_KEY — cheap, strong/);
 		assert.match(html, /role="alert"/);
 		assert.match(html, /text-xs text-red-400/);
@@ -118,11 +121,11 @@ for (const details of [
 	{ code: "provider_key_missing" },
 	{},
 ]) it(`keeps existing configuration detail strings (${JSON.stringify(details)})`, async () => {
-	globalThis.fetch = async () => Response.json({ results: [{ requestIndex: 0, filePath: "same.md", ok: false, outcome: "failed", error: "Existing raw error", ...details }] });
+	globalThis.fetch = async () => Response.json({ results: [{ requestIndex: 0, filePath: "same.txt", ok: false, outcome: "failed", error: "Existing raw error", ...details }] });
 	await mount();
 	await submit([files[0]!]);
 	const suffix = details.code === "models_not_configured" ? "\nmodels_not_configured — cheap, strong, vision" : details.provider ? "\nprovider_key_missing — openai — cheap" : details.code ? "\nprovider_key_missing" : "";
-	assert.deepEqual(current.errors, [`same.md: Existing raw error${suffix}`]);
+	assert.deepEqual(current.errors, [`same.txt: Existing raw error${suffix}`]);
 });
 
 it("empty error text renders nothing; multiple errors are plain independent alerts", () => {
@@ -133,17 +136,17 @@ it("empty error text renders nothing; multiple errors are plain independent aler
 });
 
 it("mixed out-of-order results show only failed files in selection order, including duplicate basenames", async () => {
-	const selected = [new File(["success"], "success.md"), ...files];
+	const selected = [new File(["success"], "success.txt"), ...files];
 	const results: NotesImportResult[] = [
-		{ requestIndex: 2, filePath: "same.md", ok: false, outcome: "partial", error: "second duplicate" },
-		{ ...completed(), filePath: "success.md" },
-		{ requestIndex: 1, filePath: "same.md", ok: false, outcome: "failed", error: "first duplicate" },
+		{ requestIndex: 2, filePath: "same.txt", ok: false, outcome: "partial", error: "second duplicate" },
+		{ ...completed(), filePath: "success.txt" },
+		{ requestIndex: 1, filePath: "same.txt", ok: false, outcome: "failed", error: "first duplicate" },
 	];
 	globalThis.fetch = async () => Response.json({ results });
 	await mount();
 	await submit(selected);
-	assert.deepEqual(current.errors, ["same.md: first duplicate", "same.md: second duplicate"]);
-	assert.doesNotMatch(host!.innerHTML, /success.md|completed|propositions/);
+	assert.deepEqual(current.errors, ["same.txt: first duplicate", "same.txt: second duplicate"]);
+	assert.doesNotMatch(host!.innerHTML, /success.txt|completed|propositions/);
 });
 
 for (const kind of ["network", "non-JSON", "non-2xx", "malformed", "duplicate index"] as const) it(`${kind} hook failure is visible for every selected file, never success`, async () => {
@@ -197,4 +200,30 @@ it("actual attempts clear errors immediately, guard synchronous reentry, preserv
 	assert.equal(starts, 3);
 	assert.equal(finishes, 3);
 	assert.equal(host!.innerHTML, "");
+});
+
+it("Markdown waits in the dialog and, with Cite as source off, goes to the notes route (Kvasir P2-3, D075)", async () => {
+	const posted: string[] = [];
+	globalThis.fetch = async (url, init) => {
+		posted.push(`${url} ${((init?.body as FormData).getAll("files") as File[]).map((f) => f.name).join(",")}`);
+		return Response.json({ results: [{ requestIndex: 0, filePath: "plan.md", ok: true, outcome: "completed", stats: { nodes: 0, chains: 0 } }] });
+	};
+	await mount();
+	await submit([new File(["# Plan"], "plan.md")]);
+	assert.deepEqual(posted, [], "nothing is sent before the dialog answers");
+	assert.deepEqual(current.sourceDialog.pending.map((p) => [p.file.name, p.label, p.asSource]), [["plan.md", "plan.md", false]]);
+	await act(async () => { current.sourceDialog.onImport(); });
+	await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+	assert.deepEqual(posted, ["/api/graph/import plan.md"]);
+	assert.deepEqual(current.sourceDialog.pending, []);
+});
+
+it("Cancel in the dialog sends nothing (Kvasir P2-3)", async () => {
+	let calls = 0;
+	globalThis.fetch = async () => { calls++; return Response.json({ results: [] }); };
+	await mount();
+	await submit([new File(["# Plan"], "plan.md"), new File(["x"], "other.txt")]);
+	await act(async () => { current.sourceDialog.onCancel(); });
+	assert.equal(calls, 0);
+	assert.deepEqual(current.sourceDialog.pending, []);
 });
