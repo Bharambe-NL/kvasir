@@ -25,8 +25,9 @@ export interface QueueStats {
 	newLeft: number;
 	/** Reviews still allowed today. */
 	totalLeft: number;
-	/** ISO: when the earliest card not in the queue falls due; null when no
-	 *  card is waiting. */
+	/** ISO: when the next card not in the queue becomes reviewable. A card
+	 *  already due but held back by today's limits counts from the start of
+	 *  the next day. null when no card is waiting. */
 	nextDueAt: string | null;
 }
 
@@ -62,10 +63,19 @@ export function buildQueue(
 	const queue = [...inProgress, ...fresh].slice(0, totalLeft);
 
 	const queued = new Set(queue.map((c) => c.nodeId));
+	const tomorrow = new Date(at(dayStart) + 24 * 60 * 60 * 1000).toISOString();
+	// What is still allowed today once this queue is reviewed.
+	const totalSpent = totalLeft - queue.length <= 0;
+	const newSpent = newLeft - queue.filter((c) => c.state.phase === "new").length <= 0;
 	let nextDueAt: string | null = null;
 	for (const c of cards) {
 		if (queued.has(c.nodeId)) continue;
-		if (nextDueAt === null || at(c.state.due) < at(nextDueAt)) nextDueAt = c.state.due;
+		// A card held back by today's limits (due now, or later today with its
+		// allowance spent) is reviewable from the start of tomorrow.
+		const heldBack =
+			at(c.state.due) <= at(now) || totalSpent || (c.state.phase === "new" && newSpent);
+		const when = heldBack && at(c.state.due) < at(tomorrow) ? tomorrow : c.state.due;
+		if (nextDueAt === null || at(when) < at(nextDueAt)) nextDueAt = when;
 	}
 
 	return { queue, stats: { reviewedToday: today.length, newToday, newLeft, totalLeft, nextDueAt } };

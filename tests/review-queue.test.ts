@@ -42,7 +42,7 @@ describe("buildQueue (D041)", () => {
 		assert.deepEqual(queue.map((c) => c.nodeId), nodes.slice(0, 20).map((n) => n.id));
 		assert.equal(stats.newLeft, 20);
 		assert.equal(stats.totalLeft, 200);
-		assert.equal(stats.nextDueAt, nodes[20]!.createdAt, "the next waiting card is the 21st");
+		assert.equal(stats.nextDueAt, "2026-11-02T00:00:00.000Z", "the 21st card is held back by the new limit: tomorrow, not the past");
 	});
 
 	it("counts cards first seen today against the new allowance", () => {
@@ -84,6 +84,17 @@ describe("buildQueue (D041)", () => {
 		assert.equal(stats.reviewedToday, 0);
 		assert.equal(stats.newToday, 0);
 		assert.equal(stats.newLeft, 20);
+	});
+
+	it("a card due later today reports its own due time, not tomorrow", () => {
+		const nodes = Array.from({ length: 21 }, (_, i) => node(i)).concat([node(99, minutes(NOW, 30))]);
+		const { cards } = deriveCards(graphOf(nodes), []);
+		// 20 new cards fill the queue; n_099 is introduced in 30 minutes but is also new, so it
+		// waits for tomorrow's allowance. n_020 is held back now. Both report tomorrow.
+		assert.equal(buildQueue(cards, [], NOW, DAY_START).stats.nextDueAt, "2026-11-02T00:00:00.000Z");
+		const learning = [review("n_000", 3, minutes(NOW, -1))]; // due again at +9 min
+		const few = deriveCards(graphOf([node(0)]), learning).cards;
+		assert.equal(buildQueue(few, learning, NOW, DAY_START).stats.nextDueAt, minutes(NOW, 9));
 	});
 
 	it("is empty when nothing is due, and says when the next card is", () => {
