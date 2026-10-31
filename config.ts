@@ -26,6 +26,9 @@ export const PATHS = {
 	/** Chat sessions (AI SDK UIMessage transcripts, one JSON file per chat). */
 	chats: path.join(DATA_ROOT, "chats"),
 	graph: path.join(DATA_ROOT, "graph"),
+	/** The Memory system's learner state (D030): review ledger only. Never
+	 * under graph/: the graph stays objective. */
+	learner: path.join(DATA_ROOT, "learner"),
 	/** Debug artifacts (env-gated): data/debug/provider-events/<chatId>.jsonl
 	 * raw provider stream recordings (src/agent/provider-events.ts). */
 	debug: path.join(DATA_ROOT, "debug"),
@@ -67,6 +70,15 @@ export const LEDGER_FILES = {
 	 *  the checkpoint's replacement for chat extractions — notes keep
 	 *  sessions.jsonl, whole-file as they are). */
 	coverage: path.join(PATHS.graph, "coverage.jsonl"),
+} as const;
+
+/**
+ * The learner store (src/store/learner.ts), owned by the Memory system.
+ * Line shapes: src/core/contracts/learner.ts. The review ledger is the only
+ * learner evidence; card state is derived from it at read time.
+ */
+export const LEARNER_FILES = {
+	reviews: path.join(PATHS.learner, "reviews.jsonl"),
 } as const;
 
 /**

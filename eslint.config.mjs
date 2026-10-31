@@ -15,6 +15,11 @@ import importPlugin from "eslint-plugin-import";
  *   src/agent/**   →  never imports src/server, src/store (dependencies —
  *                    the storage ports, the composition — arrive via
  *                    factories/closures from the chat-handler)
+ *   Memory (D030)  →  the learner adapter (src/store/learner.ts) and the
+ *                    graph adapter (src/store/graph*.ts) never import each
+ *                    other: learner state stays out of the graph, and the
+ *                    Memory system reaches the graph only through the
+ *                    read-only GraphReader the composition root hands it
  *
  * tests/ and scripts/ are internal — unrestricted.
  */
@@ -65,6 +70,18 @@ export default defineConfig([
 							from: ["./src/server", "./src/store"],
 							message:
 								"The agent layer receives its dependencies (storage ports via factories/closures) — it never imports the server layer or store adapters (architecture: docs/architecture.md).",
+						},
+						{
+							target: "./src/store/learner.ts",
+							from: ["./src/store/graph.ts", "./src/store/graph-format.ts"],
+							message:
+								"The Memory system never writes the graph (D030): the learner adapter does not import the graph adapter. Memory reads the graph only through the GraphReader that src/server/stores.ts hands it.",
+						},
+						{
+							target: ["./src/store/graph.ts", "./src/store/graph-format.ts"],
+							from: "./src/store/learner.ts",
+							message:
+								"The graph stays objective (D030): the graph adapter never imports learner state.",
 						},
 					],
 				},

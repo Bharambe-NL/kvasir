@@ -39,6 +39,7 @@ const { chatStore } = await import("../src/store/chats.ts");
 const { graphStore } = await import("../src/store/graph.ts");
 const { jobStore } = await import("../src/store/jobs.ts");
 const { settingsStore } = await import("../src/store/settings.ts");
+const { learnerStore } = await import("../src/store/learner.ts");
 const { readRenderSettings } = await import("../src/store/render-settings.ts");
 const { getGraph, deriveView } = await import("../src/core/graph.ts");
 const { sanitizeRenderSettings } = await import("../src/core/render-settings.ts");
@@ -220,6 +221,13 @@ test("settings: the stamped record parses", () => {
 });
 
 // ── read-only: readers never write ──────────────────────────────────────────
+
+test("learner: a data dir with no data/learner/ reads as zero reviews", () => {
+	// No real reviews exist yet (P1-1). The first real review ledger joins
+	// these fixtures after P1-5 ships the review flow.
+	assert.equal(fs.existsSync(path.join(TMP, "learner")), false);
+	assert.deepEqual(learnerStore.readReviews(), []);
+});
 
 test("read-only: after every read above, the data dir is byte-identical to the fixture source", () => {
 	const after = snapshotTree(TMP);

@@ -30,6 +30,9 @@ core tool surface must appear in real data here.
 - `jobs/` — five records covering kind × status: research done + aborted by
   learner, demo done, visual done, pdf error.
 - `settings.json` — the stamped settings record (version 1, model slots).
+- No `learner/` yet. The Memory system's review ledger (P1, `data/learner/reviews.jsonl`)
+  has no real data until the review flow ships in P1-5. The suite checks that a data dir
+  without it reads as zero reviews. Add the first real ledger here after P1-5.
 
 ## Regenerating / extending
 

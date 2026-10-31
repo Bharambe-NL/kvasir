@@ -35,3 +35,5 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D027 | 2026-10-31 | Until Apple signing secrets exist, a phase release is a notes-only GitHub release; the release workflow run that the tag starts is cancelled before it builds anything | Sagar | |
 | D028 | 2026-10-31 | `Bharambe-NL/kvasir` is public from 2026-10-31, after the P0 gate, so GitHub Actions runs without a minutes limit. History scanned for secrets first. Replaces the "private until the P0 gate passes" part of D008 | Sagar | D008 |
 | D029 | 2026-10-31 | Claude Code may self-merge P1 PRs that need no review from Sagar, once CI is green. Recorded in tracking issue #13 | Sagar | |
+| D030 | 2026-10-31 | P1 decision 1: D007 confirmed. Learner state lives in a separate store under `data/learner/`, owned by the Memory system, which reads the graph and never writes to it | Sagar | D007 |
+| D031 | 2026-10-31 | P1 decision 2: one review card is one proposition (graph node); the card key is the node id. The node's chains may give context to a review question | Sagar | |

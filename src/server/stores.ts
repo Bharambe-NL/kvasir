@@ -9,8 +9,10 @@
 import { chatStore } from "../store/chats.ts";
 import { graphStore } from "../store/graph.ts";
 import { jobStore } from "../store/jobs.ts";
+import { learnerStore } from "../store/learner.ts";
 import { settingsStore } from "../store/settings.ts";
 import { resolveSettings, type EffectiveSettings } from "../core/settings-resolution.ts";
+import type { GraphReader } from "../core/ports.ts";
 import { syncCustomProvider } from "./custom-provider.ts";
 /** The wired adapters. Satisfies core/graph.ts's GraphDeps structurally. */
 export const stores = {
@@ -18,6 +20,17 @@ export const stores = {
 	graphStore,
 	jobStore,
 	settingsStore,
+	learnerStore,
+};
+
+/**
+ * The graph as the Memory system sees it (D030): the two read methods of the
+ * live graph store and nothing else. Memory code receives this, never
+ * stores.graphStore, so it holds no graph write method.
+ */
+export const graphReader: GraphReader = {
+	readNodes: () => graphStore.readNodes(),
+	readChains: () => graphStore.readChains(),
 };
 
 export type Stores = typeof stores;
