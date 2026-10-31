@@ -37,3 +37,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D029 | 2026-10-31 | Claude Code may self-merge P1 PRs that need no review from Sagar, once CI is green. Recorded in tracking issue #13 | Sagar | |
 | D030 | 2026-10-31 | P1 decision 1: D007 confirmed. Learner state lives in a separate store under `data/learner/`, owned by the Memory system, which reads the graph and never writes to it | Sagar | D007 |
 | D031 | 2026-10-31 | P1 decision 2: one review card is one proposition (graph node); the card key is the node id. The node's chains may give context to a review question | Sagar | |
+| D032 | 2026-10-31 | P1 decision 3: the scheduler uses `ts-fsrs` 5.4.2 from npm, pinned exactly (MIT, no dependencies). A move to 6.x is its own task once 6 has settled | Sagar | |
+| D033 | 2026-10-31 | Scheduler target retention is 0.90 (the FSRS default) | Sagar | |
+| D034 | 2026-10-31 | Scheduler keeps the FSRS short-term steps: new cards return after 1 and 10 minutes, a forgotten card after 10 minutes, then day-based scheduling | Sagar | |
+| D035 | 2026-10-31 | Interval fuzz is off: the same reviews always give the same schedule. Clumping is handled by the daily limit (P1 decision 6) | Sagar | |

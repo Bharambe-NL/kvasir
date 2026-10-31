@@ -29,7 +29,7 @@ Hold the architecture along two orthogonal axes:
 | **Workbench** — background labor | `data/jobs/*.json` | job runner, researcher/demo-builder/visual-maker, steer delivery |
 | **Library** — world model | `data/graph/*` ledgers | extraction pipeline (sole graph writer), derivation, birth-session clusters |
 | **Practice**: practice sessions | no store of its own | practice sessions are chat records with `kind: "practice"` (in `data/chats`); each problem targets one proposition (§7) |
-| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review ledger; schedules derived at read; reads the graph through `GraphReader`, never writes it (D030) |
+| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review ledger; schedules derived at read by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
 | **Stage** — presentation shell | nothing server-side | components/, graph canvas, docks — pure consumer via `/api/*` |
 | **Machine room** — host | process + config | Electron main, standalone Next server, `config.ts`, data-dir seam, BYOK keys |
 
@@ -240,7 +240,7 @@ flowchart TB
 
     subgraph MEMORY["MEMORY: learner state (owns data/learner; Kvasir P1)"]
         REVIEWS["review ledger: data/learner/reviews.jsonl (append-only)"]
-        SCHED["schedules: derived at read, never stored"]
+        SCHED["schedules: derived at read, never stored<br/>core/schedule.ts: FSRS via ts-fsrs 5.4.2, pure, fuzz off"]
     end
 
     subgraph LIBRARY["LIBRARY — world model (owns data/graph ledgers)"]

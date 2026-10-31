@@ -5,7 +5,7 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P1 Retention and the learner layer (in progress). Milestone "P1 Retention and the learner layer", tracking issue #13, task issues #14 to #20.
-- Task: P1-1 Learner contracts (#14) merged via #22 after Sagar's contract review. Next task: P1-2 Scheduler (#15), not started.
+- Task: P1-2 Scheduler (#15) merged via #23. Next task: P1-3 Card source (#16), not started.
 - Branch: none open
 - PR: none open
 
@@ -15,15 +15,16 @@ Updated by Claude Code at the end of each session. Read this first.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
 - Phase P1 opened: milestone 2, label `P1`, tracking issue #13, task issues #14 to #20. Roadmap PR #21 merged. Self-merge for P1 allowed (D029).
 - P1 decisions 1 and 2: D007 confirmed (D030); one review card is one proposition, keyed by node id (D031).
+- P1-2 merged via #23: decisions D032 to D035 (`ts-fsrs` 5.4.2 pinned, retention 0.90, FSRS short-term steps, fuzz off). `src/core/schedule.ts`: `scheduleCard(nodeId, reviews, introducedAt)` replays a node's reviews; `previewRatings` gives the state per rating; `isDue`. 13 fixed-clock tests.
 - P1-1 merged via #22 (contracts approved by Sagar): `ReviewEntry` and the derived `CardState` (`src/core/contracts/learner.ts`), `LearnerStore` and the read-only `GraphReader` (`src/core/ports.ts`), the fs adapter (`src/store/learner.ts`, `data/learner/reviews.jsonl`), wiring in `src/server/stores.ts`, two ESLint zones, 16 new tests, and the architecture doc (Memory system, plus a correction of stale practice entries).
 
 ## Next
 
-1. Start P1-2 Scheduler (#15) with `/kv-task P1-2`. Ask P1 decision 3 (FSRS library) at its start. P1-2 codes against the merged `CardState` and `ReviewEntry`.
+1. Start P1-3 Card source (#16) with `/kv-task P1-3`. Ask P1 decision 4 (what creates a review card) at its start. P1-3 supplies `introducedAt` to `scheduleCard` and decides when a card is inert.
 
 ## Waiting for Sagar
 
-- P1 open decisions 3 to 6, each at the start of the task that needs it.
+- P1 open decisions 4 to 6, each at the start of the task that needs it.
 
 Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, recorded in #13).
 
