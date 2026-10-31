@@ -19,6 +19,7 @@ import type {
 	JobKind,
 	JobRecord,
 	ExtractionRunUsage,
+	ReviewEntry,
 	PlanTree,
 	Position,
 	CoverageEntry,
@@ -126,6 +127,25 @@ export interface GraphStore {
 		coverage?: CoverageEntry[];
 		checkpoints?: SessionCheckpoint[];
 	}): void;
+}
+
+/**
+ * The graph as the Memory system sees it (D030): reads only. Memory code is
+ * handed this view, never the full GraphStore, so it holds no graph write
+ * method at all. The composition root builds it from the live graph store.
+ */
+export type GraphReader = Pick<GraphStore, "readNodes" | "readChains">;
+
+// ─── LearnerStore — the Memory system's review ledger (data/learner) ─────────
+// The only learner evidence (D030, D031). Append-only; card state is derived
+// at read time (core). The store never decides: reads return raw lines in
+// append order, and dedup by id is core/learner.ts uniqueReviews.
+
+export interface LearnerStore {
+	/** Append one review line. */
+	appendReview(entry: ReviewEntry): void;
+	/** Every well-formed review line, in append order. */
+	readReviews(): ReviewEntry[];
 }
 
 // ─── JobStore — background sub-agent jobs (data/jobs) ─────────────────────────
