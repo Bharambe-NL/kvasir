@@ -80,4 +80,15 @@ Done when: the house-style check passes with the wider paths, and a live session
 
 ## Gate results
 
-(record here)
+Recorded 2026-10-31 on `main` at `2ff3591`. Tasks: P0-1 to P0-4 merged (#7 to #10); P0-5 deferred to P6-7 (#11, D026).
+
+| Check | Result | Evidence |
+|---|---|---|
+| 1. Fresh clone builds and all four gates pass | Pass | Fresh clone of `2ff3591`: `npm ci`, typecheck, lint, build and the house-style check (20 files) pass; Python skill tests 53 pass. `npm test` 2946 of 2947 locally; the one failure is "binds 127.0.0.1", which fails only under this Mac's firewall stealth mode. CI on `main` at `2ff3591` (run 41178854803) is green for all jobs, tests included. |
+| 2. The macOS app installs, runs a full probe, plan, teach session with Sagar's own key, and the graph updates | Pass | Unsigned build from release workflow run 41178973326 (`Kvasir-0.0.1-arm64.dmg`, SHA-256 `5da13727...325ca3`) installed in `/Applications`. Sagar added his own key, then ran the probe and the plan on "why PSD2 SCA needs two factors from different categories". With his approval, Claude continued the same session as the learner through ten teaching questions, using computer use. Extraction then wrote the graph: 11 propositions and 8 reasoning chains in `~/Library/Application Support/Kvasir/data/graph`, shown in the app's graph view. |
+| 3. No network request reaches upstream update or website endpoints | Pass | The same build, run with `--log-net-log`: 137 requests, all to `127.0.0.1`; no domain names anywhere in the log. `lsof` on all app processes: loopback only. `main.log`: "auto-update: updater disabled until the first Kvasir release". Bundle ID `nl.bharambe.kvasir`, baked feed `Bharambe-NL/kvasir`. |
+| 4. The rename grep from P0-2 is clean | Pass | On the fresh clone, hits only in the allow-list: `docs/kvasir/LINEAGE.md`, the README lineage section, the `docs/compaction-accounting.md` credit, and the D018 build-pack docs (`docs/kvasir/`, `CLAUDE.md`, `scripts/bootstrap-kvasir.sh`). |
+
+Also checked: `DECISIONS.md` lists every P0 decision (D008 to D026), and `docs/architecture.md` describes the system as built (Kvasir name, `KV_DATA_DIR` seam, updater off).
+
+Known issue, not a gate check: the Windows packaging job of release run 41178973326 hung for 92 minutes in electron-builder's "searching for node modules" step and was cancelled. The same step took about a minute in run 41175349304. Watch it in the next rehearsal.

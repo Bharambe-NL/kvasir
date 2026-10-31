@@ -4,8 +4,8 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Current state
 
-- Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1. P0-1 to P0-4 merged.
-- Task: P0-4 Agent files and house style (#5) merged via #10. P0-5 is deferred to P6-7 (D026). All P0 tasks are merged or deferred; next is the P0 gate.
+- Phase: P0 done (gate 2026-10-31, tag `v0.0.1`). Next phase: P1 Retention and the learner layer, or P2 or P6 tasks, which can also start after P0.
+- Task: none open.
 - Branch: none open
 - PR: none open
 
@@ -24,14 +24,15 @@ Updated by Claude Code at the end of each session. Read this first.
 - P0-4 (#5): decisions D023 to D025. The build-pack files were already installed by the bootstrap, byte-identical to the pack. `house-style.yml` aligned to `checkout@v7`, `setup-node@v7`, Node 26 and covered by the action-version test; `AGENTS.md` keeps the `next dev` version of its block. `main` protected (D024): PR required, five checks required (`Typecheck, tests, lint`, three `Standalone` jobs, `house-style`), up to date with `main`, admins included. Self-merged as #10 through that protection.
 
 - P0-5 deferred to P6-7 `p6/house-style-prompts` (D026), after the P6-4 eval harness. Issue #6 now tracks P6-7.
+- P0 gate passed: all four checks recorded in `docs/kvasir/phases/P0-bootstrap.md`, approved by Sagar in #1, merged via the `p0/gate` PR, tagged `v0.0.1`, milestone closed.
 
 ## Next
 
-1. Run the P0 gate with `/kv-gate P0`. Acceptance check 2 needs Sagar: install the packaged app (from a release workflow rehearsal, D022) and run a full probe, plan and teach session with his own key.
+1. Open P1 with `/kv-phase P1`. P1 confirms D007 (learner state in its own store) at its start.
 
 ## Waiting for Sagar
 
-- The P0 gate's acceptance check 2: the full probe, plan and teach session in the packaged app, with Sagar's own key.
+- Nothing open.
 
 Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, recorded in #1). `main` only accepts PRs whose five checks pass, admins included (D024).
 
