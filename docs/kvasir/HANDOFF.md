@@ -4,12 +4,16 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Current state
 
-- Phase: P1 Retention and the learner layer (in progress). Milestone "P1 Retention and the learner layer", tracking issue #13, task issues #14 to #20.
-- Task: every P1 task is merged (P1-1 to P1-8). Next: the P1 gate, after two weeks of real use.
-- Branch: `main`
-- PR: none open
+- Phases in progress:
+  - P1 Retention and the learner layer: every task is merged (P1-1 to P1-8). The gate waits for two weeks of real use. Milestone 2, tracking issue #13.
+  - P2 Regulation grounding: opened 2026-10-31, runs alongside P1 (the roadmap allows it). Milestone 3, tracking issue #37, task issues #31 to #36.
+- Task: none started in P2 yet. Next: P2-1 Source contracts (#31).
+- Branch: `p2/open-phase` (roadmap PR)
+- PR: the P2 roadmap PR
 
 ## Done
+
+- Phase P2 opened: milestone 3, label `P2`, tracking issue #37, task issues #31 to #36 (P2-1 to P2-6).
 
 - P0 Bootstrap and rename: gate passed 2026-10-31, released as `v0.0.1`. Tasks P0-1 to P0-4 merged (#7 to #10); P0-5 deferred to P6-7 (#6, D026). Decisions D008 to D028. Gate evidence: `docs/kvasir/phases/P0-bootstrap.md`.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
@@ -26,7 +30,8 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
+1. Merge the P2 roadmap PR, then run `/kv-task P2-1`. P2's five open decisions are asked at the start of P2-1.
+2. In parallel, Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
 
 ## Waiting for Sagar
 
