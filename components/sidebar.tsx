@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useReviewSummary } from "@/components/review/use-review-summary";
 import { MenuShell } from "@/components/menu-shell";
 import { DeleteSessionDialog } from "@/components/delete-session-dialog";
 import type { ChatDeleteMode } from "@/src/core";
@@ -403,6 +404,8 @@ function SessionsSidebar() {
 		window.localStorage.setItem(KIND_FILTER_KEY, f);
 	}, []);
 	const pathname = usePathname();
+	// Kvasir P1-6: the due count on the Review row (D048).
+	const reviewDue = useReviewSummary()?.due ?? 0;
 	const router = useRouter();
 	const { open: openSettings } = useSettingsDialog();
 
@@ -726,6 +729,12 @@ function SessionsSidebar() {
 						<LayersIcon className="size-3" />
 						Review
 						<span className="sr-only">open spaced review</span>
+						{reviewDue > 0 && (
+							<span className="ml-auto tabular-nums normal-case tracking-normal" data-testid="review-due-count">
+								{reviewDue}
+								<span className="sr-only"> due</span>
+							</span>
+						)}
 					</button>
 				</div>
 
