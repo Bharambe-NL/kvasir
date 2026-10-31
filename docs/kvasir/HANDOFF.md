@@ -48,7 +48,7 @@ Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, record
 - The installed `/Applications/Kvasir.app` is the unsigned 0.0.1 gate build. Its data folder holds the PSD2 SCA test session and its graph (11 propositions, 8 chains). Upstream LearnHarness 0.4.0 is also installed and uses its own folder (D017).
 - `desktop:dev` points Electron at `next dev`, so the server uses the repo `data/` folder. Packaged builds use `~/Library/Application Support/Kvasir/data`.
 - Extraction writes the graph only once a chat has at least `graph.extractionChunkTokens` (default 4096) uncovered tokens of teacher prose. Short sessions show no graph yet.
-- `next dev` on the home page can reload in a loop for a short while right after the first open (Fast Refresh churn during the first compile); it settles by itself. `/review` does not show it.
+- `next dev` on the home page can reload in a loop (Fast Refresh rebuilding about six times a second with no source change). In P1-6 it settled by itself; in P1-8 it did not stop after several minutes. For browser checks, use a production build instead: `npm run build`, then `KV_DATA_DIR=<copy> npx next start -p 3218`, and restore `next-env.d.ts` afterwards.
 - Python skill tests: `python3 -B -m unittest discover -s tests/skills` (53 pass on Python 3.9.6). CI does not run them.
 - The brief's `src/core/contracts/practice.ts` and `src/core/practice.ts` do not exist; practice is a chat kind. Architecture section 7 now carries a note; parts of it still describe the earlier problem-set design.
 - The upstream mark component and types keep code names `LhMark` and `LhMarkerMessage`. They do not reach the user.
