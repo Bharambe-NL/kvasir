@@ -27,7 +27,7 @@ Hold the architecture along two orthogonal axes:
 |---|---|---|
 | **Classroom** — session engine | `data/chats/*.json` | the turn pipeline, prober→teacher, plan tree, questions, phases |
 | **Workbench** — background labor | `data/jobs/*.json` | job runner, researcher/demo-builder/visual-maker, steer delivery |
-| **Library** — world model | `data/graph/*` ledgers | extraction pipeline (sole graph writer), derivation, birth-session clusters |
+| **Library** — world model | `data/graph/*` ledgers | extraction pipeline (sole graph writer), derivation, birth-session clusters; source documents and citations (Kvasir P2: `documents.jsonl`, `citations.jsonl`) |
 | **Practice**: practice sessions | no store of its own | practice sessions are chat records with `kind: "practice"` (in `data/chats`); each problem targets one proposition (§7) |
 | **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review, question and exclusions ledgers; the `/review` page records self-ratings through `src/server/review.ts` within the daily limits of `src/core/review-queue.ts`; the home graph shows a due count and an optional retention heat overlay from `GET /api/review/summary` (read only; the overlay switch lives in local storage, never in `data/graph/`); the prober and the teacher can call `list_weak_propositions` (`src/agent/tools/memory.ts`, read only, names and recall only); review questions written ahead by `src/agent/subagents/review-generator.ts` (cue or scenario by card phase, inside the shared background-LLM semaphore); cards derived by `src/core/cards.ts` (one per proposition, leaving out propositions born in a session excluded from review: `data/learner/exclusions.jsonl`, set through `/api/review/exclusions` from a Chains table cluster row or the sidebar session menu), schedules by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
 | **Stage** — presentation shell | nothing server-side | components/, graph canvas, docks — pure consumer via `/api/*` |
@@ -253,7 +253,7 @@ flowchart TB
     subgraph LIBRARY["LIBRARY — world model (owns data/graph ledgers)"]
         EXTRACT["extraction pipeline — extractor → auditor → merger (SOLE graph writer, serial per source)"]
         DERIVE["derivation — graphSnapshot · birth-session clusters (reads, never write)"]
-        GRAPHDATA["append-only ledgers — data/graph/*.jsonl"]
+        GRAPHDATA["append-only ledgers — data/graph/*.jsonl<br/>incl. documents.jsonl + citations.jsonl (Kvasir P2)"]
     end
 
     subgraph ROOM["MACHINE ROOM — host"]
@@ -367,6 +367,8 @@ Sub-agents **verify, never one-shot**: the demo-builder headlessly executes its 
 ## 6. The knowledge graph — two channels, one writer
 
 **The extraction pipeline is the sole graph writer.** Nothing else appends to `data/graph/*.jsonl` — not the teacher, not the server, not a migration script. (The one sanctioned exception: `PUT /api/graph/positions` writes layout positions only, sanitized, with an incremental layout settle when the graph grew. Backfill scripts bypass this by design, as one-time operations.)
+
+**Source documents and citations** (Kvasir P2-1, D058 to D063): the sources door (a third front door beside chats and notes imports) records each imported version of a regulation, guideline or paper as one `DocumentVersion` line in `data/graph/documents.jsonl`, and each proposition taken from it as one `Citation` line in `data/graph/citations.jsonl`: `{ id, nodeId, sourceId, version, path, quote, createdAt }`, where `path` addresses the unit (for example `["Article 28", "paragraph 2", "point (a)"]`) and the quote appears verbatim in it. Contracts and guards live in `src/core/contracts/sources.ts`; `src/core/sources.ts` derives `SourceDocument`s (versions grouped by `sourceId`, EUR-Lex ordered by consolidation date, others by import time) and a node's citations; `src/core/source-ids.ts` mints the ids (server only, it hashes). A EUR-Lex document's id is `doc_` plus a hash of its CELEX number and its version is the consolidation date; any other file's id is `doc_` plus a hash of its path at first import and its version is a content hash plus Sagar's label. Nodes from a source carry `{ chatId: "doc_…" }` provenance, so a document is a birth session like a chat or a notes import (`src_…`). Both ledgers sit behind `GraphStore`, go through the format stamp, and are written only on the merger side (P2-3 adds the writer). They are additive, so the graph format version did not change. The "outdated" flag (D061) will be derived from them at read time (P2-5).
 
 ```mermaid
 flowchart TB

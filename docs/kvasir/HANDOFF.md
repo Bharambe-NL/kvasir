@@ -7,13 +7,14 @@ Updated by Claude Code at the end of each session. Read this first.
 - Phases in progress:
   - P1 Retention and the learner layer: every task is merged (P1-1 to P1-8). The gate waits for two weeks of real use. Milestone 2, tracking issue #13.
   - P2 Regulation grounding: opened 2026-10-31, runs alongside P1 (the roadmap allows it). Milestone 3, tracking issue #37, task issues #31 to #36.
-- Task: none started in P2 yet. Next: P2-1 Source contracts (#31).
-- Branch: `p2/open-phase` (roadmap PR)
-- PR: the P2 roadmap PR
+- Task: P2-1 merged via #39. Next: P2-2 Structure parser (#32), not started.
+- Branch: `main`
+- PR: none open
 
 ## Done
 
-- Phase P2 opened: milestone 3, label `P2`, tracking issue #37, task issues #31 to #36 (P2-1 to P2-6).
+- P2-1 merged via #39 (contracts and ledger formats approved by Sagar): `src/core/contracts/sources.ts` (`DocumentVersion`, `SourceDocument`, `Citation`, guards), `src/core/sources.ts` (`sourceDocuments`, `citationsFor`, `versionLabel`), `src/core/source-ids.ts` (`eurlexSourceId`, `fileSourceId`, `versionIdFor`, `contentHashOf`), `GraphStore.appendDocumentVersion`/`readDocumentVersions`/`appendCitation`/`readCitations` with `LEDGER_FILES.documents` and `.citations`. Nothing writes the ledgers until P2-3. Decisions D058 (EUR-Lex HTML, PDF with text, Markdown), D059 (citation `{ sourceId, version, path, quote }`, verbatim quote), D060 (CELEX plus consolidation date; else content hash plus label), D061 (removed text: mark outdated, keep visible), D062 (no Eryndal or Hugin in P2; loader behind a port), D063 (`data/graph/documents.jsonl` and `citations.jsonl` behind `GraphStore`). Plan approved on #31.
+- Phase P2 opened (roadmap PR #38 merged, D057 self-merge allowed): milestone 3, label `P2`, tracking issue #37, task issues #31 to #36 (P2-1 to P2-6).
 
 - P0 Bootstrap and rename: gate passed 2026-10-31, released as `v0.0.1`. Tasks P0-1 to P0-4 merged (#7 to #10); P0-5 deferred to P6-7 (#6, D026). Decisions D008 to D028. Gate evidence: `docs/kvasir/phases/P0-bootstrap.md`.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
@@ -30,12 +31,12 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. Merge the P2 roadmap PR, then run `/kv-task P2-1`. P2's five open decisions are asked at the start of P2-1.
+1. P2-2 Structure parser (#32): run `/kv-task P2-2`. It adds the `SourceLoader` port (D062).
 2. In parallel, Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
 
 ## Waiting for Sagar
 
-- All P1 open decisions are taken (D030, D031, D032, D036, D038, D041).
+- All P1 open decisions are taken (D030, D031, D032, D036, D038, D041). All five P2 open decisions are taken (D058 to D062).
 
 Self-merge is allowed in P1 (D029, recorded in #13) and P2 (D057, recorded in #37) for PRs that need no review from Sagar.
 
