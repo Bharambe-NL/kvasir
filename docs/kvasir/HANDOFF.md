@@ -23,8 +23,9 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Waiting for Sagar
 
-- Whether Claude may self-merge P1 PRs that need no review from Sagar (WORKFLOW.md, Pull requests, step 4). D010 covered P0 only. Record the answer in #13.
 - P1 open decisions 1 to 6, each at the start of the task that needs it.
+
+Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, recorded in #13).
 
 ## Notes
 
