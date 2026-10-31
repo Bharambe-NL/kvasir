@@ -4,10 +4,10 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Current state
 
-- Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1. P0-1, P0-2 and P0-3 merged.
-- Task: P0-4 Agent files and house style (#5). Plan approved on #5; self-merge once CI is green (D010).
-- Branch: `p0/agent-files`
-- PR: draft, linked to #5
+- Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1. P0-1 to P0-4 merged.
+- Task: P0-4 Agent files and house style (#5) merged via #10. Next task: P0-5 House style for upstream text (#6), not started; ask first whether to do it in P0 or defer it to P6-4.
+- Branch: none open
+- PR: none open
 
 ## Done
 
@@ -21,24 +21,23 @@ Updated by Claude Code at the end of each session. Read this first.
 - P0-3 (#4): decisions D019 to D022. Updater off until the first Kvasir release, `publish` at `Bharambe-NL/kvasir`, signing from the environment (`scripts/desktop-dist.mjs`), version `0.0.1`, `notify-website.yml` deleted, release paths and templates renamed. Self-merged as #9 under D010.
 - P0-3 evidence (recorded in #9): `desktop:dev` and a packaged rehearsal build (release workflow run 41175349304) both made network requests only to localhost; the packaged app logs "updater disabled until the first Kvasir release", has bundle ID `nl.bharambe.kvasir` and writes to `~/Library/Application Support/Kvasir/data`. The full rename grep returns only the allow-list.
 
-- P0-4 started: decisions D023 to D025 (align `house-style.yml`, protect `main` for admins too, keep the `next dev` version of the `AGENTS.md` block). Plan approved on #5.
+- P0-4 (#5): decisions D023 to D025. The build-pack files were already installed by the bootstrap, byte-identical to the pack. `house-style.yml` aligned to `checkout@v7`, `setup-node@v7`, Node 26 and covered by the action-version test; `AGENTS.md` keeps the `next dev` version of its block. `main` protected (D024): PR required, five checks required (`Typecheck, tests, lint`, three `Standalone` jobs, `house-style`), up to date with `main`, admins included. Self-merged as #10 through that protection.
 
 ## Next
 
-1. Finish the P0-4 commits, set branch protection on `main` once the PR's checks pass (D024), then self-merge through it.
-2. Ask whether to do P0-5 in P0 or defer it to P6-4 (the brief asks for this before P0-5).
+1. Ask whether to do P0-5 in P0 or defer it to P6-4 (the brief asks for this before P0-5).
+2. Then P0-5, or the P0 gate with `/kv-gate P0` if P0-5 is deferred.
 
 ## Waiting for Sagar
 
 - Whether the two prompts that call the agent "a learning harness" (`src/agent/system-prompt.md`, `src/agent/prompts/practice/00-base.md`) should change. Prompt wording; best handled with P0-5.
 
-Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, recorded in #1).
+Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, recorded in #1). `main` only accepts PRs whose five checks pass, admins included (D024).
 
 ## Notes
 
 - One test fails on this Mac only: `tests/claude-code-tool-bridge.test.ts` "binds 127.0.0.1". It connects to the LAN address and expects `ECONNREFUSED`. macOS firewall stealth mode drops the packet, so it gets `ETIMEDOUT` after 75 seconds. It passes in CI. The bridge binds `127.0.0.1` correctly.
 - `npm run build` rewrites `next-env.d.ts` (`.next/dev/types` to `.next/types`). It is generated; restore it with `git checkout next-env.d.ts` rather than committing it.
-- `next dev` rewrites the heading level in the generated block of `AGENTS.md`. Restore it with `git checkout AGENTS.md`; P0-4 owns that file.
 - Homebrew at `/usr/local` is the Intel install and fails on this Mac with "Bad CPU type in executable". Install tools another way, or fix Homebrew first.
 - This Mac has no Xcode and no Developer ID certificate, so `desktop:dist` cannot build here (the macOS icon needs Xcode 26+). Packaged builds come from a manual run of the release workflow (D022): `gh workflow run release.yml --ref <branch>`, then `gh run download <run> -n kvasir-mac-arm64`.
 - Turning auto-update on later needs a published Kvasir release and a public repository, then `AUTO_UPDATE_ENABLED = true` in `electron/main.cjs` (D019).
