@@ -358,6 +358,11 @@ export interface AgentSettings {
 	 *  tool-toggles map. Absent = enabled (the toggle discipline); the
 	 *  effective gate composes graph.enabled AND this switch. */
 	graphTools?: { enabled?: boolean };
+	/** Memory tools (Kvasir P1-7, D050): list_weak_propositions for the
+	 *  prober and the teacher. Same discipline as graphTools: its own
+	 *  subsection, absent = enabled, and the effective gate also needs the
+	 *  graph on (memoryToolsEnabled). */
+	memoryTools?: { enabled?: boolean };
 	/** System-prompt override SWITCHES keyed by segment path (absent key =
 	 *  off). Switch-on requires the override file to exist (enforced by the
 	 *  route); the switch is explicit so users keep a file on disk but run
@@ -709,6 +714,12 @@ function sanitizeAgent(raw: Record<string, unknown>): AgentSettings {
 		const enabled = (raw.graphTools as Record<string, unknown>).enabled;
 		if (enabled === undefined) out.graphTools = {};
 		else if (typeof enabled === "boolean") out.graphTools = { enabled };
+	}
+	// Memory tools (P1-7): the same lenient read side as graphTools.
+	if (raw.memoryTools !== null && typeof raw.memoryTools === "object" && !Array.isArray(raw.memoryTools)) {
+		const enabled = (raw.memoryTools as Record<string, unknown>).enabled;
+		if (enabled === undefined) out.memoryTools = {};
+		else if (typeof enabled === "boolean") out.memoryTools = { enabled };
 	}
 	return out;
 }

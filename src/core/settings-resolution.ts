@@ -86,6 +86,9 @@ export interface EffectiveSettings {
 		/** Prober graph tools (wave 7): passthrough delta as stored —
 		 * absent/undefined enabled = ON; consumers use graphToolsEnabled. */
 		graphTools: { enabled?: boolean };
+		/** Memory tools (P1-7): passthrough delta as stored; absent = ON;
+		 *  consumers use memoryToolsEnabled. */
+		memoryTools: { enabled?: boolean };
 	};
 	/** The resolved strong/cheap/vision slots: each tier's concrete model or
 	 *  NULL when the tier holds no model (no factory floor — BYOK all the
@@ -192,6 +195,7 @@ export function resolveSettings(record: UserSettings | null): EffectiveSettings 
 			prompts: agent.prompts ?? {},
 			search: agent.search ?? {},
 			graphTools: agent.graphTools ?? {},
+			memoryTools: agent.memoryTools ?? {},
 		},
 		models: {
 			strong: resolveSlot(modelsSection.strong),
@@ -267,6 +271,18 @@ export function graphToolsEnabled(effective: {
 	agent: { graphTools: { enabled?: boolean } };
 }): boolean {
 	return effective.graph.enabled && (effective.agent.graphTools.enabled ?? true);
+}
+
+/**
+ * The MEMORY TOOLS gate (Kvasir P1-7, D050): list_weak_propositions reads
+ * learner state about graph propositions, so it needs the graph master
+ * switch AND its own toggle (absent = ON). Independent of graphTools.
+ */
+export function memoryToolsEnabled(effective: {
+	graph: { enabled: boolean };
+	agent: { memoryTools: { enabled?: boolean } };
+}): boolean {
+	return effective.graph.enabled && (effective.agent.memoryTools.enabled ?? true);
 }
 
 
