@@ -125,6 +125,13 @@ export function composeGraphTools(agent: AgentSettings | undefined, on: boolean)
 	return { ...agent, graphTools: { enabled: on } };
 }
 
+/** Compose the memory-tools toggle (Kvasir P1-7, D050): its own key in the
+ *  agent section, like graphTools. Absent = ON; the write is explicit either
+ *  way. Pure, exported for tests. */
+export function composeMemoryTools(agent: AgentSettings | undefined, on: boolean): AgentSettings {
+	return { ...agent, memoryTools: { enabled: on } };
+}
+
 /** Compose: one slot's model/thinking override. Empty model = absent
  *  override (Default — falls to the factory pin); empty thinking = the
  *  tier keeps its resolved thinking budget. Per-field independence, same
@@ -711,6 +718,27 @@ export function AgentSection({
 								disabled={!graphOn}
 								label="graph tools"
 								onChange={(on) => onSectionChange(composeGraphTools(agent, on))}
+							/>
+						</SettingsRow>
+					);
+				})()}
+				{/* Kvasir P1-7 (D050): the memory tool (list_weak_propositions) for
+				    the prober and the teacher. Directly under Graph tools, with the
+				    same graph gate: dimmed and disabled while the graph is off. */}
+				{(() => {
+					const graphOn = graph?.enabled ?? true;
+					return (
+						<SettingsRow
+							label="Memory tools"
+							hint={graphOn ? "Lets the tutor see which propositions you are forgetting" : "Graph is disabled"}
+							testid="memory-tools-row"
+							dimmed={!graphOn}
+						>
+							<Toggle
+								checked={agent?.memoryTools?.enabled ?? true}
+								disabled={!graphOn}
+								label="memory tools"
+								onChange={(on) => onSectionChange(composeMemoryTools(agent, on))}
 							/>
 						</SettingsRow>
 					);
