@@ -66,6 +66,7 @@
 import { useRouter } from "next/navigation";
 import { DueChip, RetentionToggle } from "@/components/review/retention-controls";
 import { useRetentionOverlay, useReviewSummary } from "@/components/review/use-review-summary";
+import { useReviewExclusions } from "@/components/review/use-review-exclusions";
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { NotesImportErrors, useNotesImport } from "@/components/notes-import.tsx";
 import Link from "next/link";
@@ -1089,6 +1090,7 @@ export function GraphView({
 	// overlay (read-only learner state; the switch lives in local storage).
 	const router = useRouter();
 	const reviewSummary = useReviewSummary();
+	const reviewExclusions = useReviewExclusions();
 	const [retentionOn, setRetentionOn] = useRetentionOverlay();
 	const heat = useMemo(
 		() => (retentionOn && reviewSummary ? new Map(Object.entries(reviewSummary.heat)) : undefined),
@@ -1728,6 +1730,8 @@ export function GraphView({
 				chains={snapshot?.chains ?? []}
 				sessions={snapshot?.sessions ?? {}}
 				fileSources={snapshot?.fileSources ?? {}}
+				reviewExcluded={reviewExclusions.excluded}
+				onReviewExclusion={(sessionId, excluded) => void reviewExclusions.setExcluded(sessionId, excluded)}
 				onClose={() => {
 					setChainsOpen(false);
 					onChainSelectClose?.();

@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useReviewSummary } from "@/components/review/use-review-summary";
+import { EXCLUDE_LABEL, INCLUDE_LABEL, useReviewExclusions } from "@/components/review/use-review-exclusions";
 import { MenuShell } from "@/components/menu-shell";
 import { DeleteSessionDialog } from "@/components/delete-session-dialog";
 import type { ChatDeleteMode } from "@/src/core";
@@ -406,6 +407,7 @@ function SessionsSidebar() {
 	const pathname = usePathname();
 	// Kvasir P1-6: the due count on the Review row (D048).
 	const reviewDue = useReviewSummary()?.due ?? 0;
+	const reviewExclusions = useReviewExclusions();
 	const router = useRouter();
 	const { open: openSettings } = useSettingsDialog();
 
@@ -932,6 +934,20 @@ function SessionsSidebar() {
 							className="flex items-center rounded-lg px-2.5 py-1.5 text-left text-foreground transition-colors hover:bg-accent"
 						>
 							Export as Markdown…
+						</button>
+						{/* The review opt-out (P1-8, D053, D056): the session's cards
+						    leave review or come back. Above Delete, which stays last. */}
+						<button
+							type="button"
+							data-testid="ctx-review-exclusion"
+							onClick={() => {
+								const chatId = ctxChatId;
+								setCtxChatId(null);
+								void reviewExclusions.setExcluded(chatId, !reviewExclusions.excluded.has(chatId));
+							}}
+							className="flex items-center rounded-lg px-2.5 py-1.5 text-left text-foreground transition-colors hover:bg-accent"
+						>
+							{reviewExclusions.excluded.has(ctxChatId) ? INCLUDE_LABEL : EXCLUDE_LABEL}
 						</button>
 						<button
 							type="button"
