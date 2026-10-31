@@ -21,6 +21,7 @@ import type {
 	ExtractionRunUsage,
 	Citation,
 	DocumentVersion,
+	LoadedSource,
 	ReviewEntry,
 	ReviewExclusion,
 	ReviewQuestion,
@@ -149,6 +150,16 @@ export interface GraphStore {
  * method at all. The composition root builds it from the live graph store.
  */
 export type GraphReader = Pick<GraphStore, "readNodes" | "readChains">;
+
+// ─── SourceLoader — where source documents come from (Kvasir P2, D062) ─────
+// P2 reads files Sagar picks (src/server/source-loader.ts). Another
+// provider (Eryndal, Hugin) would be a second adapter behind this port.
+
+export interface SourceLoader {
+	/** Read one source, detect its format, and hash its bytes. Throws
+	 *  UnsupportedSourceError for a format outside D058. */
+	load(filePath: string): Promise<LoadedSource>;
+}
 
 // ─── LearnerStore — the Memory system's ledgers (data/learner) ─────────────
 // The only learner evidence (D030, D031). Append-only; card state is derived

@@ -69,3 +69,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D061 | 2026-10-31 | A proposition whose cited text is removed in a newer version is marked outdated and stays visible, pointing at the version where its text changed | Sagar | |
 | D062 | 2026-10-31 | P2 imports files Sagar picks; reading from Eryndal or Hugin is out of scope. The source loader sits behind a port so another provider can plug in later | Sagar | |
 | D063 | 2026-10-31 | Source documents and versions live in the graph store: `data/graph/documents.jsonl` (one line per document version, append-only) beside `data/graph/citations.jsonl`, both behind `GraphStore` and written only on the merger side | Sagar | |
+| D064 | 2026-10-31 | A EUR-Lex unit's citation path is the full hierarchy, for example `["Chapter V", "Section I", "Article 28", "paragraph 2", "point (a)"]` | Sagar | |
+| D065 | 2026-10-31 | Citable parts of a EUR-Lex act: recitals (`["Recital 12"]`), the enacting articles, and annexes (`["Annex I", ...]`) | Sagar | |
+| D066 | 2026-10-31 | PDFs and Markdown follow the document's own numbering: for example `["Section 3.2", "paragraph 14"]` for EBA guidelines, and the heading path then paragraph number for Markdown. Unnumbered PDF text falls back to the page number | Sagar | |
+| D067 | 2026-10-31 | Test fixtures DORA (32022R2554) and PSD2 (32015L2366) as XHTML from the EU Publications Office Cellar service, and EBA/GL/2019/04 as PDF from eba.europa.eu, are committed under `tests/fixtures/sources/` with their sources acknowledged | Sagar | |
