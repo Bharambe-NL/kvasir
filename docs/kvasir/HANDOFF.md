@@ -5,7 +5,7 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1. P0-1 to P0-4 merged.
-- Task: P0-4 Agent files and house style (#5) merged via #10. Next task: P0-5 House style for upstream text (#6), not started; ask first whether to do it in P0 or defer it to P6-4.
+- Task: P0-4 Agent files and house style (#5) merged via #10. P0-5 is deferred to P6-7 (D026). All P0 tasks are merged or deferred; next is the P0 gate.
 - Branch: none open
 - PR: none open
 
@@ -23,14 +23,15 @@ Updated by Claude Code at the end of each session. Read this first.
 
 - P0-4 (#5): decisions D023 to D025. The build-pack files were already installed by the bootstrap, byte-identical to the pack. `house-style.yml` aligned to `checkout@v7`, `setup-node@v7`, Node 26 and covered by the action-version test; `AGENTS.md` keeps the `next dev` version of its block. `main` protected (D024): PR required, five checks required (`Typecheck, tests, lint`, three `Standalone` jobs, `house-style`), up to date with `main`, admins included. Self-merged as #10 through that protection.
 
+- P0-5 deferred to P6-7 `p6/house-style-prompts` (D026), after the P6-4 eval harness. Issue #6 now tracks P6-7.
+
 ## Next
 
-1. Ask whether to do P0-5 in P0 or defer it to P6-4 (the brief asks for this before P0-5).
-2. Then P0-5, or the P0 gate with `/kv-gate P0` if P0-5 is deferred.
+1. Run the P0 gate with `/kv-gate P0`. Acceptance check 2 needs Sagar: install the packaged app (from a release workflow rehearsal, D022) and run a full probe, plan and teach session with his own key.
 
 ## Waiting for Sagar
 
-- Whether the two prompts that call the agent "a learning harness" (`src/agent/system-prompt.md`, `src/agent/prompts/practice/00-base.md`) should change. Prompt wording; best handled with P0-5.
+- The P0 gate's acceptance check 2: the full probe, plan and teach session in the packaged app, with Sagar's own key.
 
 Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, recorded in #1). `main` only accepts PRs whose five checks pass, admins included (D024).
 

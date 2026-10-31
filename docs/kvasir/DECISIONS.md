@@ -31,3 +31,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D023 | 2026-10-31 | `house-style.yml` uses the same action versions and Node version as the other workflows (`checkout@v7`, `setup-node@v7`, Node 26), pinned by the workflow action-version test | Sagar | |
 | D024 | 2026-10-31 | `main` is protected: changes need a PR with all CI and house-style checks passing, and the rule applies to admins too | Sagar | |
 | D025 | 2026-10-31 | `AGENTS.md` keeps the Next.js block exactly as `next dev` writes it, so dev runs leave the tree clean | Sagar | |
+| D026 | 2026-10-31 | P0-5 (house style for the upstream prompts) is deferred out of P0 to a new task P6-7 `p6/house-style-prompts`, which starts after the P6-4 eval harness merges | Sagar | |
