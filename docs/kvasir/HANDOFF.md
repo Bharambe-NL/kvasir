@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1.
-- Task: P0-2 Identity rename (#3) merged via #8. Next task: P0-3 Release plumbing (#4), not started.
-- Branch: none open
-- PR: none open
+- Task: P0-3 Release plumbing (#4). Plan approved on #4; self-merge once CI is green (D010).
+- Branch: `p0/release`
+- PR: draft, linked to #4
 
 ## Done
 
@@ -20,11 +20,14 @@ Updated by Claude Code at the end of each session. Read this first.
 - P0-1 (#2) closed with the CI evidence and ticked in #1.
 - P0-2: decisions D011 to D018 taken (P0 decisions 2 to 5, plus four found during investigation). Plan approved on #3. All plan commits pushed to #8, plus a fix for the page title ("Learning Harness", which the brief's grep misses). Local gates green apart from the known firewall test; rename grep clean against the allow-list; `desktop:dev` shows the Kvasir title and uses `Kvasir-dev`.
 - P0-2 reviewed and approved by Sagar, squash merged as #8, ticked in #1.
+- P0-3 started: decisions D019 to D022 (updater off until the first release, unsigned builds unless signing env is set, version 0.0.1, packaged checks from a CI rehearsal run). Plan approved on #4.
 
 ## Next
 
-1. Start P0-3 with `/kv-task P0-3`. See the P0-3 notes below.
-2. Set branch protection on `main` (require a PR and passing checks), once Sagar agrees.
+1. Finish the P0-3 commits in the order of the plan on #4: updater off, signing from env, version, workflows and templates, docs.
+2. Collect the evidence: `desktop:dev` network log, then a manual release workflow run on `p0/release` and the packaged app's network log, `main.log` and data folder.
+3. Self-merge P0-3 once CI is green, tick it in #1.
+4. Set branch protection on `main` (require a PR and passing checks), once Sagar agrees.
 
 ## Waiting for Sagar
 
