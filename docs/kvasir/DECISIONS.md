@@ -32,3 +32,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D024 | 2026-10-31 | `main` is protected: changes need a PR with all CI and house-style checks passing, and the rule applies to admins too | Sagar | |
 | D025 | 2026-10-31 | `AGENTS.md` keeps the Next.js block exactly as `next dev` writes it, so dev runs leave the tree clean | Sagar | |
 | D026 | 2026-10-31 | P0-5 (house style for the upstream prompts) is deferred out of P0 to a new task P6-7 `p6/house-style-prompts`, which starts after the P6-4 eval harness merges | Sagar | |
+| D027 | 2026-10-31 | Until Apple signing secrets exist, a phase release is a notes-only GitHub release; the release workflow run that the tag starts is cancelled before it builds anything | Sagar | |
