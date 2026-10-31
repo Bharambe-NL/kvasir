@@ -4,15 +4,17 @@
 
 | Platform | Build runner | Packages | In-app update |
 |---|---|---|---|
-| macOS, Apple Silicon | `macos-26` (arm64) | signed/notarized DMG + ZIP | ZIP via Squirrel.Mac |
+| macOS, Apple Silicon | `macos-26` (arm64) | DMG + ZIP, signed and notarized when the signing secrets are set | ZIP via Squirrel.Mac |
 | Windows, x64 | `windows-2025` | unsigned per-user NSIS installer | NSIS |
 | Linux, x64 | `ubuntu-24.04` | AppImage + `.deb` | AppImage replacement; `.deb` through dpkg/apt with elevation if needed |
+
+**Auto-update is off in Kvasir builds until the first Kvasir release** (D019). `AUTO_UPDATE_ENABLED` in `electron/main.cjs` is `false`, so packaged builds load no updater and make no update request. The settings page then shows the version without the update controls. Turning it on needs a published Kvasir release and a public repository (see below). The update column describes how each platform updates once it is on.
 
 Windows signing is deliberately disabled for this first release. SmartScreen may warn about an unknown publisher on initial installation. AppImage is the primary Linux download because it is self-contained and updates without administrator permission. The installed `electron-updater` 6.8.9 also supports `.deb` updates; an update may request an administrator password. Both use the same download/restart banner.
 
 The custom app bar stays on all three platforms. macOS keeps its left-side traffic lights; Windows/Linux use Electron's native right-side Window Controls Overlay, with CSS space reserved from the overlay's actual geometry. Windows/Linux hide the native menu until Alt is pressed. macOS keeps its system menu.
 
-Icons are per-platform (2026-10-13): macOS compiles the Icon Composer document `build/icon.icon` via actool into `Assets.car` (macOS 26 Liquid Glass) plus a fallback icns that `scripts/after-pack.cjs` replaces with the hand-packed full-res `build/icon.icns` (actool's caps at 256px); Windows embeds `build/icon.ico` and Linux uses `build/icon.png`, both generated from the flat design (`build/icon-flat.svg`) by `node scripts/make-icons.mjs`. Building the mac icon needs **macOS 26+ and Xcode 26+** (`actool`): Xcode 26's asset compiler crashes on macOS 15 because its host frameworks lack required symbols. `desktop:dist` injects `DEVELOPER_DIR` locally; release packaging uses `macos-26` and selects Xcode via setup-xcode. The older-OS fallback icon remains included. Linux's desktop identity is `learnharness.desktop`. Public package-maintainer metadata uses the owner's GitHub no-reply address; support goes through [GitHub Issues](https://github.com/amosblomqvist/learnharness/issues).
+Icons are per-platform (2026-10-13): macOS compiles the Icon Composer document `build/icon.icon` via actool into `Assets.car` (macOS 26 Liquid Glass) plus a fallback icns that `scripts/after-pack.cjs` replaces with the hand-packed full-res `build/icon.icns` (actool's caps at 256px); Windows embeds `build/icon.ico` and Linux uses `build/icon.png`, both generated from the flat design (`build/icon-flat.svg`) by `node scripts/make-icons.mjs`. Building the mac icon needs **macOS 26+ and Xcode 26+** (`actool`): Xcode 26's asset compiler crashes on macOS 15 because its host frameworks lack required symbols. `desktop:dist` injects `DEVELOPER_DIR` locally; release packaging uses `macos-26` and selects Xcode via setup-xcode. The older-OS fallback icon remains included. Linux's desktop identity is `kvasir.desktop`. Package-maintainer metadata uses the owner's GitHub no-reply address; issues go to [GitHub Issues](https://github.com/Bharambe-NL/kvasir/issues).
 
 ## Build pipeline
 
@@ -27,7 +29,7 @@ Each OS installs its own dependencies and builds its own Next standalone tree:
 
 The shell/updater live in `app.asar`; the standalone server and native renderer binaries ship unpacked as `extraResources`. **Do not cross-build the server payload.** Next traces the build machine's native binaries, so a macOS-built standalone tree is not a Windows/Linux payload.
 
-`npm run desktop:dist` remains the local macOS signing path, using the `LH_NOTARY` keychain profile. For a local Windows/Linux build, run steps 1–5 above, then:
+`npm run desktop:dist` is the local macOS build. Its last step, `scripts/desktop-dist.mjs`, reads signing settings from the environment (D020): with `APPLE_TEAM_ID` and `APPLE_KEYCHAIN_PROFILE` both set it signs with the Developer ID certificate in the login keychain and notarizes through that keychain profile. With neither set it builds an unsigned, unnotarized app with the same flags as the manual rehearsal. Setting only one fails. It still needs Xcode 26+ for the icon. For a local Windows/Linux build, run steps 1–5 above, then:
 
 ```sh
 # On Windows:
@@ -60,11 +62,11 @@ The three jobs upload distinct updater feeds: `latest-mac.yml`, `latest.yml`, `l
 
 | Asset | Role |
 |---|---|
-| `LearnHarness-<v>-arm64.dmg` + `.blockmap` | macOS installer |
-| `LearnHarness-<v>-arm64-mac.zip` + `.blockmap` | macOS updater payload (Squirrel.Mac installs from the ZIP) |
-| `LearnHarness-<v>-x64-setup.exe` + `.blockmap` | Windows NSIS installer |
-| `LearnHarness-<v>-x86_64.AppImage` | Linux AppImage (no sidecar blockmap) |
-| `LearnHarness-<v>-amd64.deb` | Linux deb (no sidecar blockmap) |
+| `Kvasir-<v>-arm64.dmg` + `.blockmap` | macOS installer |
+| `Kvasir-<v>-arm64-mac.zip` + `.blockmap` | macOS updater payload (Squirrel.Mac installs from the ZIP) |
+| `Kvasir-<v>-x64-setup.exe` + `.blockmap` | Windows NSIS installer |
+| `Kvasir-<v>-x86_64.AppImage` | Linux AppImage (no sidecar blockmap) |
+| `Kvasir-<v>-amd64.deb` | Linux deb (no sidecar blockmap) |
 | `latest-mac.yml` / `latest.yml` / `latest-linux.yml` | updater feeds |
 
   (The Linux names are deliberate: the user-set `linux.artifactName` applies to both Linux targets, and `${arch}` expands per target — `x86_64` inside the AppImage, `amd64` in the deb — exactly what the installed app-builder-lib 26.15.3 emits. The script's expectations fail closed if `electron-builder.yml` drifts from these shapes.);
@@ -82,7 +84,7 @@ Add these under repository **Settings → Secrets and variables → Actions**:
 | `MAC_CSC_KEY_PASSWORD` | Password protecting that `.p12` |
 | `APPLE_ID` | Apple ID used for notarization |
 | `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for that Apple ID |
-| `APPLE_TEAM_ID` | `JS6XN22HY6` |
+| `APPLE_TEAM_ID` | Your Apple Developer team ID |
 
 The workflow maps the certificate secrets to electron-builder's `CSC_LINK` / `CSC_KEY_PASSWORD`. GitHub's built-in `GITHUB_TOKEN` supplies `GH_TOKEN` with job-scoped `contents: write`; no separate GitHub token secret is required. Signing credentials are present only for the packaging step, not the Next build. Never commit certificates, passwords, or `.env.local`.
 
