@@ -81,7 +81,7 @@ const review: FauxResponseStep = () => fauxAssistantMessage([fauxToolCall("submi
 function request(files: { name: string; bytes: Uint8Array; label?: string }[]) {
 	const form = new FormData();
 	for (const f of files) {
-		form.append("files", new File([f.bytes], f.name));
+		form.append("files", new File([new Uint8Array(f.bytes)], f.name));
 		form.append("labels", f.label ?? "");
 	}
 	return new Request("http://localhost/api/sources/import", { method: "POST", body: form });
