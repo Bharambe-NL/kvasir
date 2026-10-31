@@ -2,7 +2,7 @@
 interface AuthBoot {
 	/** Names owned by the original launch environment. */
 	realEnv: Set<string>;
-	/** Names reflected into process.env by LearnHarness's key store. */
+	/** Names reflected into process.env by Kvasir's key store. */
 	fillGap: Set<string>;
 }
 const BOOT_KEY = Symbol.for("lh.authBoot");
@@ -13,7 +13,7 @@ export function authEnvRecord(): AuthBoot {
 	return g[BOOT_KEY];
 }
 
-/** External CLIs own their authentication. Never pass LearnHarness-only injections. */
+/** External CLIs own their authentication. Never pass Kvasir-only injections. */
 export function externalCliEnv(env: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
 	const result = { ...env };
 	const { realEnv, fillGap } = authEnvRecord();

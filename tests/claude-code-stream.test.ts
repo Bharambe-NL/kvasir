@@ -605,7 +605,7 @@ test("preserves existing CLI environment authentication without a subscription g
 	assert.equal(call.env.ANTHROPIC_AUTH_TOKEN, "token-test");
 });
 
-test("does not inject credentials reflected only from LearnHarness's key store", async (t) => {
+test("does not inject credentials reflected only from Kvasir's key store", async (t) => {
 	const name = "ANTHROPIC_API_KEY";
 	const record = authEnvRecord();
 	const saved = process.env[name];
@@ -617,7 +617,7 @@ test("does not inject credentials reflected only from LearnHarness's key store",
 	record.fillGap.add(name);
 	const { calls } = await runScenario(t, readFixtureLines("text.jsonl"));
 	assert.equal(getOnlyCall(calls).env[name], undefined);
-	assert.equal(process.env[name], "lh-only-key", "other LearnHarness providers keep their env reflection");
+	assert.equal(process.env[name], "lh-only-key", "other Kvasir providers keep their env reflection");
 });
 
 test("writes one user prompt after local-only control initialization and summary request", async (t) => {
