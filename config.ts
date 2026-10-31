@@ -55,7 +55,9 @@ export type ModelRole =
 	| "visualMaker"
 	| "pdfReader"
 	| "extractor"
-	| "auditor";
+	| "auditor"
+	/** Writes review questions for the Memory system (P1-4, D040). */
+	| "reviewGenerator";
 
 /**
  * The LIVE graph store (src/store/graph.ts) — owned by the app's extraction
