@@ -29,7 +29,7 @@ Hold the architecture along two orthogonal axes:
 | **Workbench** — background labor | `data/jobs/*.json` | job runner, researcher/demo-builder/visual-maker, steer delivery |
 | **Library** — world model | `data/graph/*` ledgers | extraction pipeline (sole graph writer), derivation, birth-session clusters |
 | **Practice**: practice sessions | no store of its own | practice sessions are chat records with `kind: "practice"` (in `data/chats`); each problem targets one proposition (§7) |
-| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review and question ledgers; the `/review` page records self-ratings through `src/server/review.ts` within the daily limits of `src/core/review-queue.ts`; the home graph shows a due count and an optional retention heat overlay from `GET /api/review/summary` (read only; the overlay switch lives in local storage, never in `data/graph/`); the prober and the teacher can call `list_weak_propositions` (`src/agent/tools/memory.ts`, read only, names and recall only); review questions written ahead by `src/agent/subagents/review-generator.ts` (cue or scenario by card phase, inside the shared background-LLM semaphore); cards derived by `src/core/cards.ts` (one per proposition), schedules by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
+| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review, question and exclusions ledgers; the `/review` page records self-ratings through `src/server/review.ts` within the daily limits of `src/core/review-queue.ts`; the home graph shows a due count and an optional retention heat overlay from `GET /api/review/summary` (read only; the overlay switch lives in local storage, never in `data/graph/`); the prober and the teacher can call `list_weak_propositions` (`src/agent/tools/memory.ts`, read only, names and recall only); review questions written ahead by `src/agent/subagents/review-generator.ts` (cue or scenario by card phase, inside the shared background-LLM semaphore); cards derived by `src/core/cards.ts` (one per proposition, leaving out propositions born in a session excluded from review: `data/learner/exclusions.jsonl`, set through `/api/review/exclusions` from a Chains table cluster row or the sidebar session menu), schedules by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
 | **Stage** — presentation shell | nothing server-side | components/, graph canvas, docks — pure consumer via `/api/*` |
 | **Machine room** — host | process + config | Electron main, standalone Next server, `config.ts`, data-dir seam, BYOK keys |
 
@@ -241,6 +241,7 @@ flowchart TB
     subgraph MEMORY["MEMORY: learner state (owns data/learner; Kvasir P1)"]
         REVIEWS["review ledger: data/learner/reviews.jsonl (append-only)"]
         QUESTIONS["question ledger: data/learner/questions.jsonl (append-only)"]
+        EXCLUSIONS["exclusions ledger: data/learner/exclusions.jsonl (append-only)<br/>review opt-out per birth session; latest toggle wins"]
         RGEN["review generator: agent/subagents/review-generator.ts<br/>cue or scenario by card phase; shared background-LLM semaphore"]
         RPAGE["review page /review + GET/POST /api/review: server/review.ts<br/>queue within daily limits (core/review-queue.ts), self-rating"]
         SIGNALS["home signals: GET /api/review/summary (pure read)<br/>due count on sidebar + toolbar; retention heat overlay on the canvas"]
@@ -275,6 +276,8 @@ flowchart TB
     PPART -->|"reads propositions for targets [GraphStore port, pure read]"| GRAPHDATA
     CARDS -->|"reads nodes and chains [GraphReader, read only]"| GRAPHDATA
     CARDS --> SCHED
+    CARDS -->|"leaves out cards born in excluded sessions [core/learner.ts excludedSessions]"| EXCLUSIONS
+    UI -->|"Exclude from review / Include in review [GET/POST /api/review/exclusions]"| EXCLUSIONS
     SCHED --> REVIEWS
     RGEN -->|"due cards without a question for their cycle [withBgLlmSlot]"| CARDS
     RGEN -->|"appends questions [injected appendQuestion]"| QUESTIONS
@@ -398,6 +401,8 @@ flowchart TB
 **The teacher probes, nothing is injected** (supersedes the semantic-injection experiment, killed 2026-09-23): the teacher reaches the graph on its own terms through two read-only prober tools — `list_sessions` (birth sessions, the learner's files) and `list_propositions` (the names of what a session covered) — gated by the `agent.graphTools` setting (composing with `graph.enabled`). No topic embedding, no top-K selection, no session-start steer; the agent decides what to look at, and the graph never writes into a lesson unbidden.
 
 **The memory tool** (Kvasir P1-7, D049 to D052): the prober and the teacher also carry `list_weak_propositions` when `memoryToolsEnabled(effective)` holds, that is the graph master switch AND `agent.memoryTools` (default on, its own "Memory tools" settings row under Graph tools). It lists reviewed propositions whose FSRS recall chance is below 80%, weakest first, at most 15, as name, recall percentage, lapses, last review date and id; never the statement text. The composition root passes a `MemoryToolContext` of read functions only (`GraphReader`, a review-ledger read, the clock), so the agent layer holds no write path to the graph or the learner ledgers. Practice does not get it.
+
+**The review opt-out** (Kvasir P1-8, D053 to D056): a birth session (a chat, or a notes import's `src_` id) can be excluded from review. Each toggle appends `{id, sessionId, excluded, at}` to `data/learner/exclusions.jsonl`, and `excludedSessions` takes the latest line per session. `deriveCards` leaves out every proposition whose birth session is excluded and lists them in `CardSet.excluded`, so the queue, the due count, the retention heat, the memory tool and question pre-generation all drop them at once. Their reviews are never touched: including the session again restores the same cards with the same schedules, because card state is derived at read time. A rating for an excluded card is refused (409). `setReviewExclusion` accepts a known chat or a birth session in the graph, appends only when the state changes, and emits `reviews-changed`. The control is "Exclude from review" (or "Include in review") on each Chains table cluster row and in the sidebar session menu; an excluded cluster row shows "Not in review".
 
 **Rendering**: a hand-rolled Canvas 2D renderer (`components/graph-canvas.ts` — one rAF loop, dirty-flag idle, d3-zoom camera, zoom-gated label fade, cluster hulls computed at draw time) over a d3-force layout in core (`layout.ts`, warm-started `incrementalLayout` + `settleGraphLayout`). Render settings and drag-committed positions persist server-side; the camera persists per-device in localStorage.
 
@@ -579,7 +584,7 @@ Every place the architecture is designed to be cut — the "one file" a future c
 | Push events | `src/core/events.ts` (bus) + `src/server/events-stream.ts` (SSE seam) + `components/server-events.tsx` (the window's EventSource) | change notification, end to end |
 | Agent construction (tests) | `handleChatRequest(req, buildAgent?)` | scripted engines, no refactor |
 | Sub-agent verification | `sub-agents/headless.ts` (`headlessOverride`) | demo/SVG verification, no Chrome |
-| Learner storage (Memory) | `src/store/learner.ts`, wired in `src/server/stores.ts` (`LearnerStore`, `GraphReader`) | the review ledger; Memory's graph access stays read-only |
+| Learner storage (Memory) | `src/store/learner.ts`, wired in `src/server/stores.ts` (`LearnerStore`, `GraphReader`) | the review, question and exclusions ledgers; Memory's graph access stays read-only |
 | Memory tool (agents) | `MemoryToolContext` in `src/agent/tools/memory.ts`, built by `memoryContext()` in `src/server/chat-handler.ts` | what the prober and teacher see of learner state; read functions only; absent context = no tool |
 | Data location (Electron) | `KV_DATA_DIR` env (`config.ts` PATHS) | where data/ lives, nothing else |
 | Desktop host | `electron/main.cjs` | launcher/security shell only |
