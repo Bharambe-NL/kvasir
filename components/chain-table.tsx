@@ -72,6 +72,7 @@ import type { GraphChain, GraphNode } from "@/src/core";
 import { TopBar } from "@/components/top-bar";
 import { DeleteNodeDialog } from "@/components/delete-node-dialog";
 import { LatexGlyph } from "@/components/latex-glyph";
+import { EXCLUDE_LABEL, EXCLUDED_TAG, INCLUDE_LABEL } from "@/components/review/use-review-exclusions";
 
 /** The sortable columns (owner ruling: all three — consistency). */
 export type ChainSortCol = "name" | "props" | "created";
@@ -116,6 +117,8 @@ export function ChainTableBody({
 	onClose,
 	selectMode,
 	onSelect,
+	reviewExcluded,
+	onReviewExclusion,
 }: {
 	nodes: GraphNode[];
 	chains: GraphChain[];
@@ -142,6 +145,10 @@ export function ChainTableBody({
 	 *  selection becomes. */
 	selectMode?: boolean;
 	onSelect?: () => void;
+	/** The review opt-out (P1-8, D053): birth sessions out of review, and
+	 *  the toggle. Absent = no control on the cluster rows. */
+	reviewExcluded?: ReadonlySet<string>;
+	onReviewExclusion?: (sessionId: string, excluded: boolean) => void;
 }) {
 	const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
 	const chains = useMemo(() => chainsForSelection(nodes, storedChains), [nodes, storedChains]);
@@ -342,7 +349,7 @@ export function ChainTableBody({
 								/>
 							)}
 							{/* The cluster row: birth-session group header. */}
-							<div className="flex items-center gap-1 px-3 py-1.5">
+							<div className="group/cluster flex items-center gap-1 px-3 py-1.5">
 								<RowCheckbox
 									checked={selectedCount === group.nodeIds.length && group.nodeIds.length > 0}
 									indeterminate={selectedCount > 0 && selectedCount < group.nodeIds.length}
@@ -358,6 +365,27 @@ export function ChainTableBody({
 									{group.label ?? <span className="text-muted-foreground/60">unlabeled</span>}
 									{group.kind === "notes" && <span className="ml-2 text-[11px] uppercase tracking-widest text-muted-foreground/60">notes</span>}
 								</span>
+								{group.birth !== null && onReviewExclusion && (() => {
+									const out = reviewExcluded?.has(group.birth) ?? false;
+									return (
+										<>
+											{out && (
+												<span data-testid={`cluster-review-tag-${group.key}`} className="shrink-0 text-[11px] text-muted-foreground/60">
+													{EXCLUDED_TAG}
+												</span>
+											)}
+											<button
+												type="button"
+												data-testid={`cluster-review-toggle-${group.key}`}
+												aria-pressed={out}
+												onClick={() => onReviewExclusion(group.birth!, !out)}
+												className="shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-[11px] text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 group-hover/cluster:opacity-100"
+											>
+												{out ? INCLUDE_LABEL : EXCLUDE_LABEL}
+											</button>
+										</>
+									);
+								})()}
 								<span className="w-14 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
 									{group.nodeIds.length}
 								</span>
@@ -609,6 +637,8 @@ export function ChainTableOverlay({
 	selectMode,
 	controlledSelection,
 	onSelectionChange,
+	reviewExcluded,
+	onReviewExclusion,
 }: {
 	open: boolean;
 	nodes: GraphNode[];
@@ -619,6 +649,8 @@ export function ChainTableOverlay({
 	selectMode?: boolean;
 	controlledSelection?: ReadonlySet<string>;
 	onSelectionChange?: (next: ReadonlySet<string>) => void;
+	reviewExcluded?: ReadonlySet<string>;
+	onReviewExclusion?: (sessionId: string, excluded: boolean) => void;
 }) {
 	const [query, setQuery] = useState("");
 	const [sort, setSort] = useState<ChainSort>({ col: "name", dir: 1 });
@@ -704,6 +736,8 @@ export function ChainTableOverlay({
 					onToggleNodes={toggleNodes}
 					onClear={() => applySelection(new Set())}
 					onDelete={() => setDeleteOpen(true)}
+					reviewExcluded={reviewExcluded}
+					onReviewExclusion={onReviewExclusion}
 					onClose={onClose}
 					selectMode={selectMode}
 					onSelect={onClose}

@@ -58,3 +58,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D050 | 2026-10-31 | It is gated by its own "Memory tools" toggle under Settings, Agent, Tools (default on), and also requires the graph to be on | Sagar | |
 | D051 | 2026-10-31 | Weak means a reviewed proposition with current recall chance below 80%; the tool returns the weakest 15, weakest first | Sagar | |
 | D052 | 2026-10-31 | Each line shows name, recall percentage, lapses, last review date and node id; never the statement text (the map tools' names-only rule) | Sagar | |
+| D053 | 2026-10-31 | The review opt-out control lives on each cluster row of the Chains table (chats and notes imports) and in the sidebar session right-click menu (chats) | Sagar | |
+| D054 | 2026-10-31 | An excluded session's cards leave everything derived from the card source: the queue, the due count, the retention heat, the memory tool and question pre-generation. Their reviews stay in the ledger | Sagar | |
+| D055 | 2026-10-31 | `data/learner/exclusions.jsonl` holds toggle events `{id, sessionId, excluded, at}`, append-only; the latest line per session decides | Sagar | |
+| D056 | 2026-10-31 | The control reads "Exclude from review", and "Include in review" once excluded; an excluded cluster row shows a muted "Not in review" tag | Sagar | |

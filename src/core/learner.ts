@@ -4,7 +4,7 @@
  * semantics live here. No IO.
  */
 
-import type { CardState, QuestionFormat, ReviewEntry, ReviewQuestion } from "./contracts/learner.ts";
+import type { CardState, QuestionFormat, ReviewEntry, ReviewExclusion, ReviewQuestion } from "./contracts/learner.ts";
 
 /** The ledger with retried appends removed: the first line for each id
  *  wins, append order is kept. */
@@ -34,4 +34,21 @@ export function questionFor(nodeId: string, cycle: number, questions: readonly R
  *  forming, an applied scenario once the card is in the review phase. */
 export function formatFor(state: Pick<CardState, "phase">): QuestionFormat {
 	return state.phase === "review" ? "scenario" : "cue";
+}
+
+/** The birth sessions currently out of review (D055): the latest toggle per
+ *  session decides, by `at`, ties going to the later line in append order.
+ *  A retried append (same id) counts once. */
+export function excludedSessions(entries: readonly ReviewExclusion[]): Set<string> {
+	const seen = new Set<string>();
+	const latest = new Map<string, ReviewExclusion>();
+	for (const entry of entries) {
+		if (seen.has(entry.id)) continue;
+		seen.add(entry.id);
+		const prev = latest.get(entry.sessionId);
+		if (!prev || Date.parse(entry.at) >= Date.parse(prev.at)) latest.set(entry.sessionId, entry);
+	}
+	const out = new Set<string>();
+	for (const [sessionId, entry] of latest) if (entry.excluded) out.add(sessionId);
+	return out;
 }

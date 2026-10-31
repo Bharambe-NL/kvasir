@@ -114,3 +114,33 @@ export function isReviewEntry(value: unknown): value is ReviewEntry {
 		!Number.isNaN(Date.parse(v.reviewedAt))
 	);
 }
+
+/** One review opt-out toggle, as stored: one line of
+ *  data/learner/exclusions.jsonl (P1-8, D055). Append-only; the latest line
+ *  for a session decides whether its cards are in review (core/learner.ts
+ *  excludedSessions). Keyed by birth session (D053): a chat id, or a notes
+ *  import's "src_" id. */
+export interface ReviewExclusion {
+	/** "rx_" + nanoid-like. */
+	id: string;
+	/** The birth session the toggle applies to. */
+	sessionId: string;
+	/** true: the session's cards leave review. false: they come back. */
+	excluded: boolean;
+	/** ISO timestamp of the toggle. */
+	at: string;
+}
+
+/** Strict shape guard for one stored exclusion line. */
+export function isReviewExclusion(value: unknown): value is ReviewExclusion {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+	const v = value as Record<string, unknown>;
+	const nonEmpty = (x: unknown) => typeof x === "string" && x.trim().length > 0;
+	return (
+		nonEmpty(v.id) &&
+		nonEmpty(v.sessionId) &&
+		typeof v.excluded === "boolean" &&
+		typeof v.at === "string" &&
+		!Number.isNaN(Date.parse(v.at))
+	);
+}

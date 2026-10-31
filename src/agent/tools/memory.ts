@@ -2,7 +2,8 @@ import { Type } from "typebox";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { serverExecute } from "../tool-execute.ts";
 import { deriveCards } from "../../core/cards.ts";
-import type { ReviewEntry } from "../../core/contracts/learner.ts";
+import type { ReviewEntry, ReviewExclusion } from "../../core/contracts/learner.ts";
+import { excludedSessions } from "../../core/learner.ts";
 import type { GraphReader } from "../../core/ports.ts";
 import { retrievability } from "../../core/schedule.ts";
 
@@ -20,12 +21,16 @@ import { retrievability } from "../../core/schedule.ts";
  * Registered only when the composition root passes the context, which it
  * does only when memoryToolsEnabled (the graph master switch AND the
  * agent.memoryTools toggle, D050). Absent context = no tool.
+ *
+ * Propositions born in a session excluded from review (P1-8, D054) are left
+ * out, the same as everywhere else the card source reaches.
  */
 
 /** What the memory tool closes over: read functions only. */
 export interface MemoryToolContext {
 	graph: GraphReader;
 	readReviews: () => ReviewEntry[];
+	readExclusions: () => ReviewExclusion[];
 	now: () => string;
 }
 
@@ -49,7 +54,7 @@ export function memoryTools(ctx: MemoryToolContext): Record<string, AgentTool<an
 			execute: serverExecute("list_weak_propositions", listWeakInput, async (): Promise<string> => {
 				const now = ctx.now();
 				const reviews = ctx.readReviews();
-				const { cards } = deriveCards(ctx.graph, reviews);
+				const { cards } = deriveCards(ctx.graph, reviews, excludedSessions(ctx.readExclusions()));
 				const reviewed = cards.filter((c) => c.state.reps > 0);
 				if (reviewed.length === 0) return "No proposition has been reviewed yet, so there is no recall data.";
 				const weak = reviewed

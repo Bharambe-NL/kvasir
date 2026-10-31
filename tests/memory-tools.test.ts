@@ -51,7 +51,7 @@ for (const id of slipping) for (const r of learn(id, ago(300))) learnerStore.app
 for (const r of learn(fading, ago(20))) learnerStore.appendReview(r);
 for (const id of strong) for (const r of learn(id, ago(0, -60))) learnerStore.appendReview(r);
 
-const memory = { graph, readReviews: () => learnerStore.readReviews(), now: () => NOW };
+const memory = { graph, readReviews: () => learnerStore.readReviews(), readExclusions: () => [], now: () => NOW };
 const stubJobStore = { createJob: () => ({}), getJob: () => undefined, listJobs: () => [], updateJob: () => {} } as unknown as JobStore;
 const baseCtx = { chatId: "c1", chatStore, jobStore: stubJobStore, spawn: () => {} };
 
@@ -105,7 +105,7 @@ describe("the teacher probes weak items, and nothing is written (Done when)", ()
 describe("limits and empty states (D051)", () => {
 	it("caps the list at the weakest 15", async () => {
 		const many = ids.slice(20, 50).flatMap((id) => learn(id, ago(400)));
-		const tools = memoryTools({ graph, readReviews: () => [...learnerStore.readReviews(), ...many], now: () => NOW });
+		const tools = memoryTools({ graph, readReviews: () => [...learnerStore.readReviews(), ...many], readExclusions: () => [], now: () => NOW });
 		const out = (await tools.list_weak_propositions!.execute!("tc", {})).details as string;
 		assert.equal(WEAK_LIST_LIMIT, 15);
 		assert.match(out, /^15 weak proposition\(s\)/);
@@ -113,10 +113,10 @@ describe("limits and empty states (D051)", () => {
 	});
 
 	it("says when nothing has been reviewed, and when nothing is weak", async () => {
-		const none = memoryTools({ graph, readReviews: () => [], now: () => NOW });
+		const none = memoryTools({ graph, readReviews: () => [], readExclusions: () => [], now: () => NOW });
 		assert.match((await none.list_weak_propositions!.execute!("tc", {})).details as string, /No proposition has been reviewed yet/);
 		const fresh = strong.flatMap((id) => learn(id, ago(0, -60)));
-		const allStrong = memoryTools({ graph, readReviews: () => fresh, now: () => NOW });
+		const allStrong = memoryTools({ graph, readReviews: () => fresh, readExclusions: () => [], now: () => NOW });
 		assert.match((await allStrong.list_weak_propositions!.execute!("tc", {})).details as string, /No weak propositions: all 3 reviewed/);
 	});
 });
