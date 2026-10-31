@@ -72,6 +72,12 @@ export const LEDGER_FILES = {
 	 *  the checkpoint's replacement for chat extractions — notes keep
 	 *  sessions.jsonl, whole-file as they are). */
 	coverage: path.join(PATHS.graph, "coverage.jsonl"),
+	/** Source document versions (Kvasir P2, D063; contracts/sources.ts
+	 *  DocumentVersion). Written only on the merger side. */
+	documents: path.join(PATHS.graph, "documents.jsonl"),
+	/** Citations from propositions to source units (Kvasir P2, D059, D063;
+	 *  contracts/sources.ts Citation). Written only by the merger. */
+	citations: path.join(PATHS.graph, "citations.jsonl"),
 } as const;
 
 /**

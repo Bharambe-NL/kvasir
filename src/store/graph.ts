@@ -45,7 +45,10 @@ import type {
 	ProvenancePoint,
 	CoverageEntry,
 	SessionCheckpoint,
+	Citation,
+	DocumentVersion,
 } from "../core/contracts.ts";
+import { isCitation, isDocumentVersion } from "../core/contracts.ts";
 import type { GraphStore } from "../core/ports.ts";
 
 // ─── JSONL primitives ────────────────────────────────────────────────────────
@@ -160,6 +163,19 @@ export const graphStore: GraphStore = {
 	},
 	readCoverage(): CoverageEntry[] {
 		return readValid(LEDGER_FILES.coverage, isCoverageEntry);
+	},
+
+	appendDocumentVersion(version: DocumentVersion): void {
+		appendLine(LEDGER_FILES.documents, version);
+	},
+	readDocumentVersions(): DocumentVersion[] {
+		return readValid(LEDGER_FILES.documents, isDocumentVersion);
+	},
+	appendCitation(citation: Citation): void {
+		appendLine(LEDGER_FILES.citations, citation);
+	},
+	readCitations(): Citation[] {
+		return readValid(LEDGER_FILES.citations, isCitation);
 	},
 
 	// ── imported-notes bookkeeping (config.SOURCES_FILE — a JSON map) ──

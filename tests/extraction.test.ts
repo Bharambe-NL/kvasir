@@ -124,6 +124,11 @@ function memoryLedgers() {
 			if (next.coverage) coverage.splice(0, coverage.length, ...next.coverage.map((c) => ({ ...c })));
 			if (next.checkpoints) checkpoints.splice(0, checkpoints.length, ...next.checkpoints.map((c) => ({ ...c })));
 		},
+		// The sources ledgers (Kvasir P2): unused by this suite.
+		appendDocumentVersion: () => {},
+		readDocumentVersions: () => [],
+		appendCitation: () => {},
+		readCitations: () => [],
 	} satisfies GraphStore;
 }
 

@@ -19,6 +19,8 @@ import type {
 	JobKind,
 	JobRecord,
 	ExtractionRunUsage,
+	Citation,
+	DocumentVersion,
 	ReviewEntry,
 	ReviewExclusion,
 	ReviewQuestion,
@@ -95,6 +97,16 @@ export interface GraphStore {
 	 *  checkpoint — "uncovered" is derived from these, never tracked. */
 	appendCoverage(entry: CoverageEntry): void;
 	readCoverage(): CoverageEntry[];
+
+	/** Kvasir P2 (D063): one imported source document version, append-only.
+	 *  Written only on the merger side; readers group by sourceId
+	 *  (core/sources.ts sourceDocuments). */
+	appendDocumentVersion(version: DocumentVersion): void;
+	readDocumentVersions(): DocumentVersion[];
+	/** Kvasir P2 (D059, D063): one citation from a proposition to a source
+	 *  unit, append-only. Written only by the merger. */
+	appendCitation(citation: Citation): void;
+	readCitations(): Citation[];
 
 	/** Append one cluster-naming run's usage (graph-global money channel) —
 	 *  idempotent per startedAt. */
