@@ -6,9 +6,9 @@
 #     because native .node/dylib can't dlopen from a read-only archive and
 #     server.js process.chdir()s into its own dir;
 #   - the asar holds only the shell (electron/main.cjs + package.json);
-#   - signed + notarized since 2026-10-08 (Developer ID Application cert in
-#     the login keychain; notary credentials in the LH_NOTARY keychain
-#     profile; the profile + team env vars are baked into desktop:dist).
+#   - signing and notarization come from the environment (D020): see
+#     scripts/desktop-dist.mjs. Without APPLE_TEAM_ID and
+#     APPLE_KEYCHAIN_PROFILE the build is unsigned and not notarized.
 appId: nl.bharambe.kvasir
 productName: Kvasir
 directories:
@@ -132,7 +132,8 @@ mac:
   # Developer ID Application certificate from the login keychain;
   # notarize: true makes electron-builder sign → submit to Apple's notary
   # service → staple the ticket, all inside this one build (credentials
-  # via the LH_NOTARY keychain profile, env baked into desktop:dist).
+  # via the APPLE_KEYCHAIN_PROFILE keychain profile; scripts/desktop-dist.mjs
+  # passes -c.mac.notarize=false when signing is not configured).
   # Adds minutes per build (Apple's scan queue). Verification battery:
   # codesign --verify --deep / spctl --assess / stapler validate.
   notarize: true
@@ -183,12 +184,13 @@ linux:
 publish:
   # Update feed = GitHub Releases (decided 2026-10-08): latest-mac.yml +
   # zip/blockmap live on releases; electron-updater reads them anonymously.
-  # REQUIRES THE REPO TO BE PUBLIC before 0.3.0 ships — anonymous downloads
+  # Kvasir (D019): the updater ships off until the first Kvasir release, and
+  # the repo must be public before it is turned on. Anonymous downloads
   # from a private repo are impossible, and a token baked into the app
   # would be a leak. desktop:dist passes no --publish flag, so builds never
   # upload; publishing happens at release time (GH_TOKEN + --publish).
   - provider: github
-    owner: amosblomqvist
-    repo: learnharness
+    owner: Bharambe-NL
+    repo: kvasir
     # All three CI jobs contribute assets; only the owner publishes it.
     releaseType: draft

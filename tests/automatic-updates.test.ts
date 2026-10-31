@@ -11,9 +11,15 @@ import { describe, it } from "node:test";
 
 const mainFile = fileURLToPath(new URL("../electron/main.cjs", import.meta.url));
 const mainSource = readFileSync(mainFile, "utf8");
+// Kvasir ships with the updater off (D019). The updater tests below exercise
+// the real code with the switch flipped on; the shipped default has its own tests.
+const SHIPPED_SWITCH = "const AUTO_UPDATE_ENABLED = false;";
+assert.ok(mainSource.includes(SHIPPED_SWITCH), "main.cjs no longer declares the shipped updater switch");
+const enabledSource = mainSource.replace(SHIPPED_SWITCH, "const AUTO_UPDATE_ENABLED = true;");
 const mainRequire = createRequire(mainFile);
 
-function fixture({ packaged = true, updaterMissing = false } = {}) {
+function fixture({ packaged = true, updaterMissing = false, updates = true } = {}) {
+	let updaterRequires = 0;
 	let settings: string | Error = JSON.stringify({ version: 1, general: { autoUpdate: true } });
 	const settingsReads: string[] = [];
 	const order: string[] = [];
@@ -88,6 +94,7 @@ function fixture({ packaged = true, updaterMissing = false } = {}) {
 		require: (id: string) => {
 			if (id === "electron") return electron;
 			if (id === "electron-updater") {
+				updaterRequires++;
 				if (updaterMissing) throw new Error("missing updater");
 				return { autoUpdater: updater };
 			}
@@ -106,10 +113,11 @@ function fixture({ packaged = true, updaterMissing = false } = {}) {
 		setTimeout() {},
 		fixtureChild: { kill: (signal: string) => order.push(signal) },
 	});
-	runInContext(mainSource, context, { filename: mainFile });
+	runInContext(updates ? enabledSource : mainSource, context, { filename: mainFile });
 	const run = (code: string) => runInContext(code, context);
 	return {
 		run, updater, windows, intervals, handles, settingsReads, order, app,
+		updaterRequires: () => updaterRequires,
 		setSettings: (value: unknown) => { settings = JSON.stringify(value); },
 		setSettingsFailure: (value: string | Error) => { settings = value; },
 		setEnumerationFailure: (value: boolean) => { enumerationFails = value; },
@@ -119,6 +127,27 @@ function fixture({ packaged = true, updaterMissing = false } = {}) {
 		menuCheck: () => menu[0]!.submenu!.find(item => item.label === "Check for Updates…")!.click!(),
 	};
 }
+
+describe("Kvasir ships with the updater off (D019)", () => {
+	it("a packaged build reports disabled and never loads electron-updater", async () => {
+		const f = fixture({ updates: false });
+		f.run("setupAutoUpdater()"); await f.check(true); await f.check();
+		assert.equal(f.updaterRequires(), 0);
+		assert.equal(f.updater.checks, 0);
+		assert.equal(f.settingsReads.length, 0);
+		assert.equal(f.state().status, "disabled");
+	});
+
+	it("startup schedules no check and no timer, and the menu check stays a no-op", async () => {
+		const f = fixture({ updates: false }); f.setSettings({ version: 1 });
+		await f.run("main()");
+		f.menuCheck(); await Promise.resolve();
+		assert.equal(f.updaterRequires(), 0);
+		assert.equal(f.updater.checks, 0);
+		assert.equal(f.intervals.length, 0);
+		assert.equal(f.state().status, "disabled");
+	});
+});
 
 describe("automatic-update preference gate", () => {
 	it("explicit OFF skips automatic checks, but manual checks still run without reading the preference", async () => {

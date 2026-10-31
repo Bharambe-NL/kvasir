@@ -24,3 +24,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D016 | 2026-10-31 | Internal names (HTTP headers, MCP bridge server name, ChatGPT tool namespace, user agent, env binding, symbol key) are renamed to `kvasir` too | Sagar | |
 | D017 | 2026-10-31 | No migration from the LearnHarness data folder; Kvasir starts with its own empty folder and both apps can run side by side | Sagar | |
 | D018 | 2026-10-31 | The build-pack docs (`docs/kvasir/`, `CLAUDE.md`, `scripts/bootstrap-kvasir.sh`) may name LearnHarness as lineage and join the rename grep allow-list | Sagar | |
+| D019 | 2026-10-31 | Auto-update is off in packaged builds until the first Kvasir release; `publish` points at `Bharambe-NL/kvasir` for future releases | Sagar | |
+| D020 | 2026-10-31 | `desktop:dist` builds unsigned and unnotarized by default; it signs and notarizes only when `APPLE_TEAM_ID` and `APPLE_KEYCHAIN_PROFILE` are set | Sagar | |
+| D021 | 2026-10-31 | `package.json` version restarts at `0.0.1`, matching the roadmap release tags | Sagar | |
+| D022 | 2026-10-31 | P0 packaged macOS checks use an unsigned build from a manual run of the release workflow (the rehearsal path) | Sagar | |

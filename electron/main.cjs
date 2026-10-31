@@ -423,6 +423,10 @@ const ZOOM_LADDER = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
  * Hard rules:
  *  - DEV NEVER UPDATES: !app.isPackaged skips the updater entirely — the
  *    dev world runs `next dev` and has no signed bundle.
+ *  - KVASIR SHIPS WITH THE UPDATER OFF (D019): AUTO_UPDATE_ENABLED is false
+ *    until the first Kvasir release exists. Packaged builds then take the
+ *    same "disabled" path as dev: electron-updater is never loaded and no
+ *    check or timer starts, so no request reaches any update feed.
  *  - THE UPDATER CAN NEVER TAKE THE APP DOWN: every event and check is
  *    caught and logged (feed down, disk full, bad signature — all just
  *    log lines; the app keeps working, update or no update).
@@ -438,6 +442,7 @@ const ZOOM_LADDER = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
  * inside the .app bundle Squirrel is about to replace (extraResources),
  * and before-quit alone would race the swap. */
 const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const AUTO_UPDATE_ENABLED = false;
 let autoUpdater = null; // electron-updater's, packaged builds only
 // Observational only: this snapshot NEVER gates a check, download or install.
 // The revision lets late subscribers reject an older in-flight IPC snapshot.
@@ -506,6 +511,11 @@ function installUpdateNow() {
 function setupAutoUpdater() {
 	if (!app.isPackaged) {
 		log("auto-update: dev build — updater disabled");
+		reportUpdateStatus("disabled");
+		return;
+	}
+	if (!AUTO_UPDATE_ENABLED) {
+		log("auto-update: updater disabled until the first Kvasir release");
 		reportUpdateStatus("disabled");
 		return;
 	}

@@ -25,7 +25,7 @@ npm run typecheck    # tsc --noEmit
 node scripts/smoke-web-subscriptions.mjs # after build: offline Next start/dev + reload gate
 
 npm run desktop:dev    # next dev + Electron shell pointed at it
-npm run desktop:dist   # local signed/notarized macOS arm64 build (LH_NOTARY keychain)
+npm run desktop:dist   # local macOS arm64 build; signs and notarizes only when APPLE_TEAM_ID and APPLE_KEYCHAIN_PROFILE are set
 
 # one-shot data scripts (run from the master tree only — data never crosses trees)
 npx tsx --env-file=.env.local scripts/import-notes.ts <dir>   # bulk-import notes → graph
