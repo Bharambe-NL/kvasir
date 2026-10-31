@@ -21,14 +21,15 @@ Hold the architecture along two orthogonal axes:
 
 **Static structure — the hexagon.** One pure core (`src/core`); everything else is an *adapter* (implements a core port or drives the core) or a *composition root* (the only code that wires adapters to core). Dependency arrows point **inward only** — toward purity, toward stability. Two barrels are the entire public API: `@/src/core` (browser-safe) and `@/src/server` (the server-side surface).
 
-**Runtime ownership — six systems.** Each persistent store has exactly one owning writer-system; systems talk only through named, idempotent protocols:
+**Runtime ownership — seven systems.** Each persistent store has exactly one owning writer-system; systems talk only through named, idempotent protocols:
 
 | System | Owns (sole writer) | Role |
 |---|---|---|
 | **Classroom** — session engine | `data/chats/*.json` | the turn pipeline, prober→teacher, plan tree, questions, phases |
 | **Workbench** — background labor | `data/jobs/*.json` | job runner, researcher/demo-builder/visual-maker, steer delivery |
 | **Library** — world model | `data/graph/*` ledgers | extraction pipeline (sole graph writer), derivation, birth-session clusters |
-| **Practice** — problem sets | `data/practice/*.json` | partitioner→generator→grader pipeline, self-contained sets (§7) |
+| **Practice**: practice sessions | no store of its own | practice sessions are chat records with `kind: "practice"` (in `data/chats`); each problem targets one proposition (§7) |
+| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review ledger; schedules derived at read; reads the graph through `GraphReader`, never writes it (D030) |
 | **Stage** — presentation shell | nothing server-side | components/, graph canvas, docks — pure consumer via `/api/*` |
 | **Machine room** — host | process + config | Electron main, standalone Next server, `config.ts`, data-dir seam, BYOK keys |
 
@@ -158,7 +159,7 @@ flowchart TB
 
 ## 3. Ports, adapters, and the composition roots
 
-Storage is **per-entity semantic ports**, never one generic interface: `ChatStore`, `GraphStore`, `JobStore`, `PracticeStore` (`src/core/ports.ts` — types only). The fs adapters (`src/store/{chats,graph,jobs,practice}.ts`) implement them and contain persistence and nothing else. One more adapter (`src/store/render-settings.ts`) is a portless free function re-exported through the server barrel — a deliberate pragmatic bypass, documented here so nobody mistakes it for the pattern.
+Storage is **per-entity semantic ports**, never one generic interface: `ChatStore`, `GraphStore`, `JobStore`, `LearnerStore` (`src/core/ports.ts` — types only). The fs adapters (`src/store/{chats,graph,jobs,learner}.ts`) implement them and contain persistence and nothing else. `GraphReader` (`Pick<GraphStore, "readNodes" | "readChains">`) is the only graph access the Memory system receives: `stores.ts` builds it from the live graph store, so Memory code never holds a graph write method. One more adapter (`src/store/render-settings.ts`) is a portless free function re-exported through the server barrel — a deliberate pragmatic bypass, documented here so nobody mistakes it for the pattern.
 
 **Idioms.** Graph evidence lives in **append-only JSONL ledgers** (corrupt-line-tolerant reads; strict shape guards drop invalid lines, never guess). Chats, jobs, positions, sources, and the settings blobs are whole-file read-modify-write JSON. All writes are synchronous, single-process (atomicity rides the Node event loop). Merge/dedup/derivation semantics are **reader-side, in core** — the store never decides.
 
@@ -181,7 +182,7 @@ flowchart LR
         direction TB
         SESS["session brain: phases · plan-tree · question-core · pending · steer builders"]
         GBRAIN["graph brain: merger + derivation · coverage · clusters · layout"]
-        PORTSBOX["PORTS (types only): ChatStore · GraphStore · JobStore · PracticeStore"]
+        PORTSBOX["PORTS (types only): ChatStore · GraphStore · JobStore · LearnerStore · GraphReader"]
     end
 
     subgraph DRIVEN["DRIVEN ADAPTERS — outbound"]
@@ -209,7 +210,7 @@ flowchart LR
 
 ---
 
-## 4. The six systems (runtime ownership and protocols)
+## 4. The seven systems (runtime ownership and protocols)
 
 The systems view: each box owns its store; edges are the protocols, each with the adapter/seam that implements it.
 
@@ -233,9 +234,13 @@ flowchart TB
         WAKE["wake pipeline — per-chat serialized queues on globalThis"]
     end
 
-    subgraph PRAC["PRACTICE — problem sets (owns data/practice)"]
-        PPART["practice pipeline — partitioner → one generator per problem · one grader per answer<br/>(score-only; never steers the teacher)"]
-        PDATA["problem sets — data/practice/*.json"]
+    subgraph PRAC["PRACTICE: practice sessions (no store, chat records with kind practice)"]
+        PPART["practice agent: problem · conclude tools; each problem targets one proposition"]
+    end
+
+    subgraph MEMORY["MEMORY: learner state (owns data/learner; Kvasir P1)"]
+        REVIEWS["review ledger: data/learner/reviews.jsonl (append-only)"]
+        SCHED["schedules: derived at read, never stored"]
     end
 
     subgraph LIBRARY["LIBRARY — world model (owns data/graph ledgers)"]
@@ -260,9 +265,10 @@ flowchart TB
     EXTRACT -->|"reads transcript as evidence [ChatStore port]"| CHATDATA
     EXTRACT -->|"append-only ledger writes [GraphStore port — sole writer]"| GRAPHDATA
     DERIVE -->|"pure read: snapshot for home [graphSnapshot]"| GRAPHDATA
-    UI -->|"POST /api/practice/sets · answers [HTTP transport]"| PPART
-    PPART -->|"reads the graph ONCE at creation — propositions+chains frozen into the set [GraphStore port, pure read]"| GRAPHDATA
-    PPART --> PDATA
+    PPART -->|"practice turns persist as chat records [ChatStore port]"| CHATDATA
+    PPART -->|"reads propositions for targets [GraphStore port, pure read]"| GRAPHDATA
+    SCHED -->|"reads nodes and chains [GraphReader, read only]"| GRAPHDATA
+    SCHED --> REVIEWS
     UI -->|"GET /api/graph (read) · PUT positions (sanctioned exception) · POST import"| DERIVE
     HOST -.->|"hosts every server-side system"| TURN
 ```
@@ -382,6 +388,8 @@ flowchart TB
 
 ## 7. Practice — strengthening, not assessment (owner ruling 2026-09-29)
 
+> **Kvasir note (P1-1, 2026-10-31):** the code no longer has a `PracticeStore`, `data/practice`, `src/core/practice.ts` or a practice-sets route. Practice sessions are chat records with `kind: "practice"`, driven by the practice agent's `problem` and `conclude` tools; each problem targets one proposition (`resolveTargetId`, `src/core/chains.ts`, which also holds `chainsForSelection`). Parts of this section describe the earlier problem-set design. Spaced review now lives in the separate Memory system (P1), which keeps this section's rule: nothing about the learner is written to the graph.
+
 Practice turns the graph into problem sets the learner reasons through out loud. The purpose ruling first: this is **strengthening, not assessment**. Grades are feedback for the learner — a score, a brief justification, a look at the model solution — and nothing else. Grading writes nothing to the graph, no understanding levels exist anywhere, and the vision doc's exam machinery (scores, streaks, spaced repetition over failure rates) stays parked. A set exercises what the learner already met; it certifies nothing.
 
 **The chain model.** Practice reads the STORED chains directly (chains-primary, 2026-09-30): `chainsForSelection` (`src/core/practice.ts`) includes a stored argument iff its conclusion AND every premise are selected — an argument missing any member is excluded entirely, and a node in no surviving argument becomes a singleton chain; premise-only nodes belong to no chain. Each argument keeps its own `arg_` id: two independent arguments for one conclusion stay two chains (never a unioned premise set — the exact corruption edge-grouping invited). The partition must cover every chain **exactly once** — a true partition; duplicates fail validation exactly like gaps (owner amendment 2026-09-29: variety accumulates ACROSS sets, never within one — the at-least-once doctrine is dead). `chainCoverage` is the soundness check: only `missing` fails a partition, `duplicated` is informational.
@@ -462,7 +470,7 @@ For ordinary Next web/dev, `src/server/web-subscriptions.ts` composes these same
 | Law |
 |---|
 | **One composition root per concern** — `stores.ts` (storage), `chat-handler.ts` (a turn) |
-| **One writer per ledger** — the merger is the sole graph writer; chat records written only by the turn pipeline; job records only by the runner; positions PUT is the only sanctioned graph-adjacent exception |
+| **One writer per ledger** — the merger is the sole graph writer; the review pipeline is the sole learner writer (Memory, from P1-4), and the Memory system reaches the graph only through the read-only `GraphReader`; chat records written only by the turn pipeline; job records only by the runner; positions PUT is the only sanctioned graph-adjacent exception |
 | **The store never decides** — adapters persist and shape-guard; merge/dedup/derivation semantics are reader-side, in core |
 | **Derived, never dual-tracked** — append-only evidence; every state recomputed at read (snapshot, plan statuses, phases, costs, coverage) |
 | **Idempotency via deterministic keys** — steer ids, ledger refs, coverage fingerprints, source content fingerprints, cluster content hashes; re-running anything converges |
@@ -547,12 +555,13 @@ Every place the architecture is designed to be cut — the "one file" a future c
 | LLM engine / model per role | settings `models` slots + `src/agent/models.ts` (`piEngineFor`) | provider wiring, one place |
 | Turn composition | `src/server/chat-handler.ts` | what a turn consists of |
 | Extraction trigger | `src/server/turn-service.ts` (`triggerExtraction`) | when the Library runs |
-| Practice orchestration | `src/agent/subagents/practice-pipeline.ts` | generation/grading flow without touching contracts |
+| Practice tools | `src/agent/tools/practice.ts` (`problem` / `conclude`) | what a practice turn can do |
 | Graph access for teacher | `src/agent/tools/graph.ts` (`list_sessions` / `list_propositions`) | what the teacher can probe, one gate |
 | Steer delivery (wake) | `src/server/jobs.ts` + injected `deliver` | how background results re-enter lessons |
 | Push events | `src/core/events.ts` (bus) + `src/server/events-stream.ts` (SSE seam) + `components/server-events.tsx` (the window's EventSource) | change notification, end to end |
 | Agent construction (tests) | `handleChatRequest(req, buildAgent?)` | scripted engines, no refactor |
 | Sub-agent verification | `sub-agents/headless.ts` (`headlessOverride`) | demo/SVG verification, no Chrome |
+| Learner storage (Memory) | `src/store/learner.ts`, wired in `src/server/stores.ts` (`LearnerStore`, `GraphReader`) | the review ledger; Memory's graph access stays read-only |
 | Data location (Electron) | `KV_DATA_DIR` env (`config.ts` PATHS) | where data/ lives, nothing else |
 | Desktop host | `electron/main.cjs` | launcher/security shell only |
 
