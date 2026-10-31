@@ -34,3 +34,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D026 | 2026-10-31 | P0-5 (house style for the upstream prompts) is deferred out of P0 to a new task P6-7 `p6/house-style-prompts`, which starts after the P6-4 eval harness merges | Sagar | |
 | D027 | 2026-10-31 | Until Apple signing secrets exist, a phase release is a notes-only GitHub release; the release workflow run that the tag starts is cancelled before it builds anything | Sagar | |
 | D028 | 2026-10-31 | `Bharambe-NL/kvasir` is public from 2026-10-31, after the P0 gate, so GitHub Actions runs without a minutes limit. History scanned for secrets first. Replaces the "private until the P0 gate passes" part of D008 | Sagar | D008 |
+| D029 | 2026-10-31 | Claude Code may self-merge P1 PRs that need no review from Sagar, once CI is green. Recorded in tracking issue #13 | Sagar | |
