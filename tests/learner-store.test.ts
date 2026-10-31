@@ -121,6 +121,23 @@ describe("questions ledger (P1-4, D039)", () => {
 	});
 });
 
+describe("exclusions ledger (P1-8, D055)", () => {
+	const toggle = (id: string, sessionId: string, excluded: boolean) => ({ id, sessionId, excluded, at: "2026-11-01T09:00:00.000Z" });
+
+	it("reads [] before any toggle, round-trips appends in order, and skips bad lines", () => {
+		assert.deepEqual(learnerStore.readExclusions(), []);
+		const a = toggle("rx_a", "c1", true);
+		const b = toggle("rx_b", "c1", false);
+		learnerStore.appendExclusion(a);
+		fs.appendFileSync(LEARNER_FILES.exclusions, '{"id":"rx_torn",\n');
+		fs.appendFileSync(LEARNER_FILES.exclusions, `${JSON.stringify({ ...toggle("rx_bad", "c1", true), excluded: 1 })}\n`);
+		learnerStore.appendExclusion(b);
+		assert.deepEqual(learnerStore.readExclusions(), [a, b]);
+		assert.equal(path.dirname(LEARNER_FILES.exclusions), PATHS.learner);
+		assert.notEqual(LEARNER_FILES.exclusions, LEARNER_FILES.reviews);
+	});
+});
+
 describe("the Memory system never writes to the graph (D030)", () => {
 	it("leaves data/graph/ byte-identical across learner writes and reads", () => {
 		fs.mkdirSync(PATHS.graph, { recursive: true });
