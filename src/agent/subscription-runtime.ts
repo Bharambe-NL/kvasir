@@ -13,7 +13,7 @@ function runtime(): Runtime {
 }
 export function configureWebSubscriptionRuntime(request: NonNullable<Runtime["request"]>): void { runtime().request = request; }
 export function webSubscriptionsEnabled(): boolean {
-	return process.env.LH_DESKTOP_SERVER !== "1" && !process.env.LH_DESKTOP_API_SECRET && !!runtime().request;
+	return process.env.KV_DESKTOP_SERVER !== "1" && !process.env.KV_DESKTOP_API_SECRET && !!runtime().request;
 }
 export function onWebSubscriptionPacket(channel: SubscriptionRuntimeChannel, listener: (packet: SubscriptionRuntimePacket) => void): void {
 	const state = runtime(); const listeners = state.listeners.get(channel) ?? new Set();

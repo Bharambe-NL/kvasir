@@ -15,7 +15,7 @@ const mainFile = path.join(root, "electron/main.cjs");
 const mainSource = readFileSync(mainFile, "utf8");
 const mainRequire = createRequire(mainFile);
 const guardSource = readFileSync(path.join(root, "electron/server-title-guard.cjs"), "utf8");
-const backendEnv = { ELECTRON_RUN_AS_NODE: "1", LH_DESKTOP_SERVER: "1" };
+const backendEnv = { ELECTRON_RUN_AS_NODE: "1", KV_DESKTOP_SERVER: "1" };
 
 function titleFixture(platform = "darwin", env: Record<string, string> = backendEnv) {
 	const nativeWrites: unknown[] = [];
@@ -79,7 +79,7 @@ describe("macOS backend process.title guard", () => {
 		["Linux", "linux", backendEnv],
 		["full-Electron browser helper", "darwin", {}],
 		["non-backend Node child", "darwin", { ELECTRON_RUN_AS_NODE: "1" }],
-		["non-Node-mode process", "darwin", { LH_DESKTOP_SERVER: "1" }],
+		["non-Node-mode process", "darwin", { KV_DESKTOP_SERVER: "1" }],
 	] as const) {
 		it(`leaves the original property untouched for ${label}`, () => {
 			const fixture = titleFixture(platform, env);
@@ -122,9 +122,9 @@ describe("backend-only preload wiring and packaging", () => {
 			assert.equal(launch.options.cwd, path.dirname(entry));
 			assert.equal(launch.options.env.NODE_OPTIONS, undefined, "do not add NODE_OPTIONS to the child environment");
 			assert.equal(launch.options.env.ELECTRON_RUN_AS_NODE, "1");
-			assert.equal(launch.options.env.LH_DESKTOP_SERVER, "1");
-			assert.equal(launch.options.env.LH_DATA_DIR, path.join("/fixture/user-data", "data"));
-			assert.equal(launch.options.env.LH_AUTH_FILE, path.join("/fixture/user-data", "auth.json"));
+			assert.equal(launch.options.env.KV_DESKTOP_SERVER, "1");
+			assert.equal(launch.options.env.KV_DATA_DIR, path.join("/fixture/user-data", "data"));
+			assert.equal(launch.options.env.KV_AUTH_FILE, path.join("/fixture/user-data", "auth.json"));
 			assert.equal(launch.options.env.PORT, "54321");
 			assert.equal(launch.options.env.HOSTNAME, "127.0.0.1");
 			assert.equal(launch.options.env.FIXTURE, "kept");

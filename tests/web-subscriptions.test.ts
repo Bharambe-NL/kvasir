@@ -9,10 +9,10 @@ import { githubCopilotProvider } from "@earendil-works/pi-ai/providers/github-co
 import { xaiProvider } from "@earendil-works/pi-ai/providers/xai";
 
 const directory = await fs.mkdtemp(path.join(os.tmpdir(), "lh-web-sub-"));
-process.env.LH_AUTH_FILE = path.join(directory, "auth.json");
-process.env.LH_DATA_DIR = path.join(directory, "data");
-delete process.env.LH_DESKTOP_SERVER; delete process.env.LH_DESKTOP_API_SECRET;
-await fs.writeFile(process.env.LH_AUTH_FILE, "{}", { mode: 0o600 });
+process.env.KV_AUTH_FILE = path.join(directory, "auth.json");
+process.env.KV_DATA_DIR = path.join(directory, "data");
+delete process.env.KV_DESKTOP_SERVER; delete process.env.KV_DESKTOP_API_SECRET;
+await fs.writeFile(process.env.KV_AUTH_FILE, "{}", { mode: 0o600 });
 const require = createRequire(import.meta.url);
 const { SCOPES } = require("../electron/chatgpt.cjs");
 const { createWebSubscriptionOwner, webSubscriptionOwner, webSubscriptionsEnabled } = await import("../src/server/web-subscriptions.ts");
@@ -79,13 +79,13 @@ test("HTTP controls reject cross-origin, simple-form and private credential oper
 	const browser = new Request("http://localhost:3000/api/subscriptions/browser?id=00000000-0000-4000-8000-000000000001");
 	assert.equal((await subscriptionBrowserResponse(browser)).status, 403);
 	for (const [marker, secret] of [["1", undefined], [undefined, "fixture-capability"]]) {
-		if (marker) process.env.LH_DESKTOP_SERVER = marker; else delete process.env.LH_DESKTOP_SERVER;
-		if (secret) process.env.LH_DESKTOP_API_SECRET = secret; else delete process.env.LH_DESKTOP_API_SECRET;
+		if (marker) process.env.KV_DESKTOP_SERVER = marker; else delete process.env.KV_DESKTOP_SERVER;
+		if (secret) process.env.KV_DESKTOP_API_SECRET = secret; else delete process.env.KV_DESKTOP_API_SECRET;
 		assert(!webSubscriptionsEnabled());
 		assert.equal((await subscriptionControlsResponse(request())).status, 404);
 		await assert.rejects(chat.chatGPTRequest("status"), /desktop app/);
 	}
-	delete process.env.LH_DESKTOP_SERVER; delete process.env.LH_DESKTOP_API_SECRET;
+	delete process.env.KV_DESKTOP_SERVER; delete process.env.KV_DESKTOP_API_SECRET;
 });
 
 function fakeSDK(login: (id: string, interaction: ProviderAuthInteraction) => Promise<OAuthCredential>) {

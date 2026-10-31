@@ -63,7 +63,7 @@ describe("desktop window chrome", () => {
 
 	it("only the external dev shell receives the web subscription transport marker", () => {
 		assert.equal(windowOptions("darwin").webPreferences.additionalArguments, undefined);
-		assert.deepEqual(windowOptions("darwin", { LH_DEV_URL: "http://localhost:3000" }).webPreferences.additionalArguments, ["--lh-web-subscriptions"]);
+		assert.deepEqual(windowOptions("darwin", { KV_DEV_URL: "http://localhost:3000" }).webPreferences.additionalArguments, ["--lh-web-subscriptions"]);
 	});
 
 	it("dev preload routes opaque sign-in actions through its narrow external-browser channel", async () => {

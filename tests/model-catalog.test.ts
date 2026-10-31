@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { after, describe, it } from "node:test";
 import assert from "node:assert/strict";
 const testData = fs.mkdtempSync(path.join(os.tmpdir(), "lh-cli-catalog-data-"));
-process.env.LH_DATA_DIR = testData;
+process.env.KV_DATA_DIR = testData;
 after(() => fs.rmSync(testData, { recursive: true, force: true }));
 const {
 	catalogContextLimits,

@@ -22,10 +22,10 @@ import type { SteerMessage } from "../src/core/contracts.ts";
 // Set the storage/auth seams BEFORE any app/config-loading imports.
 assert.equal(process.env.NODE_ENV, "test", "Run with NODE_ENV=test; these tests must not invoke real providers.");
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "lh-retry-failed-turn-"));
-process.env.LH_DATA_DIR = path.join(scratch, "data");
-process.env.LH_AUTH_FILE = path.join(scratch, "auth.json");
+process.env.KV_DATA_DIR = path.join(scratch, "data");
+process.env.KV_AUTH_FILE = path.join(scratch, "auth.json");
 process.env.OPENROUTER_API_KEY = "test-key-presence-gate";
-fs.writeFileSync(process.env.LH_AUTH_FILE, "{}");
+fs.writeFileSync(process.env.KV_AUTH_FILE, "{}");
 
 const { SessionModel } = await import("../components/session-core.ts");
 const { createPracticeAgent, createProberAgent, createTeacherAgent } = await import("../src/agent/teacher-agent.ts");

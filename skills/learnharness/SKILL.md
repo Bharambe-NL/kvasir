@@ -81,7 +81,7 @@ The default is the normal installed application's data folder:
 
 This is the directory **containing** `chats/` and `graph/`, not their parent
 `LearnHarness/` profile directory. For a moved installation, backup, development
-copy, or an app configured with `LH_DATA_DIR`, use `--data-dir` explicitly. Readers
+copy, or an app configured with `KV_DATA_DIR`, use `--data-dir` explicitly. Readers
 print the selected directory and never create a missing folder or silently switch
 to another copy.
 

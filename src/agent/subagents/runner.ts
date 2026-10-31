@@ -110,7 +110,7 @@ interface LoopContext {
 	 * model call so the spend stops mid-call, not at the next loop check. */
 	abortSignal: AbortSignal;
 	/** The job's chat (debug: raw provider-event recording under
-	 * LH_PROVIDER_EVENTS=1 — forwarded into every subagent run). */
+	 * KV_PROVIDER_EVENTS=1 — forwarded into every subagent run). */
 	chatId?: string;
 	/** Fold one model call's usage into the job record (progress write). */
 	onUsage: (step: UsageStepLike) => void;

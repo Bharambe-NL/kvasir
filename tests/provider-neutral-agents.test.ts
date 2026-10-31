@@ -47,7 +47,7 @@ const TRANSPORTS: Transport[] = [
 
 // Replacing rather than extending env also isolates secondary tokens (including
 // ANTHROPIC_AUTH_TOKEN/OAUTH_TOKEN and CLAUDE_CODE_OAUTH_TOKEN), SDK base-URL
-// overrides, cloud credentials, profiles, and LH_IGNORE_ENV_KEYS. No .env loads.
+// overrides, cloud credentials, profiles, and KV_IGNORE_ENV_KEYS. No .env loads.
 async function isolated<T>(env: Record<string, string>, run: () => Promise<T>): Promise<T> {
 	const previous = process.env;
 	const fetch = globalThis.fetch;
@@ -133,7 +133,7 @@ function assertSuccess(loop: Loop, run: Awaited<ReturnType<typeof runLoop>>) {
 describe("provider-neutral raw agent loops", { concurrency: false }, () => {
 	for (const loop of LOOPS) {
 		it(`${loop}: every actual stream request has NO credential override (recording faux engine)`, async () => {
-			await isolated({ OPENROUTER_API_KEY: OR_KEY, LH_PROVIDER_EVENTS: "1" }, async () => {
+			await isolated({ OPENROUTER_API_KEY: OR_KEY, KV_PROVIDER_EVENTS: "1" }, async () => {
 				const faux = createFauxCore({ tokenSize: { min: 64, max: 64 } });
 				faux.setResponses([0, 1, 2, 0, 1, 2].map((round) => {
 					const calls = callsFor(loop, round);

@@ -174,7 +174,7 @@ flowchart LR
         BROWSER["Browser UI — components/: question dock (addToolOutput) · graph canvas · docks"]
         HTTP["HTTP transport — app/api/*: 28 route handlers"]
         NOTES["Notes front door — POST /api/graph/import"]
-        ELEC["Electron main — thin launcher, spawns server, LH_DATA_DIR + BYOK env"]
+        ELEC["Electron main — thin launcher, spawns server, KV_DATA_DIR + BYOK env"]
     end
 
     subgraph HEXCORE["THE CORE — src/core (pure domain)"]
@@ -245,7 +245,7 @@ flowchart TB
     end
 
     subgraph ROOM["MACHINE ROOM — host"]
-        HOST["Electron main → standalone Next server · config.ts · LH_DATA_DIR · BYOK"]
+        HOST["Electron main → standalone Next server · config.ts · KV_DATA_DIR · BYOK"]
     end
 
     LEARNER -->|"text · answers [transport adapter]"| UI
@@ -407,7 +407,7 @@ Practice turns the graph into problem sets the learner reasons through out loud.
 ```mermaid
 flowchart LR
     subgraph DESKTOP["Electron app (production)"]
-        MAIN["Electron main (electron/main.cjs)<br/>launcher + credential/security owner<br/>origin-pinned controls · private child IPC"] -->|"spawn: ELECTRON_RUN_AS_NODE,<br/>loopback port, LH_DATA_DIR=userData/data"| NEXT["standalone Next server (child)<br/>ALL app logic: turns · extraction · jobs · graph"]
+        MAIN["Electron main (electron/main.cjs)<br/>launcher + credential/security owner<br/>origin-pinned controls · private child IPC"] -->|"spawn: ELECTRON_RUN_AS_NODE,<br/>loopback port, KV_DATA_DIR=userData/data"| NEXT["standalone Next server (child)<br/>ALL app logic: turns · extraction · jobs · graph"]
         MAIN -->|"loadURL, sandboxed renderer"| REND["Browser renderer (components/)<br/>fetch/WebSocket to own origin only"]
     end
     subgraph OUTSIDE["outside the process"]
@@ -415,7 +415,7 @@ flowchart LR
         DG["Deepgram STT (browser-direct WebSocket)"]
         GCSE["Google CSE / Jina (researcher tools)"]
         CHROME["system Chrome (headless: demo verify · SVG render)"]
-        DISK["data/ ledgers (via LH_DATA_DIR seam)"]
+        DISK["data/ ledgers (via KV_DATA_DIR seam)"]
     end
     NEXT --> OR
     NEXT --> GCSE
@@ -425,7 +425,7 @@ flowchart LR
     REND -->|"fetch /api/*"| NEXT
 ```
 
-The Electron main is a launcher + credential/security guard, never a host for teaching or inference logic: single-instance lock, deny-by-default permissions, origin-pinned navigation, sandboxed renderer. All Next.js code runs unchanged in a child process (`output: "standalone"`), relocated by the `LH_DATA_DIR` seam (also the test seam — `data-dir-seam.test.ts` covers it, including a fresh-child-process case). The build hard-fails if repo `data/` would leak into the bundle or if prompt assets fall out of the trace (`scripts/build-server.mjs`).
+The Electron main is a launcher + credential/security guard, never a host for teaching or inference logic: single-instance lock, deny-by-default permissions, origin-pinned navigation, sandboxed renderer. All Next.js code runs unchanged in a child process (`output: "standalone"`), relocated by the `KV_DATA_DIR` seam (also the test seam — `data-dir-seam.test.ts` covers it, including a fresh-child-process case). The build hard-fails if repo `data/` would leak into the bundle or if prompt assets fall out of the trace (`scripts/build-server.mjs`).
 
 ---
 
@@ -553,7 +553,7 @@ Every place the architecture is designed to be cut — the "one file" a future c
 | Push events | `src/core/events.ts` (bus) + `src/server/events-stream.ts` (SSE seam) + `components/server-events.tsx` (the window's EventSource) | change notification, end to end |
 | Agent construction (tests) | `handleChatRequest(req, buildAgent?)` | scripted engines, no refactor |
 | Sub-agent verification | `sub-agents/headless.ts` (`headlessOverride`) | demo/SVG verification, no Chrome |
-| Data location (Electron) | `LH_DATA_DIR` env (`config.ts` PATHS) | where data/ lives, nothing else |
+| Data location (Electron) | `KV_DATA_DIR` env (`config.ts` PATHS) | where data/ lives, nothing else |
 | Desktop host | `electron/main.cjs` | launcher/security shell only |
 
 ---

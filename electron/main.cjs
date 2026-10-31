@@ -4,7 +4,7 @@
  * What this process is and is not:
  *   IS:  a thin launcher + security guard around the app's real server —
  *        `next build`'s standalone server.js (Next 16), spawned as a child
- *        on 127.0.0.1 with the BYOK auth file and the LH_DATA_DIR seam.
+ *        on 127.0.0.1 with the BYOK auth file and the KV_DATA_DIR seam.
  *   NOT: a host for any app logic. Everything — teacher turns, extraction,
  *        the graph — runs in the Next server, unchanged.
  *
@@ -19,7 +19,7 @@
  *   - keys ride the child's ENV, never argv; auth.json (BYOK) is a flat
  *     {VAR: value} JSON map, plaintext, mode 0600 — server-managed since
  *     the auth-keys wave (2026-09-19): the child reads/writes it DIRECTLY
- *     (LH_AUTH_FILE below) and reflects values into its own env. The old
+ *     (KV_AUTH_FILE below) and reflects values into its own env. The old
  *     spawn-time env injection retired with that wave — a copy made here
  *     would shadow every settings-page key change until restart.
  */
@@ -48,14 +48,14 @@ const PRODUCT_NAME = "LearnHarness";
 // exactly "LearnHarness" in dev AND packaged. Packaged Electron would
 // otherwise derive it from package.json "name" (now lowercase
 // "learnharness"), and productName metadata alone doesn't reach app.name.
-// Must run before the LH_DEV_URL suffix below — dev becomes
+// Must run before the KV_DEV_URL suffix below — dev becomes
 // "LearnHarness-dev".
 app.setName(PRODUCT_NAME);
 const AUTH_FILE = () => path.join(app.getPath("userData"), "auth.json");
 const DATA_DIR = () => path.join(app.getPath("userData"), "data");
 
 /** The packaged standalone server (extraResources → Resources/server).
- *  In dev LH_DEV_URL short-circuits everything: no spawn, no packaging —
+ *  In dev KV_DEV_URL short-circuits everything: no spawn, no packaging —
  *  the window points at the running `next dev` server (full HMR). */
 function serverEntry() {
 	// extraResources ships the whole .next payload under server/standalone/
@@ -73,7 +73,7 @@ function serverEntry() {
 // the helper prints "BROWSER_SERVICE_CDP <port>" on stdout once the CDP
 // endpoint listens. Lifetime: parent IPC disconnect/death = quit.
 // MUST run before the single-instance lock — a helper is a second
-// instance of this very binary, and before the LH_DEV_URL redirect — the
+// instance of this very binary, and before the KV_DEV_URL redirect — the
 // helper owns no user data at all.
 if (process.argv.includes("--browser-service")) {
 	const { waitForBrowserService } = require("./browser-service-readiness.cjs");
@@ -109,11 +109,11 @@ if (process.argv.includes("--browser-service")) {
 		}
 	})();
 } else {
-	// Dev shell (LH_DEV_URL) runs BESIDE the packaged app, not instead of it:
+	// Dev shell (KV_DEV_URL) runs BESIDE the packaged app, not instead of it:
 	// its own userData so (a) the single-instance lock — checked below — doesn't
 	// silently kill it, and (b) it never reads/writes the real app's
 	// localStorage, auth.json, or logs. Must run before the lock check.
-	if (process.env.LH_DEV_URL) {
+	if (process.env.KV_DEV_URL) {
 		app.setPath("userData", `${app.getPath("userData")}-dev`);
 	}
 
@@ -171,7 +171,7 @@ function freePort() {
 
 /** BYOK keys: auth.json in userData, flat {VAR: value} map, 0600 —
  *  SERVER-MANAGED since the auth-keys wave (2026-09-19). This shell no
- *  longer reads or injects it: the child gets LH_AUTH_FILE below and does
+ *  longer reads or injects it: the child gets KV_AUTH_FILE below and does
  *  its own read/reflect/write, so a key saved in the settings page takes
  *  effect on the next model call — no restart. Real environment variables
  *  still win over the file inside the child (its documented rule). */
@@ -215,13 +215,13 @@ function startServer(port) {
 					NODE_ENV: "production",
 					PORT: String(port),
 					HOSTNAME: "127.0.0.1", // the server defaults to 0.0.0.0 — never
-					LH_DATA_DIR: DATA_DIR(),
+					KV_DATA_DIR: DATA_DIR(),
 					// The auth/keys store — the child reads AND writes this file itself
 					// (no env injection anymore: a spawn-time copy would shadow every
 					// settings-page key change until restart; env wins over file).
-					LH_AUTH_FILE: AUTH_FILE(),
-					LH_DESKTOP_SERVER: "1",
-					LH_DESKTOP_API_SECRET: desktopAPISecret,
+					KV_AUTH_FILE: AUTH_FILE(),
+					KV_DESKTOP_SERVER: "1",
+					KV_DESKTOP_API_SECRET: desktopAPISecret,
 				},
 				stdio: ["ignore", "pipe", "pipe", "ipc"],
 			},
@@ -316,7 +316,7 @@ function createWindow(url) {
 			contextIsolation: true,
 			sandbox: true,
 			nodeIntegration: false,
-			...(process.env.LH_DEV_URL ? { additionalArguments: ["--lh-web-subscriptions"] } : {}),
+			...(process.env.KV_DEV_URL ? { additionalArguments: ["--lh-web-subscriptions"] } : {}),
 			preload: path.join(__dirname, "preload.cjs"),
 		},
 		// Live-resize + first-paint flash (owner, 2026-09-17): during a resize
@@ -426,7 +426,7 @@ const ZOOM_LADDER = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
  *  - THE UPDATER CAN NEVER TAKE THE APP DOWN: every event and check is
  *    caught and logged (feed down, disk full, bad signature — all just
  *    log lines; the app keeps working, update or no update).
- *  - LH_UPDATE_FEED (env): overrides the baked GitHub feed with a generic
+ *  - KV_UPDATE_FEED (env): overrides the baked GitHub feed with a generic
  *    local server — the pre-release verification drill (serve
  *    latest-mac.yml + zip + blockmap from any localhost HTTP dir and
  *    watch a real installed copy find/download/restart). Test-only seam.
@@ -516,10 +516,10 @@ function setupAutoUpdater() {
 		reportUpdateStatus("disabled");
 		return;
 	}
-	const feed = process.env.LH_UPDATE_FEED;
+	const feed = process.env.KV_UPDATE_FEED;
 	if (feed) {
 		autoUpdater.setFeedURL({ provider: "generic", url: feed });
-		log(`auto-update: LH_UPDATE_FEED override → ${feed}`);
+		log(`auto-update: KV_UPDATE_FEED override → ${feed}`);
 	}
 	autoUpdater.autoDownload = true;
 	autoUpdater.autoInstallOnAppQuit = true;
@@ -646,10 +646,10 @@ async function main() {
 
 	await app.whenReady();
 
-	// Dev mode: point at a running `next dev` server (LH_DEV_URL) — no
+	// Dev mode: point at a running `next dev` server (KV_DEV_URL) — no
 	// spawn, no packaging, full HMR. The rest of this shell still applies
 	// (guards, menu, single instance).
-	const devUrl = process.env.LH_DEV_URL;
+	const devUrl = process.env.KV_DEV_URL;
 	const url = devUrl ?? `http://127.0.0.1:${await freePort()}`;
 	if (!devUrl) {
 		desktopAPISecret = randomBytes(32).toString("hex");

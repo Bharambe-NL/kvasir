@@ -19,7 +19,7 @@ const validStamp = (s: Stamp) => s && [s.epoch, s.authorityRevision, s.revision]
  * transport: require the same launch markers set by Electron startServer.
  * These identify the transport, not a substitute for admission/lease checks. */
 function desktopIPCConnected(): boolean {
- return process.env.LH_DESKTOP_SERVER === "1" && (process.env.LH_DESKTOP_API_SECRET?.length ?? 0) >= 64 && typeof process.send === "function" && process.connected === true;
+ return process.env.KV_DESKTOP_SERVER === "1" && (process.env.KV_DESKTOP_API_SECRET?.length ?? 0) >= 64 && typeof process.send === "function" && process.connected === true;
 }
 function runtimeConnected(): boolean { return desktopIPCConnected() || webSubscriptionsEnabled(); }
 function bridge(): BridgeState {

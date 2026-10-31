@@ -25,7 +25,7 @@ def data_root(override: str | None = None) -> Path:
     """Resolve an explicit data directory or the normal desktop location.
 
     Never create a missing directory or try a different installation. For a
-    development copy or an app launched with LH_DATA_DIR, pass --data-dir.
+    development copy or an app launched with KV_DATA_DIR, pass --data-dir.
     """
     if override is not None:
         root = Path(override).expanduser()

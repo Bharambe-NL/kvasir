@@ -22,7 +22,7 @@ import type { PiEngine } from "../src/agent/models.ts";
 
 // Opt-in writes must not race another test process's settings record.
 const testData = mkdtempSync(join(tmpdir(), "lh-cli-harness-data-"));
-process.env.LH_DATA_DIR = testData;
+process.env.KV_DATA_DIR = testData;
 after(() => rmSync(testData, { recursive: true, force: true }));
 const { PATHS, SETTINGS_FILE } = await import("../config.ts");
 const { readSettings, writeSettings } = await import("../src/store/settings.ts");

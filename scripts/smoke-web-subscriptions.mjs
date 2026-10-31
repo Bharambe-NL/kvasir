@@ -42,7 +42,7 @@ const env = {
 	PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: path.join(profile, "home"),
 	XDG_CONFIG_HOME: path.join(profile, "config"), XDG_CACHE_HOME: path.join(profile, "cache"), XDG_DATA_HOME: path.join(profile, "xdg-data"),
 	PI_CODING_AGENT_DIR: path.join(profile, "pi"), PI_AGENT_DIR: path.join(profile, "pi"), CLAUDE_CONFIG_DIR: path.join(profile, "claude"), CODEX_HOME: path.join(profile, "codex"),
-	TMPDIR: path.join(profile, "tmp"), LH_AUTH_FILE: path.join(profile, "auth.json"), LH_DATA_DIR: path.join(profile, "data"),
+	TMPDIR: path.join(profile, "tmp"), KV_AUTH_FILE: path.join(profile, "auth.json"), KV_DATA_DIR: path.join(profile, "data"),
 	NODE_OPTIONS: `--import=${pathToFileURL(preload).href}`, NEXT_TELEMETRY_DISABLED: "1",
 };
 const saved = {

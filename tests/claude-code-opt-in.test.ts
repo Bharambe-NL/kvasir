@@ -5,7 +5,7 @@ import { delimiter, join } from "node:path";
 import test, { after, type TestContext } from "node:test";
 
 const testData = mkdtempSync(join(tmpdir(), "lh-cli-opt-in-data-"));
-process.env.LH_DATA_DIR = testData;
+process.env.KV_DATA_DIR = testData;
 after(() => rmSync(testData, { recursive: true, force: true }));
 const { SETTINGS_FILE } = await import("../config.ts");
 const { PUT } = await import("../app/api/settings/[section]/route.ts");

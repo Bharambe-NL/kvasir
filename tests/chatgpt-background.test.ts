@@ -9,9 +9,9 @@ import { piModels } from "../src/agent/models.ts";
 import { toLlmMessages } from "../src/core/native-messages.ts";
 import { buildSubagentSteer } from "../src/core/contracts.ts";
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lh-chatgpt-background-"));
-process.env.LH_DATA_DIR = path.join(dir, "data");
-process.env.LH_AUTH_FILE = path.join(dir, "scratch-auth.json");
-fs.writeFileSync(process.env.LH_AUTH_FILE, "{}");
+process.env.KV_DATA_DIR = path.join(dir, "data");
+process.env.KV_AUTH_FILE = path.join(dir, "scratch-auth.json");
+fs.writeFileSync(process.env.KV_AUTH_FILE, "{}");
 const { stores } = await import("../src/server/stores.ts");
 const { beginTurn, endTurn } = await import("../src/server/turn-liveness.ts");
 const { deliverJobResult, registerLiveAgent, unregisterLiveAgent, setTurnRunner, settleSteers, steerLiveChat } = await import("../src/server/jobs.ts");
@@ -22,9 +22,9 @@ function connection(background: boolean) {
 	ipc({ channel: "lh:chatgpt", kind: "state", stamp: { epoch: 1, authorityRevision: 1, revision: revision++ }, invalidate: background ? "none" : "background", status: { available: true, pending: false, allowBackgroundUse: background, activeId: "scratch-account", accounts: [{ id: "scratch-account", connected: true, planEnabled: true, background: !background }], error: null } });
 }
 const originalSend = Object.getOwnPropertyDescriptor(process, "send"), originalConnected = Object.getOwnPropertyDescriptor(process, "connected");
-const desktopMarker = process.env.LH_DESKTOP_SERVER, desktopSecret = process.env.LH_DESKTOP_API_SECRET;
+const desktopMarker = process.env.KV_DESKTOP_SERVER, desktopSecret = process.env.KV_DESKTOP_API_SECRET;
 before(() => {
-	process.env.LH_DESKTOP_SERVER = "1"; process.env.LH_DESKTOP_API_SECRET = "d".repeat(64);
+	process.env.KV_DESKTOP_SERVER = "1"; process.env.KV_DESKTOP_API_SECRET = "d".repeat(64);
 	Object.defineProperty(process, "connected", { configurable: true, value: true });
 	Object.defineProperty(process, "send", { configurable: true, value: (_message: unknown, callback?: (error: Error) => void) => { callback?.(new Error("unexpected fixture desktop request")); return false; } });
 });
@@ -32,8 +32,8 @@ after(() => {
 	fs.rmSync(dir, { recursive: true, force: true });
 	if (originalSend) Object.defineProperty(process, "send", originalSend); else delete process.send;
 	if (originalConnected) Object.defineProperty(process, "connected", originalConnected); else delete (process as { connected?: boolean }).connected;
-	if (desktopMarker === undefined) delete process.env.LH_DESKTOP_SERVER; else process.env.LH_DESKTOP_SERVER = desktopMarker;
-	if (desktopSecret === undefined) delete process.env.LH_DESKTOP_API_SECRET; else process.env.LH_DESKTOP_API_SECRET = desktopSecret;
+	if (desktopMarker === undefined) delete process.env.KV_DESKTOP_SERVER; else process.env.KV_DESKTOP_SERVER = desktopMarker;
+	if (desktopSecret === undefined) delete process.env.KV_DESKTOP_API_SECRET; else process.env.KV_DESKTOP_API_SECRET = desktopSecret;
 });
 
 for (const revokedAfterQueue of [false, true]) {
