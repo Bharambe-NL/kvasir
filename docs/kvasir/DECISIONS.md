@@ -63,3 +63,9 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D055 | 2026-10-31 | `data/learner/exclusions.jsonl` holds toggle events `{id, sessionId, excluded, at}`, append-only; the latest line per session decides | Sagar | |
 | D056 | 2026-10-31 | The control reads "Exclude from review", and "Include in review" once excluded; an excluded cluster row shows a muted "Not in review" tag | Sagar | |
 | D057 | 2026-10-31 | Self-merge is allowed in P2 for PRs that need no review from Sagar (no contract, prompt, store format or user-facing text change), as D029 allowed for P1 | Sagar | |
+| D058 | 2026-10-31 | P2 source formats: EUR-Lex HTML, PDF with a text layer, and Markdown. Scanned PDFs without text are out of scope | Sagar | |
+| D059 | 2026-10-31 | A citation is a structured anchor `{ sourceId, version, path, quote }`, for example path `["Article 28", "paragraph 2", "point (a)"]`; the quote must appear verbatim in that unit | Sagar | |
+| D060 | 2026-10-31 | Source versions: EUR-Lex documents are identified by CELEX number plus consolidation date; other files by content hash plus a label Sagar gives at import | Sagar | |
+| D061 | 2026-10-31 | A proposition whose cited text is removed in a newer version is marked outdated and stays visible, pointing at the version where its text changed | Sagar | |
+| D062 | 2026-10-31 | P2 imports files Sagar picks; reading from Eryndal or Hugin is out of scope. The source loader sits behind a port so another provider can plug in later | Sagar | |
+| D063 | 2026-10-31 | Source documents and versions live in the graph store: `data/graph/documents.jsonl` (one line per document version, append-only) beside `data/graph/citations.jsonl`, both behind `GraphStore` and written only on the merger side | Sagar | |
