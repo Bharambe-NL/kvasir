@@ -69,6 +69,7 @@ export const SERVER_EVENT_TYPES = [
 	"subscriptions-changed",
 	"record-changed",
 	"compaction-changed",
+	"reviews-changed",
 ] as const satisfies readonly ServerEventType[];
 
 /** One notification: the type discriminates the payload. */
