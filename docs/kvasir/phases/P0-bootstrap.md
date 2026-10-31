@@ -63,6 +63,8 @@ Done when: CI runs the four gates plus the house-style check on every PR.
 
 ### P0-5 House style for upstream text
 
+**Deferred to P6-7 (D026).** Sagar chose to wait for the P6-4 eval harness, so the rewrite can be checked against it. P0 closes without this task.
+
 Branch `p0/house-style-prompts`. The upstream prompts in `src/agent/prompts/` and `src/agent/system-prompt.md` have about 190 house-style findings (mostly em dashes). Rewrite them to house style without changing teaching behaviour, then add `README.md`, `src/agent/system-prompt.md` and `src/agent/prompts` to `DEFAULT_PATHS` in `scripts/house-style-check.mjs`.
 
 This changes prompts, so Sagar reviews the PR. Ask first whether to do this in P0 or defer it to P6-4, so the eval harness can confirm teaching quality did not drop.
