@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1. P0-1, P0-2 and P0-3 merged.
-- Task: P0-3 Release plumbing (#4) merged via #9. Next task: P0-4 Agent files and house style (#5), not started.
-- Branch: none open
-- PR: none open
+- Task: P0-4 Agent files and house style (#5). Plan approved on #5; self-merge once CI is green (D010).
+- Branch: `p0/agent-files`
+- PR: draft, linked to #5
 
 ## Done
 
@@ -21,15 +21,15 @@ Updated by Claude Code at the end of each session. Read this first.
 - P0-3 (#4): decisions D019 to D022. Updater off until the first Kvasir release, `publish` at `Bharambe-NL/kvasir`, signing from the environment (`scripts/desktop-dist.mjs`), version `0.0.1`, `notify-website.yml` deleted, release paths and templates renamed. Self-merged as #9 under D010.
 - P0-3 evidence (recorded in #9): `desktop:dev` and a packaged rehearsal build (release workflow run 41175349304) both made network requests only to localhost; the packaged app logs "updater disabled until the first Kvasir release", has bundle ID `nl.bharambe.kvasir` and writes to `~/Library/Application Support/Kvasir/data`. The full rename grep returns only the allow-list.
 
+- P0-4 started: decisions D023 to D025 (align `house-style.yml`, protect `main` for admins too, keep the `next dev` version of the `AGENTS.md` block). Plan approved on #5.
+
 ## Next
 
-1. Start P0-4 with `/kv-task P0-4`.
+1. Finish the P0-4 commits, set branch protection on `main` once the PR's checks pass (D024), then self-merge through it.
 2. Ask whether to do P0-5 in P0 or defer it to P6-4 (the brief asks for this before P0-5).
-3. Set branch protection on `main` (require a PR and passing checks), once Sagar agrees.
 
 ## Waiting for Sagar
 
-- Branch protection on `main`: set it in GitHub settings, or ask Claude to set it with `gh`.
 - Whether the two prompts that call the agent "a learning harness" (`src/agent/system-prompt.md`, `src/agent/prompts/practice/00-base.md`) should change. Prompt wording; best handled with P0-5.
 
 Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, recorded in #1).
