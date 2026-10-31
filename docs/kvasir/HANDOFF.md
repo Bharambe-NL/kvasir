@@ -57,4 +57,4 @@ Self-merge is allowed in P1 (D029, recorded in #13) and P2 (D057, recorded in #3
 - Python skill tests: `python3 -B -m unittest discover -s tests/skills` (53 pass on Python 3.9.6). CI does not run them.
 - The brief's `src/core/contracts/practice.ts` and `src/core/practice.ts` do not exist; practice is a chat kind. Architecture section 7 now carries a note; parts of it still describe the earlier problem-set design.
 - The upstream mark component and types keep code names `LhMark` and `LhMarkerMessage`. They do not reach the user.
-- EUR-Lex () answers scripted requests with an empty 202 (bot protection). Do not work around it. The EU Publications Office Cellar service serves the same XHTML: `curl -L -H 'Accept: application/xhtml+xml' -H 'Accept-Language: eng' https://publications.europa.eu/resource/celex/<CELEX>`.
+- EUR-Lex (`eur-lex.europa.eu`) answers scripted requests with an empty 202 (bot protection). Do not work around it. The EU Publications Office Cellar service serves the same XHTML: `curl -L -H 'Accept: application/xhtml+xml' -H 'Accept-Language: eng' https://publications.europa.eu/resource/celex/<CELEX>`.
