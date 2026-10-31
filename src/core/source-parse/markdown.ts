@@ -24,6 +24,7 @@ export function parseMarkdown(markdown: string, fileName: string): ParsedSource 
 	const units: SourceUnit[] = [];
 	const headings: { depth: number; text: string }[] = [];
 	const counts = new Map<string, number>();
+	const seenHeadings = new Set<string>();
 	let title: string | null = null;
 
 	const paragraph = (text: string) => {
@@ -39,7 +40,13 @@ export function parseMarkdown(markdown: string, fileName: string): ParsedSource 
 			const text = plain(node);
 			if (!text) continue;
 			while (headings.length && headings.at(-1)!.depth >= (node.depth ?? 1)) headings.pop();
-			headings.push({ depth: node.depth ?? 1, text });
+			// A repeated heading at the same place gets " (2)", so its
+			// paragraphs never share a path with the first one's.
+			const parent = headings.map((h) => h.text).join("\u0000");
+			let label = text;
+			for (let n = 2; seenHeadings.has(`${parent}\u0000${label}`); n++) label = `${text} (${n})`;
+			seenHeadings.add(`${parent}\u0000${label}`);
+			headings.push({ depth: node.depth ?? 1, text: label });
 			title ??= node.depth === 1 ? text : null;
 			units.push({ path: headings.map((h) => h.text), text: "" });
 		} else if (node.type === "list") {
@@ -48,19 +55,7 @@ export function parseMarkdown(markdown: string, fileName: string): ParsedSource 
 			paragraph(plain(node));
 		}
 	}
-	return { format: "markdown", title: title ?? fileName.replace(/\.[^.]+$/, ""), units: dedupe(units) };
-}
-
-/** Two headings with the same text at the same place would share a path;
- *  the later one gets " (2)", so every path stays unique. */
-function dedupe(units: SourceUnit[]): SourceUnit[] {
-	const seen = new Map<string, number>();
-	return units.map((u) => {
-		const k = u.path.join("\u0000");
-		const n = (seen.get(k) ?? 0) + 1;
-		seen.set(k, n);
-		return n === 1 ? u : { ...u, path: [...u.path.slice(0, -1), `${u.path.at(-1)} (${n})`] };
-	});
+	return { format: "markdown", title: title ?? fileName.replace(/\.[^.]+$/, ""), units };
 }
 
 function plain(node: MdNode): string {

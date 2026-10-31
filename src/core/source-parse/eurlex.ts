@@ -11,8 +11,8 @@
  * citable (D065). Inside an article, a paragraph starting "2." is
  * "paragraph 2"; a two- or three-column table row whose label cell reads
  * "(a)", "(i)", "(1)" or "1." is a point ("point (a)", "point 1"), and its
- * nested tables are its sub-points. Footnote markers and footnotes are
- * dropped.
+ * nested tables are its sub-points. Footnote references (the link around
+ * "(¹)") and footnotes are dropped.
  */
 
 import { parseHTML } from "linkedom";
@@ -25,6 +25,9 @@ type El = Element;
 
 export function parseEurlex(xhtml: string): ParsedSource {
 	const { document } = parseHTML(xhtml);
+	// Footnote references are links around a superscript number, "(¹)";
+	// the whole link goes, then any stray superscript and the footnotes.
+	for (const el of [...document.querySelectorAll('a[href^="#ntr"]')]) el.remove();
 	for (const el of [...document.querySelectorAll(".oj-super, .oj-note, .oj-note-tag")]) el.remove();
 
 	const title = docTitle(document);
