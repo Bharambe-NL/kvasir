@@ -43,6 +43,7 @@ Upstream deliberately removed all mastery tracking from the graph (architecture 
 | P1-5 | `p1/review-ui` | `/review` page: due queue, answer, self-rate (Again, Hard, Good, Easy), next card | Render tests pass; keyboard-only flow works |
 | P1-6 | `p1/home-signals` | Due count on the home page and sidebar; retention heat overlay on the graph canvas (read only) | Overlay toggles; graph ledgers unchanged by any review |
 | P1-7 | `p1/teacher-hook` | Read-only teacher tool `list_weak_propositions`, gated by a setting | Teacher can probe weak items; no writes |
+| P1-8 | `p1/card-opt-out` | Added by D036. Opt a birth session (cluster) out of review: an append-only exclusions record in `data/learner/` keyed by session id, read by the card source, with a control in the UI. Contract change, so Sagar reviews | An excluded session's cards leave the queue; their reviews stay in the ledger; including it again restores them |
 
 ## Gate acceptance checks
 
