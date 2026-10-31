@@ -173,7 +173,7 @@ describe("workflow action versions", () => {
 	type Workflow = { jobs: Record<string, { steps: Step[] }> };
 	const yaml = require("js-yaml") as { load(source: string): Workflow };
 
-	for (const filename of ["ci.yml", "release.yml"]) {
+	for (const filename of ["ci.yml", "release.yml", "house-style.yml"]) {
 		it(`${filename} uses supported Action runtimes without changing the app's Node 26`, () => {
 			const workflow = yaml.load(readFileSync(new URL(`../.github/workflows/${filename}`, import.meta.url), "utf8"));
 			const expected = ["actions/checkout@v7", "actions/setup-node@v7"];
@@ -188,7 +188,8 @@ describe("workflow action versions", () => {
 					observed.add(step.uses);
 					if (step.uses === "actions/setup-node@v7") {
 						assert.equal(step.with?.["node-version"], "26");
-						assert.equal(step.with?.cache, "npm");
+						// house-style.yml installs nothing, so only the npm-installing workflows cache.
+						if (filename !== "house-style.yml") assert.equal(step.with?.cache, "npm");
 					}
 					if (step.uses === "actions/upload-artifact@v7") {
 						assert.equal(step.with?.archive ?? true, true, "multi-file installers remain zipped artifacts");
