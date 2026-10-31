@@ -414,3 +414,15 @@ describe("applyClusterLabels (the label-only rename channel)", () => {
 		assert.equal(changed, false);
 	});
 });
+
+describe("retention overlay colours (P1-6, D046)", async () => {
+	const { heatColor, HEAT_COLORS } = await import("../components/graph-canvas.ts");
+	it("maps each recall band to its colour", () => {
+		assert.equal(heatColor(0.5), HEAT_COLORS.low);
+		assert.equal(heatColor(0.69), HEAT_COLORS.low);
+		assert.equal(heatColor(0.7), HEAT_COLORS.mid);
+		assert.equal(heatColor(0.89), HEAT_COLORS.mid);
+		assert.equal(heatColor(0.9), HEAT_COLORS.high);
+		assert.equal(new Set(Object.values(HEAT_COLORS)).size, 3, "three distinct colours");
+	});
+});

@@ -55,6 +55,7 @@ import { select } from "d3-selection";
 import { zoom, zoomIdentity, type ZoomBehavior, type ZoomTransform } from "d3-zoom";
 import type { Simulation, SimulationLinkDatum } from "d3-force";
 import { clusterHue, type Pt } from "./cluster-geometry.ts";
+import { heatBand, type HeatBand } from "@/src/core";
 import {
 	CHARGE_STRENGTH,
 	CLUSTER_PULL_STRENGTH,
@@ -132,6 +133,10 @@ export interface CanvasData {
 	impLinks?: ReadonlyArray<{ id: string; premises: ReadonlyArray<string>; conclusion: string }>;
 	clusters: CanvasCluster[];
 	colors: CanvasColors;
+	/** The retention overlay (Kvasir P1-6, D045 to D047): node id → current
+	 *  recall chance, 0 to 1. Present only while the overlay is on; absent =
+	 *  the canvas draws exactly as without it. Read-only learner state. */
+	heat?: ReadonlyMap<string, number>;
 	/** Body font family (labels must match the app typography). */
 	fontFamily: string;
 }
@@ -174,6 +179,18 @@ const REGION_LABEL_LINE_HEIGHT = 1.3;
  *  node-label discipline), capped at maxLines. Overflow folds into the
  *  last line, ellipsized to fit. measure is the canvas measureText (or a
  *  fake in tests) — pure otherwise. */
+/** The overlay's three band colours (D046): slipping, fading, strong. */
+export const HEAT_COLORS: Readonly<Record<HeatBand, string>> = Object.freeze({
+	low: "#e5484d",
+	mid: "#f5a524",
+	high: "#30a46c",
+});
+
+/** The overlay colour for a recall chance (D046). */
+export function heatColor(r: number): string {
+	return HEAT_COLORS[heatBand(r)];
+}
+
 export function wrapRegionLabel(
 	text: string,
 	maxWidth: number,
@@ -637,6 +654,8 @@ export class GraphCanvasRenderer {
 	private geoVersion = 0; // bump = geometry inputs changed
 	private builtVersion = -1; // version the cache was built at
 	private nodesPath: Path2D | null = null;
+	/** One disc path per heat band (P1-6); empty when the overlay is off. */
+	private heatPaths: { band: HeatBand; path: Path2D }[] = [];
 	private shaftsPath: Path2D = new Path2D();
 	private headsPath: Path2D = new Path2D();
 	private regionCanvas: HTMLCanvasElement | null = null;
@@ -1246,6 +1265,23 @@ export class GraphCanvasRenderer {
 		}
 		this.nodesPath = nodesPath;
 
+		// Retention overlay (P1-6): the same discs, grouped by heat band, drawn
+		// over the base fill. Absent heat = no extra paths at all.
+		const bandPaths = new Map<HeatBand, Path2D>();
+		if (data.heat) {
+			for (const n of data.nodes) {
+				if (!isVisible(n.id) || isImpNodeId(n.id)) continue;
+				const r = data.heat.get(n.id);
+				if (r === undefined) continue;
+				const band = heatBand(r);
+				const path = bandPaths.get(band) ?? new Path2D();
+				path.moveTo(n.x + nodeR, n.y);
+				path.arc(n.x, n.y, nodeR, 0, Math.PI * 2);
+				bandPaths.set(band, path);
+			}
+		}
+		this.heatPaths = [...bandPaths].map(([band, path]) => ({ band, path }));
+
 		// Edge shafts + arrowheads (rendering arc, owner 2026-09-30): all
 		// arrows are PLAIN single shafts — the old double-shaft glyph is
 		// gone entirely. An argument's geometry: lines INTO an implication
@@ -1664,6 +1700,11 @@ export class GraphCanvasRenderer {
 		// 4. Nodes: one cached Path2D, one fill.
 		ctx.fillStyle = data.colors.node;
 		ctx.fill(this.nodesPath);
+		// 5. Retention overlay (P1-6): band colours over the reviewed nodes.
+		for (const { band, path } of this.heatPaths) {
+			ctx.fillStyle = HEAT_COLORS[band];
+			ctx.fill(path);
+		}
 
 		// 6. Node labels — one global gate, faded together. World-scaled
 		// with the graph (they grow as you zoom in, Obsidian-style).

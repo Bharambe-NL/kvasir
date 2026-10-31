@@ -50,3 +50,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D042 | 2026-10-31 | A card whose generated question is not ready (generating, failed, or no model configured) shows the proposition name as the cue and reveals the full statement; the generated question replaces it once stored | Sagar | |
 | D043 | 2026-10-31 | The review page is reached from a third sidebar row, "Review", below Teaching and Practice | Sagar | |
 | D044 | 2026-10-31 | No typed answers on the review page: think, reveal with Space, rate with keys 1 to 4 | Sagar | |
+| D045 | 2026-10-31 | The retention heat shows each proposition's current recall chance (FSRS retrievability); unreviewed propositions get no heat | Sagar | |
+| D046 | 2026-10-31 | Heat encoding: red below 70%, amber from 70% to 90%, green at 90% or above; unreviewed nodes keep the normal colour. Colour appears only while the overlay is on | Sagar | |
+| D047 | 2026-10-31 | The overlay toggle is a "Retention" button in the home graph toolbar, off by default, remembered in the window's local storage (nothing written to data/graph/) | Sagar | |
+| D048 | 2026-10-31 | The due count shows on the sidebar Review row and as a chip in the home graph toolbar that opens /review; both hide when nothing is due | Sagar | |

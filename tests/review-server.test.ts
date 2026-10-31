@@ -6,6 +6,7 @@
  */
 
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -23,7 +24,19 @@ process.env.KV_DATA_DIR = TMP;
 process.env.KV_AUTH_FILE = path.join(TMP, "auth.json");
 for (const key of Object.keys(process.env)) if (/_API_KEY$|_TOKEN$/.test(key)) delete process.env[key];
 
-const { reviewQueueView, recordReview } = await import("../src/server/review.ts");
+const { reviewQueueView, recordReview, reviewSummary } = await import("../src/server/review.ts");
+
+/** Every graph ledger file with its hash, taken before any test runs. */
+function graphHashes(): Record<string, string> {
+	const dir = path.join(TMP, "graph");
+	const out: Record<string, string> = {};
+	for (const name of fs.readdirSync(dir).sort()) {
+		const full = path.join(dir, name);
+		if (fs.statSync(full).isFile()) out[name] = createHash("sha256").update(fs.readFileSync(full)).digest("hex");
+	}
+	return out;
+}
+const GRAPH_BEFORE = graphHashes();
 const { learnerStore } = await import("../src/store/learner.ts");
 const { subscribe } = await import("../src/core/events.ts");
 
@@ -109,5 +122,31 @@ describe("recordReview", () => {
 		const gone = recordReview({ id: "rev_gone", nodeId: "n_does_not_exist", rating: 3 });
 		assert.ok(!gone.ok && gone.status === 409);
 		assert.equal(learnerStore.readReviews().length, before);
+	});
+});
+
+describe("reviewSummary (P1-6)", () => {
+	it("due equals the review page's queue length, limits included", () => {
+		assert.equal(reviewSummary(NOW).due, reviewQueueView(NOW, { generate: false }).items.length);
+	});
+
+	it("gives a recall chance only for reviewed live cards", () => {
+		const summary = reviewSummary(later(60));
+		const reviewed = new Set(learnerStore.readReviews().map((r) => r.nodeId));
+		assert.ok(Object.keys(summary.heat).length > 0);
+		for (const [nodeId, r] of Object.entries(summary.heat)) {
+			assert.ok(reviewed.has(nodeId), `${nodeId} was reviewed`);
+			assert.ok(r > 0 && r <= 1, `${nodeId}: ${r}`);
+		}
+		assert.equal("n_does_not_exist" in summary.heat, false);
+	});
+});
+
+describe("graph ledgers unchanged by any review (P1-6 Done when, D030)", () => {
+	it("data/graph/ is byte-identical after every review, queue read and summary read in this file", () => {
+		reviewSummary(later(120));
+		reviewQueueView(later(120), { generate: false });
+		assert.ok(learnerStore.readReviews().length >= 2, "reviews were recorded above");
+		assert.deepEqual(graphHashes(), GRAPH_BEFORE);
 	});
 });

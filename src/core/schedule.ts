@@ -113,3 +113,17 @@ export function previewRatings(
 export function isDue(state: CardState, now: string): boolean {
 	return Date.parse(state.due) <= Date.parse(now);
 }
+
+/** The card's current recall chance (FSRS retrievability), from 0 to 1, at
+ *  `now` (D045). null for a card never reviewed: there is no memory to
+ *  measure yet. */
+export function retrievability(
+	nodeId: string,
+	reviews: readonly ReviewEntry[],
+	introducedAt: string,
+	now: string,
+): number | null {
+	const card = replay(nodeId, reviews, introducedAt);
+	if (card.state === State.New || !card.last_review) return null;
+	return scheduler.get_retrievability(card, new Date(now), false);
+}

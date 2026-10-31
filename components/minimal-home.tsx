@@ -19,6 +19,9 @@
  * lifts the pick set; the chip opens the overlay in select mode).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { DueChip } from "@/components/review/retention-controls";
+import { useReviewSummary } from "@/components/review/use-review-summary";
 import { ListTreeIcon, UploadIcon } from "lucide-react";
 import { ChainTableOverlay } from "@/components/chain-table.tsx";
 import { GraphCostControl } from "@/components/graph-view.tsx";
@@ -97,6 +100,9 @@ export function MinimalHome({
 	const [costs, setCosts] = useState<GraphCostSummary | null>(null);
 	const [chats, setChats] = useState<ChatSummary[]>([]);
 	const [chainsOpen, setChainsOpen] = useState(false);
+	// Kvasir P1-6: the review due chip (no canvas here, so no overlay).
+	const router = useRouter();
+	const reviewSummary = useReviewSummary();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const readState = useCallback(() => {
@@ -179,6 +185,7 @@ export function MinimalHome({
 							</button>
 						</Hint>
 					</div>
+					<DueChip due={reviewSummary?.due ?? 0} onOpen={() => router.push("/review")} />
 					<div className="shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur">
 						<Hint label="Import notes into the graph" side="bottom">
 							<button

@@ -63,6 +63,9 @@
  * camera never moves.
  */
 
+import { useRouter } from "next/navigation";
+import { DueChip, RetentionToggle } from "@/components/review/retention-controls";
+import { useRetentionOverlay, useReviewSummary } from "@/components/review/use-review-summary";
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { NotesImportErrors, useNotesImport } from "@/components/notes-import.tsx";
 import Link from "next/link";
@@ -849,6 +852,7 @@ export function GraphChromeRow({
 	settings,
 	changeSettings,
 	onOpenChains,
+	extra,
 }: {
 	isEmpty: boolean;
 	query: string;
@@ -865,6 +869,9 @@ export function GraphChromeRow({
 	/** Opens the chain table overlay (the chains-overlay plan,
 	 *  2026-09-29). */
 	onOpenChains: () => void;
+	/** Kvasir P1-6: the review due chip and the retention toggle, after
+	 *  Chains. */
+	extra?: React.ReactNode;
 }) {
 	return (
 		<>
@@ -911,6 +918,7 @@ export function GraphChromeRow({
 					</Hint>
 				</div>
 			)}
+			{!isEmpty && extra}
 			{/* Import notes — its own container (36px, header band); ALWAYS
 			    rendered (the empty-graph ruling above — the entry point). */}
 			<div className="shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur">
@@ -1077,6 +1085,15 @@ export function GraphView({
 	// The chain table overlay (chains-overlay plan, 2026-09-29) —
 	// component-local: a browsing surface, not graph state.
 	const [chainsOpen, setChainsOpen] = useState(false);
+	// Kvasir P1-6 home signals: the review due count and the retention
+	// overlay (read-only learner state; the switch lives in local storage).
+	const router = useRouter();
+	const reviewSummary = useReviewSummary();
+	const [retentionOn, setRetentionOn] = useRetentionOverlay();
+	const heat = useMemo(
+		() => (retentionOn && reviewSummary ? new Map(Object.entries(reviewSummary.heat)) : undefined),
+		[retentionOn, reviewSummary],
+	);
 	// PRACTICE SELECT (2026-10-04): the parent's chip drives the select
 	// mode; closing (either the picker's confirm or its X) reports back so
 	// the chip's open state and the table's never disagree.
@@ -1434,8 +1451,9 @@ export function GraphView({
 			},
 			// Match the app typography (Geist via the body's stack).
 			fontFamily: getComputedStyle(document.body).fontFamily,
+			heat,
 		});
-	}, [snapshot, isEmpty]);
+	}, [snapshot, isEmpty, heat]);
 
 	// Feed #2 — settings: just marks the frame dirty. No rebuild, no
 	// re-layout, no camera touch (the whole point of the new renderer).
@@ -1613,6 +1631,12 @@ export function GraphView({
 					settings={settings}
 					changeSettings={changeSettings}
 					onOpenChains={() => setChainsOpen(true)}
+					extra={
+						<>
+							<DueChip due={reviewSummary?.due ?? 0} onOpen={() => router.push("/review")} />
+							<RetentionToggle on={retentionOn} onChange={setRetentionOn} />
+						</>
+					}
 				/>
 			</div>
 

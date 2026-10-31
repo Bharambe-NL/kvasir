@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P1 Retention and the learner layer (in progress). Milestone "P1 Retention and the learner layer", tracking issue #13, task issues #14 to #20.
-- Task: P1-5 Review UI (#18) merged via #27 after Sagar's review. Next task: P1-6 Home signals (#19).
-- Branch: none open
-- PR: none open
+- Task: P1-6 Home signals (#19). Implementation done; waiting for Sagar's review (user-facing text).
+- Branch: `p1/home-signals`
+- PR: #28 (ready for review)
 
 ## Done
 
@@ -15,6 +15,7 @@ Updated by Claude Code at the end of each session. Read this first.
 - Repository `Bharambe-NL/kvasir` is public (D028). `main` only accepts PRs whose five checks pass, admins included (D024).
 - Phase P1 opened: milestone 2, label `P1`, tracking issue #13, task issues #14 to #20. Roadmap PR #21 merged. Self-merge for P1 allowed (D029).
 - P1 decisions 1 and 2: D007 confirmed (D030); one review card is one proposition, keyed by node id (D031).
+- P1-6 built on #28: `retrievability` (`src/core/schedule.ts`), `heatBand` and `ReviewSummary` (`src/core/review-view.ts`), `reviewSummary` and `GET /api/review/summary`, canvas heat (`CanvasData.heat`, `HEAT_COLORS`), `components/review/use-review-summary.ts` and `retention-controls.tsx`, the sidebar count and toolbar chip. Checked in the browser on a seeded golden copy: overlay on shows all three band colours on the canvas, off shows none, and every graph file stays byte-identical. D045 (heat = current recall chance), D046 (red < 70%, amber 70 to 90%, green >= 90%), D047 (Retention toggle in the graph toolbar, remembered in local storage), D048 (due count on the sidebar row and a toolbar chip). Plan approved on #19.
 - P1-5 merged via #27 (text approved by Sagar): `src/core/review-queue.ts` (queue within limits, measured retention), `src/core/review-view.ts` (wire types, `formatInterval`), `src/server/review.ts` (`reviewQueueView`, `recordReview`, background generation), `reviews-changed`, `GET`/`POST /api/review`, `/review` page, sidebar Review row. Walked through by keyboard in the browser on a golden copy. D041 (20 new and 200 total reviews per local day), D042 (proposition name as fallback cue), D043 (sidebar Review row), D044 (think, reveal with Space, rate with 1 to 4). Plan approved on #18.
 - P1-4 merged via #26 (contract and prompt approved by Sagar): `ReviewQuestion` and the questions ledger, `questionFor` and `formatFor` (`src/core/learner.ts`), the `reviewGenerator` role (cheap slot), `generateDueQuestions` in `src/agent/subagents/review-generator.ts` with its prompt as a module constant (the extraction idiom, so it does not appear in the prompt-override settings). D038 (cue-and-recall for new, learning and relearning cards; applied scenario for review cards), D039 (pre-generated questions stored in `data/learner/questions.jsonl`), D040 (cheap slot). Plan approved on #17.
 - P1-3 merged via #25: `src/core/cards.ts` (`deriveCards` gives one card per proposition plus the inert ids of deleted nodes; `dueCards`; the derived `ReviewCard` type). D036 (every proposition gets a card automatically; the per-session opt-out is new task P1-8, issue #24, row added to the brief). Golden graph: 278 propositions, so 278 cards.
@@ -23,11 +24,13 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. P1-6 Home signals (#19): due count on the home page and sidebar Review row, retention heat overlay on the graph canvas.
+1. After Sagar approves #28: squash merge, tick P1-6 in #13.
+2. Then P1-7 Teacher hook (#20) and P1-8 Card opt-out (#24). P1-7 needs only merged pieces and can start while #28 waits.
 
 ## Waiting for Sagar
 
 - All P1 open decisions are taken (D030, D031, D032, D036, D038, D041).
+- Review of #28 (home signals text: see the string list in the PR).
 
 Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, recorded in #13).
 
@@ -43,6 +46,7 @@ Self-merge is allowed in P1 for PRs that need no review from Sagar (D029, record
 - The installed `/Applications/Kvasir.app` is the unsigned 0.0.1 gate build. Its data folder holds the PSD2 SCA test session and its graph (11 propositions, 8 chains). Upstream LearnHarness 0.4.0 is also installed and uses its own folder (D017).
 - `desktop:dev` points Electron at `next dev`, so the server uses the repo `data/` folder. Packaged builds use `~/Library/Application Support/Kvasir/data`.
 - Extraction writes the graph only once a chat has at least `graph.extractionChunkTokens` (default 4096) uncovered tokens of teacher prose. Short sessions show no graph yet.
+- `next dev` on the home page can reload in a loop for a short while right after the first open (Fast Refresh churn during the first compile); it settles by itself. `/review` does not show it.
 - Python skill tests: `python3 -B -m unittest discover -s tests/skills` (53 pass on Python 3.9.6). CI does not run them.
 - The brief's `src/core/contracts/practice.ts` and `src/core/practice.ts` do not exist; practice is a chat kind. Architecture section 7 now carries a note; parts of it still describe the earlier problem-set design.
 - The upstream mark component and types keep code names `LhMark` and `LhMarkerMessage`. They do not reach the user.
