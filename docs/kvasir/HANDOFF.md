@@ -5,9 +5,9 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Current state
 
 - Phase: P0 (in progress). Milestone "P0 Bootstrap and rename", tracking issue #1.
-- Task: P0-2 Identity rename (#3). Plan approved on #3.
+- Task: P0-2 Identity rename (#3). All plan commits done; waiting for Sagar's review.
 - Branch: `p0/rename`
-- PR: draft, linked to #3
+- PR: #8, closes #3
 
 ## Done
 
@@ -18,18 +18,19 @@ Updated by Claude Code at the end of each session. Read this first.
 - `gh` 2.103.3 installed at `~/.local/bin/gh` from the official release (checksum verified), signed in as `Bharambe-NL`.
 - Phase P0 opened: milestone 1, labels `phase`, `task` and `P0`, tracking issue #1, task issues #2 to #6. Roadmap PR #7 merged.
 - P0-1 (#2) closed with the CI evidence and ticked in #1.
-- P0-2 started: decisions D011 to D018 taken (P0 decisions 2 to 5, plus four found during investigation). Plan posted and approved on #3.
+- P0-2: decisions D011 to D018 taken (P0 decisions 2 to 5, plus four found during investigation). Plan approved on #3. All plan commits pushed to #8, plus a fix for the page title ("Learning Harness", which the brief's grep misses). Local gates green apart from the known firewall test; rename grep clean against the allow-list; `desktop:dev` shows the Kvasir title and uses `Kvasir-dev`.
 
 ## Next
 
-1. Finish the P0-2 commits in the order of the plan on #3: `KV_*` rename, internal names, app identity, user-facing text, skill move, docs.
-2. Run the rename grep and a `desktop:dev` check, then mark the PR ready for Sagar's review.
+1. After Sagar approves #8: squash merge, tick P0-2 in #1.
+2. Start P0-3 with `/kv-task P0-3`.
 3. Set branch protection on `main` (require a PR and passing checks), once Sagar agrees.
 
 ## Waiting for Sagar
 
+- Review of #8 (user-facing text, README, package metadata).
 - Branch protection on `main`: set it in GitHub settings, or ask Claude to set it with `gh`.
-- Review of the P0-2 PR when it is ready (it changes user-facing text).
+- Whether the two prompts that call the agent "a learning harness" (`src/agent/system-prompt.md`, `src/agent/prompts/practice/00-base.md`) should change. Prompt wording; best handled with P0-5.
 
 Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, recorded in #1).
 
@@ -44,3 +45,7 @@ Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, record
 - `package.json` `version` is still the upstream `0.4.0`. The P0 release tag is `v0.0.1`. Settle the version in P0-3.
 - Upstream LearnHarness 0.4.0 is installed in `/Applications` and uses `~/Library/Application Support/LearnHarness`. After P0-2, Kvasir uses its own `Kvasir` folder (D017).
 - Python skill tests: `python3 -B -m unittest discover -s tests/skills` (53 pass on Python 3.9.6). CI does not run them.
+- P0-3: `release.yml` hard-codes `dist/.../LearnHarness.app` and `learnharness` paths. With `productName` Kvasir these would break a release run, so fix them with the publish target.
+- `desktop:dev` points Electron at `next dev`, so the server uses the repo `data/` folder. `KV_DATA_DIR` (the user-data `data/` folder) is set only in packaged builds; P0-3 checks that path. Electron also leaves an empty `Kvasir` folder in dev.
+- `next dev` rewrites the heading level in the generated block of `AGENTS.md`. Restore it with `git checkout AGENTS.md`; P0-4 owns that file.
+- The upstream mark component and types keep code names `LhMark` and `LhMarkerMessage`. They do not reach the user.
