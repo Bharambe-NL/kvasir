@@ -48,6 +48,56 @@ export interface CardState {
 	lastReviewedAt: string | null;
 }
 
+/** The two review question formats, chosen by card phase (D038): a cue
+ *  that makes the learner recall the proposition, or an applied scenario
+ *  where it must come to mind unnamed. */
+export type QuestionFormat = "cue" | "scenario";
+
+export const QUESTION_FORMATS: readonly QuestionFormat[] = ["cue", "scenario"];
+
+/** One generated review question, as stored: one line of
+ *  data/learner/questions.jsonl (D039). Append-only; failures are never
+ *  stored, so the ledger holds only usable questions. */
+export interface ReviewQuestion {
+	/** "rq_" + nanoid-like. */
+	id: string;
+	/** The card (D031): a graph node id. */
+	nodeId: string;
+	/** The card's reps when generated: this question serves the review after
+	 *  that many reviews. A new review cycle needs a new question. */
+	cycle: number;
+	format: QuestionFormat;
+	/** What the learner sees: the cue, or the scenario. */
+	prompt: string;
+	/** What is revealed: the proposition (cue) or a model answer (scenario). */
+	answer: string;
+	/** ISO timestamp of generation. */
+	generatedAt: string;
+	/** The model that wrote it, as "provider:id". */
+	model: string;
+}
+
+/** Strict shape guard for one stored question line. */
+export function isReviewQuestion(value: unknown): value is ReviewQuestion {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+	const v = value as Record<string, unknown>;
+	const nonEmpty = (x: unknown) => typeof x === "string" && x.trim().length > 0;
+	return (
+		nonEmpty(v.id) &&
+		nonEmpty(v.nodeId) &&
+		typeof v.cycle === "number" &&
+		Number.isInteger(v.cycle) &&
+		v.cycle >= 0 &&
+		typeof v.format === "string" &&
+		(QUESTION_FORMATS as readonly string[]).includes(v.format) &&
+		nonEmpty(v.prompt) &&
+		nonEmpty(v.answer) &&
+		typeof v.generatedAt === "string" &&
+		!Number.isNaN(Date.parse(v.generatedAt)) &&
+		nonEmpty(v.model)
+	);
+}
+
 /** Strict shape guard for one stored review line. Readers drop anything
  *  that fails it rather than guess. */
 export function isReviewEntry(value: unknown): value is ReviewEntry {

@@ -79,6 +79,8 @@ export const LEDGER_FILES = {
  */
 export const LEARNER_FILES = {
 	reviews: path.join(PATHS.learner, "reviews.jsonl"),
+	/** Generated review questions (D039), one per card per review cycle. */
+	questions: path.join(PATHS.learner, "questions.jsonl"),
 } as const;
 
 /**
