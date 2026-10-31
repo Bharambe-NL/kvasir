@@ -29,7 +29,7 @@ Hold the architecture along two orthogonal axes:
 | **Workbench** — background labor | `data/jobs/*.json` | job runner, researcher/demo-builder/visual-maker, steer delivery |
 | **Library** — world model | `data/graph/*` ledgers | extraction pipeline (sole graph writer), derivation, birth-session clusters |
 | **Practice**: practice sessions | no store of its own | practice sessions are chat records with `kind: "practice"` (in `data/chats`); each problem targets one proposition (§7) |
-| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review and question ledgers; review questions written ahead by `src/agent/subagents/review-generator.ts` (cue or scenario by card phase, inside the shared background-LLM semaphore); cards derived by `src/core/cards.ts` (one per proposition), schedules by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
+| **Memory**: learner state (Kvasir, P1) | `data/learner/*` | review and question ledgers; the `/review` page records self-ratings through `src/server/review.ts` within the daily limits of `src/core/review-queue.ts`; review questions written ahead by `src/agent/subagents/review-generator.ts` (cue or scenario by card phase, inside the shared background-LLM semaphore); cards derived by `src/core/cards.ts` (one per proposition), schedules by `src/core/schedule.ts` (FSRS, deterministic); reads the graph through `GraphReader`, never writes it (D030) |
 | **Stage** — presentation shell | nothing server-side | components/, graph canvas, docks — pure consumer via `/api/*` |
 | **Machine room** — host | process + config | Electron main, standalone Next server, `config.ts`, data-dir seam, BYOK keys |
 
@@ -242,6 +242,7 @@ flowchart TB
         REVIEWS["review ledger: data/learner/reviews.jsonl (append-only)"]
         QUESTIONS["question ledger: data/learner/questions.jsonl (append-only)"]
         RGEN["review generator: agent/subagents/review-generator.ts<br/>cue or scenario by card phase; shared background-LLM semaphore"]
+        RPAGE["review page /review + GET/POST /api/review: server/review.ts<br/>queue within daily limits (core/review-queue.ts), self-rating"]
         CARDS["card source: core/cards.ts<br/>one card per proposition, introduced at createdAt; deleted nodes go inert"]
         SCHED["schedules: derived at read, never stored<br/>core/schedule.ts: FSRS via ts-fsrs 5.4.2, pure, fuzz off"]
     end
@@ -275,6 +276,8 @@ flowchart TB
     SCHED --> REVIEWS
     RGEN -->|"due cards without a question for their cycle [withBgLlmSlot]"| CARDS
     RGEN -->|"appends questions [injected appendQuestion]"| QUESTIONS
+    UI -->|"GET queue · POST rating [HTTP transport]"| RPAGE
+    RPAGE -->|"appends reviews; starts generation [LearnerStore port]"| REVIEWS
     UI -->|"GET /api/graph (read) · PUT positions (sanctioned exception) · POST import"| DERIVE
     HOST -.->|"hosts every server-side system"| TURN
 ```
@@ -511,6 +514,7 @@ Before 2026-10-02 the client discovered server-side change by polling: a lattice
 | `jobs-changed` | `{chatId}` | every job-store write (create/update/delete-that-removed) |
 | `activity-changed` | `{}` | extraction `setPhase`/`finishExtraction`; practice `registerRow`/phase-writes/`finishPractice` |
 | `chats-changed` | `{}` | list-shape writes only: chat create/rename/delete-that-removed |
+| `reviews-changed` | `{}` | Kvasir P1-5: a review recorded or a review question stored (`src/server/review.ts`); the review page refetches |
 
 ### 10.3 Emitter laws
 
