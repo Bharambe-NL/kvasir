@@ -112,3 +112,39 @@ export function isCitation(value: unknown): value is Citation {
 		isIso(v.createdAt)
 	);
 }
+
+/** One addressable unit of a parsed source, in document order (P2-2).
+ *  Inner units (an article, a paragraph with points) carry only their OWN
+ *  text, the chapeau; their children follow as separate units. */
+export interface SourceUnit {
+	/** The unit's address, outermost first (D064, D066), for example
+	 *  ["Chapter V", "Section I", "Article 28", "paragraph 2", "point (a)"]. */
+	path: string[];
+	/** The unit's title, where it has one: an article's subject, a
+	 *  section's name. */
+	heading?: string;
+	/** The unit's own text: verbatim, with whitespace normalised. May be
+	 *  empty for a pure container (a chapter). */
+	text: string;
+	/** PDFs only: the 1-based page the unit starts on. */
+	page?: number;
+}
+
+/** A source document split into units (P2-2): the parser's output and the
+ *  sources door's input to extraction (P2-3). */
+export interface ParsedSource {
+	format: SourceFormat;
+	title: string;
+	/** EUR-Lex only: the CELEX number read from the document. */
+	celex?: string;
+	units: SourceUnit[];
+}
+
+/** A file read by a SourceLoader (D062): its bytes, detected format and
+ *  content hash (DocumentVersion.contentHash). */
+export interface LoadedSource {
+	filePath: string;
+	format: SourceFormat;
+	bytes: Uint8Array;
+	contentHash: string;
+}
