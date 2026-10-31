@@ -84,4 +84,4 @@ export * from "./coverage.ts";
 // ONE session→markdown formatter — the extractor's view and the user-facing
 // export share it. Pure, browser-safe.
 export * from "./session-markdown.ts";
-export { formatInterval, type ReviewQueueItem, type ReviewQueueView, type QueueStats, type Retention } from "./review-view.ts";
+export { formatInterval, heatBand, type HeatBand, type ReviewSummary, type ReviewQueueItem, type ReviewQueueView, type QueueStats, type Retention } from "./review-view.ts";

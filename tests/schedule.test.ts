@@ -139,3 +139,26 @@ describe("previewRatings", () => {
 		}
 	});
 });
+
+describe("retrievability (P1-6, D045)", async () => {
+	const { retrievability } = await import("../src/core/schedule.ts");
+
+	it("is null for a card never reviewed", () => {
+		assert.equal(retrievability(NODE, [], T0, at(60)), null);
+	});
+
+	it("is about 1 right after a review and falls as time passes", () => {
+		const s = scheduleCard(NODE, GRADUATED, T0);
+		const justAfter = retrievability(NODE, GRADUATED, T0, at(11))!;
+		const atDue = retrievability(NODE, GRADUATED, T0, s.due)!;
+		const longAfter = retrievability(NODE, GRADUATED, T0, new Date(Date.parse(s.due) + 30 * DAY).toISOString())!;
+		assert.ok(justAfter > 0.99, `just after: ${justAfter}`);
+		assert.ok(justAfter > atDue && atDue > longAfter, "decays over time");
+	});
+
+	it("sits near the 0.90 target when a review card falls due (D033)", () => {
+		const s = scheduleCard(NODE, GRADUATED, T0);
+		const r = retrievability(NODE, GRADUATED, T0, s.due)!;
+		assert.ok(Math.abs(r - 0.9) < 0.03, `at due: ${r}`);
+	});
+});

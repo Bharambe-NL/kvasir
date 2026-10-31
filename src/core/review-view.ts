@@ -27,6 +27,24 @@ export interface ReviewQueueView {
 
 export type { QueueStats, Retention };
 
+/** GET /api/review/summary (P1-6): the home signals. */
+export interface ReviewSummary {
+	/** Cards in today's queue right now (the review page's count). */
+	due: number;
+	/** Current recall chance per reviewed live card (D045), 0 to 1. */
+	heat: Record<string, number>;
+}
+
+export type HeatBand = "low" | "mid" | "high";
+
+/** The overlay band for a recall chance (D046): below 0.70 slipping, 0.70
+ *  up to 0.90 fading, 0.90 and above strong. */
+export function heatBand(r: number): HeatBand {
+	if (r >= 0.9) return "high";
+	if (r >= 0.7) return "mid";
+	return "low";
+}
+
 /** A short interval label between two ISO times: "1 min", "10 min",
  *  "3 h", "4 d", "2 mo", "1.5 y". Never negative. */
 export function formatInterval(fromIso: string, toIso: string): string {
