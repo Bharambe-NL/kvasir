@@ -9,7 +9,7 @@ export function desktopAPIAuthorized(
 	const expected = env.KV_DESKTOP_API_SECRET;
 	if (env.KV_DESKTOP_SERVER !== "1" && !expected) return true;
 	if (!expected || expected.length < 64) return false;
-	const supplied = headers.get("x-learnharness-desktop");
+	const supplied = headers.get("x-kvasir-desktop");
 	if (!supplied) return false;
 	const actual = Buffer.from(supplied);
 	const wanted = Buffer.from(expected);

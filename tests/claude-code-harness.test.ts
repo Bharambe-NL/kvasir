@@ -56,7 +56,7 @@ function toAskScenario(): string[] {
 		streamEvent({
 			type: "content_block_start",
 			index: 0,
-			content_block: { type: "tool_use", id: ASK_ID, name: "mcp__learnharness__ask_user_question", input: {} },
+			content_block: { type: "tool_use", id: ASK_ID, name: "mcp__kvasir__ask_user_question", input: {} },
 		}),
 		streamEvent({ type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: JSON.stringify(ASK_INPUT) } }),
 		streamEvent({ type: "content_block_stop", index: 0 }),
@@ -234,7 +234,7 @@ test("a question pauses later calls from the same CLI response until the learner
 	const secondQuestion = "What do you want to learn next?";
 	const scenario = toAskScenario();
 	scenario.splice(4, 0,
-		streamEvent({ type: "content_block_start", index: 1, content_block: { type: "tool_use", id: secondId, name: "mcp__learnharness__ask_user_question", input: {} } }),
+		streamEvent({ type: "content_block_start", index: 1, content_block: { type: "tool_use", id: secondId, name: "mcp__kvasir__ask_user_question", input: {} } }),
 		streamEvent({ type: "content_block_delta", index: 1, delta: { type: "input_json_delta", partial_json: JSON.stringify({ question: secondQuestion }) } }),
 		streamEvent({ type: "content_block_stop", index: 1 }),
 	);
@@ -262,7 +262,7 @@ test("an individually cancelled MCP question queued behind a learner wait never 
 	const question = "This cancelled question must never be posed";
 	const scenario = toAskScenario();
 	scenario.splice(4, 0,
-		streamEvent({ type: "content_block_start", index: 1, content_block: { type: "tool_use", id: cancelledId, name: "mcp__learnharness__ask_user_question", input: {} } }),
+		streamEvent({ type: "content_block_start", index: 1, content_block: { type: "tool_use", id: cancelledId, name: "mcp__kvasir__ask_user_question", input: {} } }),
 		streamEvent({ type: "content_block_delta", index: 1, delta: { type: "input_json_delta", partial_json: JSON.stringify({ question }) } }),
 		streamEvent({ type: "content_block_stop", index: 1 }),
 	);

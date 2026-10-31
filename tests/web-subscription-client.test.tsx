@@ -17,7 +17,7 @@ test("web ChatGPT reserves a new tab before async login, navigates only to an op
 	window.open = (() => { calls.push("tab"); return tab; }) as unknown as typeof window.open;
 	const safe = { available: true, pending: true, allowBackgroundUse: true, activeId: null, accounts: [], error: null };
 	globalThis.fetch = async (url, options) => {
-		assert.equal(url, "/api/subscriptions"); assert.equal(new Headers(options?.headers).get("x-learnharness-subscriptions"), "1");
+		assert.equal(url, "/api/subscriptions"); assert.equal(new Headers(options?.headers).get("x-kvasir-subscriptions"), "1");
 		if (!options?.method) return Response.json({ chatgpt: safe, native: [] });
 		calls.push("login"); assert.equal(tab.opener, null);
 		assert.deepEqual(JSON.parse(String(options.body)), { providerId: "chatgpt", op: "login" });

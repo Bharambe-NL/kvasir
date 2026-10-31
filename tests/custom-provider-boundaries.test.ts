@@ -150,7 +150,7 @@ test("empty DELETE streams normalize consistently without accepting malformed JS
 test("desktop capability remains mandatory in desktop mode", async () => {
 	process.env.KV_DESKTOP_SERVER = "1"; process.env.KV_DESKTOP_API_SECRET = "x".repeat(64);
 	assert.equal((await mutate({}, "DELETE")).status, 403);
-	assert.equal((await mutate(undefined, "DELETE", { origin: "null", "x-learnharness-desktop": "x".repeat(64) })).status, 200);
+	assert.equal((await mutate(undefined, "DELETE", { origin: "null", "x-kvasir-desktop": "x".repeat(64) })).status, 200);
 });
 test("forbidden URL components are rejected before probing", async () => {
 	for (const baseUrl of ["ftp://h", "https://user:pass@h/v1", "http://h/v1?q=secret", "http://h/v1#x", "http://h/v1?", "http://h/v1#"]) assert.equal((await mutate({ baseUrl, authMode: "keyless" })).status, 400);

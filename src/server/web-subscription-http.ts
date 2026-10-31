@@ -16,7 +16,7 @@ export function subscriptionRequestOrigin(request: Request): string | undefined 
 }
 function authorized(request: Request): boolean {
 	const origin = subscriptionRequestOrigin(request);
-	if (!origin || request.headers.get("x-learnharness-subscriptions") !== "1") return false;
+	if (!origin || request.headers.get("x-kvasir-subscriptions") !== "1") return false;
 	if (request.headers.get("sec-fetch-site") === "cross-site") return false;
 	const supplied = request.headers.get("origin");
 	return request.method === "GET" ? !supplied || supplied === origin : supplied === origin;

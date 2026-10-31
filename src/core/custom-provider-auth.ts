@@ -1,7 +1,7 @@
 /** Private custom credential authorization; no credential-derived public value. */
 import { normalizeBaseUrl, type CustomProviderSettings } from "./settings.ts";
 
-export const CUSTOM_AUTH_BINDING = "__learnharness_custom_provider_binding";
+export const CUSTOM_AUTH_BINDING = "__kvasir_custom_provider_binding";
 export interface CustomAuthBinding {
 	version: 1;
 	id: string;

@@ -42,7 +42,7 @@ if (mode === "inspect") {
 		reason = (await engine.streamFn(engine.model, normalizeContext({ messages: [{ role: "user", content: "fixture", timestamp: 0 }] }), {}).result()).stopReason;
 	} catch { reason = "refused"; }
 	const { keyStatuses } = await import("../../src/server/keys.ts");
-	console.log(JSON.stringify({ enabled, reason, requests, statusIds: keyStatuses().map(row => row.id), metadataInEnv: process.env.__learnharness_custom_provider_binding !== undefined }));
+	console.log(JSON.stringify({ enabled, reason, requests, statusIds: keyStatuses().map(row => row.id), metadataInEnv: process.env.__kvasir_custom_provider_binding !== undefined }));
 } else {
 	const route = await import("../../app/api/custom-provider/route.ts");
 	const get = route.GET(new Request("http://localhost/api/custom-provider"));

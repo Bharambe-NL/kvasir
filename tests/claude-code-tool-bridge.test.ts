@@ -59,7 +59,7 @@ test("lists exactly the given tools with their JSON schemas", async (t) => {
 		],
 	);
 
-	assert.deepEqual(bridge.allowedTools, ["mcp__learnharness__read", "mcp__learnharness__screenshot"]);
+	assert.deepEqual(bridge.allowedTools, ["mcp__kvasir__read", "mcp__kvasir__screenshot"]);
 });
 
 test("rejects requests without the bearer token", async (t) => {
@@ -232,12 +232,12 @@ test("close rejects consumers still waiting for tool calls", { timeout: 1000 }, 
 	await assert.rejects(waiting, /tool bridge closed/);
 });
 
-test('mcpConfig is {"mcpServers":{"learnharness":{"type":"http","url":...,"headers":{"Authorization":"Bearer ..."}}}}', async (t) => {
+test('mcpConfig is {"mcpServers":{"kvasir":{"type":"http","url":...,"headers":{"Authorization":"Bearer ..."}}}}', async (t) => {
 	const bridge = await createToolBridge([READ_TOOL]);
 	t.after(() => bridge.close());
 
 	const config = JSON.parse(bridge.mcpConfig) as { mcpServers: Record<string, unknown> };
-	assert.deepEqual(Object.keys(config.mcpServers), ["learnharness"]);
+	assert.deepEqual(Object.keys(config.mcpServers), ["kvasir"]);
 
 	const server = getServerConfig(bridge);
 	assert.deepEqual(Object.keys(server).sort(), ["headers", "type", "url"]);
@@ -266,6 +266,6 @@ test("missing and reused Claude tool IDs are rejected rather than matched by arg
 });
 
 test("toolNameFromMcp strips the bridge prefix", () => {
-	assert.equal(toolNameFromMcp("mcp__learnharness__read"), "read");
+	assert.equal(toolNameFromMcp("mcp__kvasir__read"), "read");
 	assert.equal(toolNameFromMcp("read"), "read");
 });

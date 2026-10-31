@@ -78,7 +78,7 @@ real-model image-understanding quality.
 
 Nonsecret configuration is stored in the existing `settings.json.customProvider`;
 file-saved credentials use the existing `auth.json` key seam. A reserved internal
-string entry, `__learnharness_custom_provider_binding`, binds authorization to the
+string entry, `__kvasir_custom_provider_binding`, binds authorization to the
 endpoint, mode, and a random nonsecret `credentialBindingId` in custom settings.
 The file key and its binding are published in one existing atomic auth-map write.
 The internal entry is not an environment variable or an editable/displayed key.

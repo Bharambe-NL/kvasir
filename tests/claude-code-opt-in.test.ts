@@ -74,7 +74,7 @@ test("default off even with an installed binary; section writes toggle availabil
 
 test("off cannot launch a version probe even through an otherwise authorized HTTP request", async (t) => {
 	setup(t);
-	const request = new Request("http://test/api/claude-code", { headers: { "x-learnharness-claude-code": "1" } });
+	const request = new Request("http://test/api/claude-code", { headers: { "x-kvasir-claude-code": "1" } });
 	const response = await claudeCodeInstallationResponse(request, async () => assert.fail("disabled CLI must not execute"));
 	assert.equal(response.status, 403);
 });

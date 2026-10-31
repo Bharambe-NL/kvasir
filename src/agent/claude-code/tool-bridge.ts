@@ -14,7 +14,7 @@ import {
 	type Tool as McpTool,
 } from "@modelcontextprotocol/sdk/types.js";
 
-export const BRIDGE_SERVER_NAME = "learnharness";
+export const BRIDGE_SERVER_NAME = "kvasir";
 
 const MCP_TOOL_PREFIX = `mcp__${BRIDGE_SERVER_NAME}__`;
 const LOOPBACK_HOST = "127.0.0.1";

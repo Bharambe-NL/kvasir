@@ -79,7 +79,7 @@ export function ClaudeCodeInstallationStatus() {
 		request.current = controller;
 		setBusy(true);
 		try {
-			const response = await fetch("/api/claude-code", { cache: "no-store", signal: controller.signal, headers: { "x-learnharness-claude-code": "1" } });
+			const response = await fetch("/api/claude-code", { cache: "no-store", signal: controller.signal, headers: { "x-kvasir-claude-code": "1" } });
 			if (!response.ok) throw new Error("status unavailable");
 			const value = await response.json() as ClaudeCodeStatus;
 			if (!["not-found", "meets-minimum", "update-required", "version-unchecked"].includes(value.state)

@@ -12,7 +12,7 @@ import { discoverModels, mergeManualModels, syncCustomProvider } from "./custom-
 import { parseCustomModelOverridesBody } from "./settings-body.ts";
 import { CustomBodyLimitError, readBoundedJson } from "./custom-provider-body.ts";
 
-const revisionKey = Symbol.for("learnharness.custom-provider-revision");
+const revisionKey = Symbol.for("kvasir.custom-provider-revision");
 const globals = globalThis as typeof globalThis & { [revisionKey]?: Buffer };
 const secret = globals[revisionKey] ??= randomBytes(32);
 const failure = (error: string, status = 400) => Response.json({ error }, { status });

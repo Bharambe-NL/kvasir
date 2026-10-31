@@ -20,7 +20,7 @@ export async function claudeCodeInstallationResponse(
 	const supplied = request.headers.get("origin");
 	const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 	if (request.method !== "GET" || !origin
-		|| request.headers.get("x-learnharness-claude-code") !== "1"
+		|| request.headers.get("x-kvasir-claude-code") !== "1"
 		|| request.headers.get("sec-fetch-site") === "cross-site"
 		|| (supplied !== null && supplied !== origin)) {
 		return Response.json({ error: "Claude Code checks require a same-origin LearnHarness request." }, { status: 403, headers });

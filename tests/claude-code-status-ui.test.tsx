@@ -34,7 +34,7 @@ function fixture(probe: (init?: RequestInit) => Promise<Response>, enabled = tru
 		if (url === "/api/models") return Response.json({ models: on ? [{ provider: "claude-code", id: "sonnet" }] : [] });
 		assert.equal(url, "/api/claude-code");
 		assert.equal(init?.cache, "no-store");
-		assert.equal(new Headers(init?.headers).get("x-learnharness-claude-code"), "1");
+		assert.equal(new Headers(init?.headers).get("x-kvasir-claude-code"), "1");
 		return probe(init);
 	}) as typeof fetch;
 	return calls;
