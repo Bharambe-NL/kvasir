@@ -27,10 +27,10 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Waiting for Sagar
 
-- Review and merge the `p0/open-phase` PR.
 - Branch protection on `main`: set it in GitHub settings, or ask Claude to set it with `gh`.
-- Whether Claude may self-merge PRs in P0 that need no review (WORKFLOW.md, Pull requests, step 4). Record the answer in #1.
 - P0 open decisions 2 to 5.
+
+Self-merge is allowed in P0 for PRs that need no review from Sagar (D010, recorded in #1).
 
 ## Notes
 
