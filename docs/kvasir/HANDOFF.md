@@ -25,6 +25,7 @@ Updated by Claude Code at the end of each session. Read this first.
 
 - P0-5 deferred to P6-7 `p6/house-style-prompts` (D026), after the P6-4 eval harness. Issue #6 now tracks P6-7.
 - P0 gate passed: all four checks recorded in `docs/kvasir/phases/P0-bootstrap.md`, approved by Sagar in #1, merged via the `p0/gate` PR, tagged `v0.0.1`, milestone closed.
+- Repository made public on 2026-10-31 (D028) after GitHub Actions stopped for the private repo's spending limit. History scanned for secrets first; none found.
 
 ## Next
 
