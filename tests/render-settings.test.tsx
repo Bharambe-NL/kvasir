@@ -12,7 +12,7 @@ import React from "react";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { TOGGLE_TOOLS, AgentSection } from "../components/settings/agent-section.tsx";
+import { TOGGLE_TOOLS, AgentSection, composeMemoryTools } from "../components/settings/agent-section.tsx";
 import { AppearanceSection, GraphSection } from "../components/settings/appearance-section.tsx";
 import { KeysSection } from "../components/settings/keys-section.tsx";
 import { KeyboardSection } from "../components/settings/keyboard-section.tsx";
@@ -179,6 +179,38 @@ describe("AgentSection (thin SSR)", () => {
 		);
 		const row = html.split('data-testid="graph-tools-row"')[1] ?? "";
 		assert.ok(row.includes('aria-checked="false"'), "stored-off renders off");
+	});
+
+	it("the memory-tools row sits directly under Graph tools, default on (Kvasir P1-7, D050)", () => {
+		const html = renderToStaticMarkup(<AgentSection agent={undefined} models={undefined} graph={undefined} onSectionChange={() => {}} onModelsChange={() => {}} />);
+		const toolsGroup = html.split('data-testid="group-tools"')[1] ?? "";
+		const rows = [...toolsGroup.matchAll(/data-testid="(graph-tools-row|memory-tools-row|tool-row-\w+)"/g)].map((m) => m[1]);
+		assert.deepEqual(rows.slice(0, 2), ["graph-tools-row", "memory-tools-row"]);
+		const row = html.split('data-testid="memory-tools-row"')[1]?.split('data-testid="tool-row-')[0] ?? "";
+		assert.ok(row.includes("Memory tools"));
+		assert.ok(row.includes("Lets the tutor see which propositions you are forgetting"));
+		assert.ok(row.includes('aria-checked="true"'), "absent = on");
+		assert.ok(!row.includes("opacity-40"), "lit while the graph is on");
+	});
+
+	it("graph disabled dims the memory-tools row with the reason hint", () => {
+		const html = renderToStaticMarkup(
+			<AgentSection agent={undefined} models={undefined} graph={{ enabled: false }} onSectionChange={() => {}} onModelsChange={() => {}} />,
+		);
+		const row = html.split('data-testid="memory-tools-row"')[1]?.split('data-testid="tool-row-')[0] ?? "";
+		assert.ok(row.includes("opacity-40"));
+		assert.ok(row.includes("Graph is disabled"));
+		assert.ok(row.includes("disabled"));
+	});
+
+	it("an explicit memoryTools off renders off, and the toggle composes its own key", () => {
+		const html = renderToStaticMarkup(
+			<AgentSection agent={{ memoryTools: { enabled: false } }} models={undefined} graph={undefined} onSectionChange={() => {}} onModelsChange={() => {}} />,
+		);
+		const row = html.split('data-testid="memory-tools-row"')[1]?.split('data-testid="tool-row-')[0] ?? "";
+		assert.ok(row.includes('aria-checked="false"'));
+		assert.deepEqual(composeMemoryTools({ graphTools: { enabled: false } }, false), { graphTools: { enabled: false }, memoryTools: { enabled: false } });
+		assert.deepEqual(composeMemoryTools(undefined, true), { memoryTools: { enabled: true } });
 	});
 
 	it("renders the owner's FINAL tool list — research, demo, visual, pdf", () => {

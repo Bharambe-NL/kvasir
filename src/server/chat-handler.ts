@@ -30,13 +30,15 @@ import {
 import { runPiTurn } from "./pi/ui-stream.ts";
 import { collectToolCallIds } from "./pi/call-ids.ts";
 import { providerEventNote } from "../agent/provider-events.ts";
-import { effectiveSettings, stores } from "./stores.ts";
+import { effectiveSettings, graphReader, stores } from "./stores.ts";
+import type { MemoryToolContext } from "../agent/tools/memory.ts";
 import { searchAvailable, searchProvider } from "./search.ts";
 import { providerKeyPresent } from "./keys.ts";
 import { CLAUDE_CODE_PROVIDER } from "../core/contracts/claude-code.ts";
 import {
 	extractionEnabled,
 	graphToolsEnabled,
+	memoryToolsEnabled,
 	resolveConversationSpec,
 	resolveRoleSpec,
 } from "../core/settings-resolution.ts";
@@ -147,6 +149,16 @@ setTurnRunner(async (chatId, input) => {
  *  the chain (role override → slot → NOTHING) may end empty, and undefined
  *  flows through to the per-need refusal gates (runner/extraction), read
  *  FRESH so a settings PUT between dispatch and spawn lands. */
+/** The memory tool's read-only context (Kvasir P1-7, D030): the graph's read
+ *  view and a review-ledger read, never a store. */
+function memoryContext(): MemoryToolContext {
+	return {
+		graph: graphReader,
+		readReviews: () => stores.learnerStore.readReviews(),
+		now: () => new Date().toISOString(),
+	};
+}
+
 function resolveEngine(role: ModelRole): PiEngine | undefined {
 	const spec = resolveRoleSpec(role, stores.settingsStore.readSettings());
 	return spec ? piEngineForSpec(spec) : undefined;
@@ -481,6 +493,8 @@ export async function handleChatInput(
 						// The registry drop's signal (2026-09-20): no live engine
 						// = no research tool in the teacher's registry.
 						searchAvailable,
+						// Kvasir P1-7: the forgetting signal behind its own gate.
+						...(memoryToolsEnabled(effective) ? { memory: memoryContext() } : {}),
 					},
 					agentOpts,
 				)
@@ -499,6 +513,8 @@ export async function handleChatInput(
 						// knowledge graph through tools when the gate opens —
 						// graph master switch AND the agent.graphTools toggle.
 						...(graphToolsEnabled(effective) ? { graphStore: stores.graphStore } : {}),
+						// Kvasir P1-7: the forgetting signal behind its own gate.
+						...(memoryToolsEnabled(effective) ? { memory: memoryContext() } : {}),
 					},
 					agentOpts,
 				);

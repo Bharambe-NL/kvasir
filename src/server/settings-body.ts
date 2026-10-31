@@ -207,6 +207,15 @@ export function parseAgentSettingsBody(body: unknown): SettingsBodyResult<AgentS
 		}
 		settings.graphTools = graphTools.enabled === undefined ? {} : { enabled: graphTools.enabled };
 	}
+	// Memory tools (Kvasir P1-7, D050): the same strict write side.
+	if (raw.memoryTools !== undefined) {
+		const memoryTools = asRecord(raw.memoryTools);
+		if (!memoryTools) return { ok: false, error: "memoryTools must be an object" };
+		if (memoryTools.enabled !== undefined && typeof memoryTools.enabled !== "boolean") {
+			return { ok: false, error: "memoryTools.enabled must be a boolean" };
+		}
+		settings.memoryTools = memoryTools.enabled === undefined ? {} : { enabled: memoryTools.enabled };
+	}
 	return { ok: true, settings };
 }
 

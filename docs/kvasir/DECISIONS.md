@@ -54,3 +54,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D046 | 2026-10-31 | Heat encoding: red below 70%, amber from 70% to 90%, green at 90% or above; unreviewed nodes keep the normal colour. Colour appears only while the overlay is on | Sagar | |
 | D047 | 2026-10-31 | The overlay toggle is a "Retention" button in the home graph toolbar, off by default, remembered in the window's local storage (nothing written to data/graph/) | Sagar | |
 | D048 | 2026-10-31 | The due count shows on the sidebar Review row and as a chip in the home graph toolbar that opens /review; both hide when nothing is due | Sagar | |
+| D049 | 2026-10-31 | `list_weak_propositions` is given to both the prober and the teacher | Sagar | |
+| D050 | 2026-10-31 | It is gated by its own "Memory tools" toggle under Settings, Agent, Tools (default on), and also requires the graph to be on | Sagar | |
+| D051 | 2026-10-31 | Weak means a reviewed proposition with current recall chance below 80%; the tool returns the weakest 15, weakest first | Sagar | |
+| D052 | 2026-10-31 | Each line shows name, recall percentage, lapses, last review date and node id; never the statement text (the map tools' names-only rule) | Sagar | |
