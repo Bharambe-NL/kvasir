@@ -95,3 +95,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D087 | 2026-11-01 | Only the teacher gets `read_source`; the prober keeps its map tools | Sagar | |
 | D088 | 2026-11-01 | P2 passed its gate before P1, so the P2 release is `v0.2.0` (package version 0.2.0) and includes the P1 work; when P1 passes its gate it is recorded in the roadmap and release notes without a separate `v0.1.0` tag, so versions stay in order | Sagar | |
 | D089 | 2026-11-01 | Self-merge is allowed in P6 for PRs that need no review from Sagar (no contract, prompt, store format or user-facing text change), as D029 and D057 allowed for P1 and P2 | Sagar | |
+| D090 | 2026-11-01 | The MCP server's read-only tools: `search_graph`, `get_proposition`, `list_sources`, `read_source`, `list_sessions` and `review_status` | Sagar | |
+| D091 | 2026-11-01 | Claude Desktop runs the MCP server as a command over stdio; it reads the Kvasir data folder directly and works whether or not the app is open | Sagar | |
+| D092 | 2026-11-01 | The MCP server shares learner state read-only: recall and next due date per proposition, due counts, weak propositions and measured retention | Sagar | |
+| D093 | 2026-11-01 | The MCP server is installed with a documented `claude_desktop_config.json` entry (printed by `npm run mcp:config`); `npm run mcp` runs it directly | Sagar | |

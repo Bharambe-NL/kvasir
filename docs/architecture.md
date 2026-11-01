@@ -75,6 +75,7 @@ Dependency arrows point **down only**. Each layer may import the core barrel; no
 | `components/**` | `@/src/core` only (the barrel) | The UI renders domain data; it never runs domain logic or touches IO |
 | `app/**` | `@/src/core` + `@/src/server` (the barrels) | Route handlers are transport; they delegate to server entry points |
 | `src/core/**` | nothing below itself (never `agent`/`server`/`store`) | The core is pure; adapters implement its ports, never the reverse |
+| `src/mcp/**` | never `agent`/`server`/`store` | The MCP tools receive read functions only; `scripts/mcp-server.ts` wires the store readers (Kvasir P6-2) |
 | `src/agent/**` | never `server`/`store` | The agent layer receives its dependencies (ports, engines, seams) via factories/closures |
 
 ```mermaid
@@ -384,6 +385,8 @@ EUR-Lex itself refuses scripted requests, so the app never fetches: Sagar picks 
 
 **Teacher citations** (Kvasir P2-6, D084 to D087): a lesson cites a source with a link of the form `[Regulation (EU) 2022/2554, Art. 28(2)](#src-<versionId>-<label>)` (`src/core/source-cite.ts`; the label is the unit's `U` number in that version). The chat's markdown renderer runs Streamdown's default rehype steps (`raw`, `sanitize`, `harden`) and then `rehypeSourceCite` (`components/source-link.tsx`), which turns only these links into a `kv-source-cite` element; `mdComponents` renders it as the citation chip, and a click opens the source panel on the unit from `GET /api/graph/source-unit?ref=` (`sourceUnitView` in `src/server/source-cite.ts`). Ordinary links keep Streamdown's own handling; a link that does not resolve shows as its text. The teacher sees sources two ways: a session started from picked propositions lists each cited pick's sources (link and quote, `citationSourceLines`) in its `graph-context` marker, and the `read_source` tool (`src/agent/tools/sources.ts`, read functions only) looks up the newest version of each imported document by address ("Art. 28(2)", "Recital 12", "3.3.3 para 17") or by words, at most 12 units, each with its link. Only the teacher gets the tool, behind `graphToolsEnabled`. The teacher prompt's "Citing sources" section (`src/agent/prompts/teacher/45-citing-sources.md`) asks it to copy the links into its prose and to cite only text it has read.
 
+**The MCP server** (Kvasir P6-2, D090 to D093): a third entry point beside the Next server and the Electron main, for Claude Desktop. `scripts/mcp-server.ts` (the composition root) wires the fs store readers into a `KvasirReadContext` of read functions only and serves `src/mcp/server.ts` over stdio. `src/mcp/tools.ts` holds the six read-only tools (`search_graph`, `get_proposition`, `list_sources`, `read_source`, `list_sessions`, `review_status`) as pure functions over core derivations; `read_source` shares `readSource`, moved to `src/core/source-read.ts`. `src/mcp` has its own ESLint zone: it imports core only. The entry point routes console output to stderr (stdout is the protocol) and lists chats with `readdir` plus `getChat`, so it never creates a folder. `KV_DATA_DIR` picks the data folder; unset, it is the desktop app's. Setup: `docs/mcp.md` and `npm run mcp:config`.
+
 ```mermaid
 flowchart TB
     TRIG["trigger seam (turn-service): coverageOf(record, coverageLedger)<br/>— uncovered tokens ≥ graph.extractionChunkTokens (settings)?"] -->|"yes, single-flight per source"| RUN["extraction.runExtraction(chatId)"]
@@ -600,6 +603,7 @@ Every place the architecture is designed to be cut — the "one file" a future c
 | Push events | `src/core/events.ts` (bus) + `src/server/events-stream.ts` (SSE seam) + `components/server-events.tsx` (the window's EventSource) | change notification, end to end |
 | Agent construction (tests) | `handleChatRequest(req, buildAgent?)` | scripted engines, no refactor |
 | Sub-agent verification | `sub-agents/headless.ts` (`headlessOverride`) | demo/SVG verification, no Chrome |
+| MCP read context (P6) | `KvasirReadContext` in `src/mcp/tools.ts`, wired in `scripts/mcp-server.ts` | what Claude Desktop can read through Kvasir; read functions only |
 | Source text for the teacher (P2) | `SourceToolContext` in `src/agent/tools/sources.ts`, built in `src/server/chat-handler.ts` | what `read_source` can read; read functions only; absent context = no tool |
 | Citation views (Library, P2) | `citationViews` in `src/server/citations.ts`, `GET /api/graph/citations` | what the chip and panel show; unit text from `data/graph/document-units/` |
 | Source loading (Library, P2) | `SourceLoader` in `src/core/ports.ts`, file adapter `src/server/source-loader.ts` | where source documents come from; another provider (Eryndal, Hugin) is a second adapter (D062) |
