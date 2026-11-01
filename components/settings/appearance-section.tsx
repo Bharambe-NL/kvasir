@@ -35,10 +35,13 @@ import {
 	DEFAULT_BACKGROUNDS,
 	EXTRACTION_CHUNK_TOKENS_FLOOR,
 	FACTORY_SETTINGS,
+	HIGHLIGHT_SWATCHES,
+	THEMES,
 	resolveSettings,
 	type AppearanceMode,
 	type AppearanceSettings,
 	type GraphSettings,
+	type ThemeId,
 } from "@/src/core";
 import { MenuShell } from "@/components/menu-shell";
 import { Hint } from "@/components/ui/hint";
@@ -200,6 +203,43 @@ export function AppearanceSection({
 					<option value="light">Light</option>
 					<option value="system">System</option>
 				</ThinSelect>
+			</SettingsRow>
+			<SettingsRow label="Theme" testid="row-theme">
+				<ThinSelect
+					value={appearance?.theme ?? FACTORY_SETTINGS.appearance.theme}
+					ariaLabel="theme"
+					onChange={(v) => onSectionChange({ ...appearance, theme: v as ThemeId })}
+					testid="select-theme"
+				>
+					{THEMES.map((t) => (
+						<option key={t.id} value={t.id}>
+							{t.name}
+						</option>
+					))}
+				</ThinSelect>
+			</SettingsRow>
+			<SettingsRow label="Highlight colour" hint="Empty = the theme's own" testid="row-highlight">
+				<span className="flex items-center gap-1.5">
+					{HIGHLIGHT_SWATCHES.map((hex) => (
+						<button
+							key={hex}
+							type="button"
+							aria-label={hex}
+							aria-pressed={appearance?.highlight === hex}
+							data-testid={`swatch-${hex.slice(1)}`}
+							onClick={() => onSectionChange({ ...appearance, highlight: hex })}
+							className={`size-5 shrink-0 rounded-full border ${appearance?.highlight === hex ? "border-foreground ring-2 ring-ring" : "border-border"}`}
+							style={{ backgroundColor: hex }}
+						/>
+					))}
+					<CommitInput
+						value={appearance?.highlight ?? ""}
+						placeholder="#"
+						ariaLabel="highlight hex"
+						testid="input-highlight"
+						onCommit={(v) => onSectionChange({ ...appearance, highlight: v === "" ? null : v })}
+					/>
+				</span>
 			</SettingsRow>
 			<SettingsRow
 				label="Dark background"
