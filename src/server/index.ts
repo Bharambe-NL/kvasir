@@ -11,6 +11,7 @@ export * from "./graph.ts";
 export { NotesImportError, SourceImportError } from "../agent/subagents/extraction.ts";
 export { importSourceFile, sourceDocumentList, type SourceDocumentItem } from "./sources.ts";
 export * from "./citations.ts";
+export { citationSourceLines, sourceUnitView, type SourceUnitView } from "./source-cite.ts";
 export { UnsupportedSourceError } from "./source-loader.ts";
 export * from "./commit-positions.ts";
 export * from "./jobs.ts";
