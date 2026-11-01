@@ -17,18 +17,22 @@ const paths = (agent: "prober" | "teacher" | "practice", voice = false) =>
 	listSourceSegments(agent, voice ? "voice" : undefined).map((s) => s.path);
 
 describe("voice profile composition (D149)", () => {
-	it("the teacher: base, its own fragments, the shared appendix without formatting, then voice shared and voice teacher", () => {
+	it("the teacher: base, its own fragments, the shared appendix without the written guides, then voice shared and voice teacher", () => {
 		const def = paths("teacher");
 		const voice = paths("teacher", true);
-		assert.ok(def.includes("shared/40-formatting.md"));
-		assert.ok(!voice.includes("shared/40-formatting.md"), "the speaking guide replaces the formatting guide");
-		assert.deepEqual(voice.slice(0, def.length - 1), def.filter((p) => p !== "shared/40-formatting.md"));
-		assert.deepEqual(voice.slice(def.length - 1), ["voice/shared/10-spoken-session.md", "voice/teacher/10-spoken-teaching.md"]);
+		const DROPPED = ["shared/20-question-tools.md", "shared/40-formatting.md"];
+		for (const p of DROPPED) {
+			assert.ok(def.includes(p));
+			assert.ok(!voice.includes(p), `${p}: replaced by its spoken guide (D149, D160)`);
+		}
+		const kept = def.filter((p) => !DROPPED.includes(p));
+		assert.deepEqual(voice.slice(0, kept.length), kept);
+		assert.deepEqual(voice.slice(kept.length), ["voice/shared/10-spoken-session.md", "voice/shared/20-spoken-questions.md", "voice/teacher/10-spoken-teaching.md"]);
 	});
 
-	it("the prober gets the spoken session and the setup questions, last", () => {
+	it("the prober gets the spoken session, the spoken questions and the setup questions, last", () => {
 		const voice = paths("prober", true);
-		assert.deepEqual(voice.slice(-2), ["voice/shared/10-spoken-session.md", "voice/prober/10-setup.md"]);
+		assert.deepEqual(voice.slice(-3), ["voice/shared/10-spoken-session.md", "voice/shared/20-spoken-questions.md", "voice/prober/10-setup.md"]);
 		assert.ok(!voice.some((p) => p.startsWith("voice/teacher/")), "never the other agent's overlay");
 	});
 
@@ -78,6 +82,16 @@ describe("the Socratic Tutor contract is in the voice prompts", () => {
 	for (const [rule, text, pattern] of RULES) it(`rule ${rule}`, () => assert.match(text, pattern));
 
 	it("the voice prompts no longer ask for Markdown or LaTeX documents", () => {
-		for (const text of [prober, teacher]) assert.doesNotMatch(text, /he receives documents, not chat messages/);
+		for (const text of [prober, teacher]) {
+			assert.doesNotMatch(text, /he receives documents, not chat messages/);
+			assert.doesNotMatch(text, /LaTeX everywhere/, "the written question guide is gone (P3-3)");
+		}
+	});
+
+	it("every question goes through ask_spoken (P3-3, D160)", () => {
+		for (const text of [prober, teacher]) {
+			assert.match(text, /every question goes through `ask_spoken`/);
+			assert.match(text, /Grade strictly against your commitment/);
+		}
 	});
 });
