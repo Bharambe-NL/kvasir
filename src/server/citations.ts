@@ -5,6 +5,7 @@
  */
 
 import { citationLabel, sourceDocuments, versionLabel, type CitationView } from "../core/sources.ts";
+import { citationStatus } from "../core/source-diff.ts";
 import type { SourceUnit } from "../core/contracts.ts";
 import { stores } from "./stores.ts";
 
@@ -16,7 +17,9 @@ export function citationViews(nodeIds: readonly string[]): Record<string, Citati
 	const wanted = new Set(nodeIds);
 	const versions = stores.graphStore.readDocumentVersions();
 	const byVersion = new Map(versions.map((v) => [v.versionId, v]));
-	const titleOf = new Map(sourceDocuments(versions).map((d) => [d.id, d.title]));
+	const docs = sourceDocuments(versions);
+	const titleOf = new Map(docs.map((d) => [d.id, d.title]));
+	const orderedOf = new Map(docs.map((d) => [d.id, d.versions]));
 	const units = new Map<string, Map<string, SourceUnit> | null>();
 	const unitsOf = (versionId: string) => {
 		if (!units.has(versionId)) {
@@ -33,6 +36,7 @@ export function citationViews(nodeIds: readonly string[]): Record<string, Citati
 		const version = byVersion.get(c.version);
 		if (!version) continue;
 		const unit = unitsOf(c.version)?.get(c.path.join("\u0000")) ?? null;
+		const status = citationStatus(c, orderedOf.get(c.sourceId) ?? [], (v) => stores.graphStore.readDocumentUnits(v));
 		(out[c.nodeId] ??= []).push({
 			id: c.id,
 			nodeId: c.nodeId,
@@ -43,6 +47,9 @@ export function citationViews(nodeIds: readonly string[]): Record<string, Citati
 			...(unit?.heading ? { heading: unit.heading } : {}),
 			quote: c.quote,
 			unitText: unit ? unit.text : null,
+			...(status
+				? { outdated: { versionLabel: status.versionLabel, kind: status.kind, ...(status.text !== undefined ? { text: status.text } : {}) } }
+				: {}),
 		});
 	}
 	return out;

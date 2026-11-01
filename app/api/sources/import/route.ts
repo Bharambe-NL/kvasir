@@ -2,7 +2,9 @@
  * POST /api/sources/import: the sources door's transport (Kvasir P2-3,
  * D071). Multipart form data: "files" (EUR-Lex HTML, PDF, or Markdown sent
  * as a source) and, per file in the same order, an optional "labels" entry
- * (the version label for PDF and Markdown, D074). Each file is identified,
+ * (the version label for PDF and Markdown, D074) and an optional
+ * "versionOf" entry (an existing PDF or Markdown document's id, Kvasir P2-5,
+ * D082). Each file is identified,
  * parsed, and extracted with a citation on every proposition; one result
  * per file, in the notes route's shape. A 3-wide worker pool, as there.
  */
@@ -36,6 +38,7 @@ export async function POST(request: Request) {
 		return Response.json({ results: [] as SourceImportResult[], error: "no files" }, { status: 400 });
 	}
 	const labels = form.getAll("labels").map((l) => (typeof l === "string" ? l : ""));
+	const versionOfs = form.getAll("versionOf").map((l) => (typeof l === "string" ? l : ""));
 
 	const results: SourceImportResult[] = [];
 	const queue = files.map((file, requestIndex) => ({ file, requestIndex }));
@@ -47,7 +50,11 @@ export async function POST(request: Request) {
 			try {
 				const bytes = new Uint8Array(await file.arrayBuffer());
 				const label = labels[requestIndex]?.trim() || undefined;
-				const stats = await importSourceFile({ fileName: file.name, bytes, ...(label ? { label } : {}) }, (input) => extraction.importSource(input));
+				const versionOf = versionOfs[requestIndex]?.trim() || undefined;
+				const stats = await importSourceFile(
+					{ fileName: file.name, bytes, ...(label ? { label } : {}), ...(versionOf ? { versionOf } : {}) },
+					(input) => extraction.importSource(input),
+				);
 				results.push({ filePath: file.name, requestIndex, outcome: "completed", ok: true, stats });
 			} catch (err) {
 				if (err instanceof ModelsNotConfiguredError) {

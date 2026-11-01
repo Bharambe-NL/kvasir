@@ -8,7 +8,7 @@
 
 import type { Citation, DocumentVersion, SourceUnit } from "./contracts/sources.ts";
 import { locateQuote } from "./source-extract.ts";
-import { versionLabel } from "./sources.ts";
+import { sourceDocuments, versionLabel } from "./sources.ts";
 
 export interface UnitDiff {
 	added: string[][];
@@ -74,4 +74,21 @@ export function citationStatus(
 		kind: first.unit ? "changed" : "removed",
 		...(first.unit ? { text: first.unit.text } : {}),
 	};
+}
+
+/** The live nodes with at least one outdated citation (the snapshot's
+ *  `outdated` list, sorted). */
+export function outdatedNodes(
+	citations: readonly Citation[],
+	versions: readonly DocumentVersion[],
+	unitsOf: (versionId: string) => readonly SourceUnit[] | null,
+	live: ReadonlySet<string>,
+): string[] {
+	const ordered = new Map(sourceDocuments(versions).map((d) => [d.id, d.versions]));
+	const out = new Set<string>();
+	for (const c of citations) {
+		if (!live.has(c.nodeId) || out.has(c.nodeId)) continue;
+		if (citationStatus(c, ordered.get(c.sourceId) ?? [], unitsOf)) out.add(c.nodeId);
+	}
+	return [...out].sort();
 }
