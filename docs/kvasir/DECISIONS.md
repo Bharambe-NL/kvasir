@@ -151,3 +151,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D143 | 2026-11-01 | Type keeps three families with set roles: mono only for small labels, numbers and keys; sans for controls and body text; serif only for page and session titles, at a calmer size; one type scale | Sagar | |
 | D144 | 2026-11-01 | Motion is subtle and quick: fades and short slides of 150 to 200 ms on dialogs, menus, the review card and new messages; off for reduced motion and in E-ink | Sagar | |
 | D145 | 2026-11-01 | Each polish area is done when Sagar approves before and after screenshots in Kvasir dark and light, plus one sheet across the four themes; each area is its own commit | Sagar | |
+| D146 | 2026-11-01 | The zero-keys notice reads "No provider key yet. Add one to start." ("Add one" is the link), true whenever it shows; replaces the plan's "No model yet." | Sagar | |

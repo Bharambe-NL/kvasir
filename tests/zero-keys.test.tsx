@@ -52,8 +52,8 @@ describe("ZeroKeysPill — the composer-hoisted notice", () => {
 	it("the notice line carries its own testid and copy, the link on the action (P7-5)", () => {
 		const html = renderToStaticMarkup(createElement(ZeroKeysPill, { onOpen: () => {} }));
 		assert.ok(html.includes('data-testid="setup-cta-keys"'));
-		assert.match(html, />Add a provider key<\/button>/);
-		assert.equal(html.replace(/<[^>]+>/g, ""), "No model yet. Add a provider key to start.");
+		assert.match(html, />Add one<\/button>/);
+		assert.equal(html.replace(/<[^>]+>/g, ""), "No provider key yet. Add one to start.");
 		assert.doesNotMatch(html, /chats start|—/);
 		// the models CTA's testid must not appear on the keys pill
 		assert.ok(!html.includes('data-testid="setup-cta"'));

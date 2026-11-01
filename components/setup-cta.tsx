@@ -2,8 +2,8 @@
 /**
  * The zero-keys surfaces (zero-keys wave, 2026-09-25, owner-locked over
  * Platform's 66dbea9 key-presence gate): when NO model-provider key
- * exists, chat / home / /chat/new hoist a composer notice — "No model
- * yet. Add a provider key to start." (Kvasir P7-5) — that takes PRECEDENCE over the models setup CTA
+ * exists, chat / home / /chat/new hoist a composer notice — "No
+ * provider key yet. Add one to start." (Kvasir P7-5, D146) — that takes PRECEDENCE over the models setup CTA
  * (keys come first in the chain: the model pickers list only what
  * keys unlock). Click opens the SetupDialog, whose stage derives to
  * the first-key screen on its own.
@@ -75,21 +75,21 @@ export function useZeroKeys(): boolean {
 	return catalog ? !catalog.providers.some((provider) => provider.keyPresent) : false;
 }
 
-/** The notice (Kvasir P7-5): a slim line above the composer in place of
- *  the old floating pill, with "Add a provider key" as its link. testid
+/** The notice (Kvasir P7-5, D146): a slim line above the composer in
+ *  place of the old floating pill, with "Add one" as its link. testid
  *  "setup-cta-keys" stays on the link (the models CTA keeps "setup-cta";
  *  probes can tell them apart). */
 export function ZeroKeysPill({ onOpen, inline = false }: { onOpen: () => void; inline?: boolean }) {
 	const notice = (
 		<p data-testid="setup-cta-keys-notice" className="lh-fade-in text-sm text-muted-foreground">
-			No model yet.{" "}
+			No provider key yet.{" "}
 			<button
 				type="button"
 				data-testid="setup-cta-keys"
 				onClick={onOpen}
 				className="cursor-pointer text-foreground underline decoration-muted-foreground/50 underline-offset-4 transition-colors hover:decoration-foreground"
 			>
-				Add a provider key
+				Add one
 			</button>{" "}
 			to start.
 		</p>
