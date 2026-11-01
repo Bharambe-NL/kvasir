@@ -5,8 +5,9 @@
  * one question, no formulas, no options, no Markdown, short. Writes
  * evals/voice/<commit>.json and exits non-zero if any reply fails.
  *
- * The question tools are held back (an empty tool registry), as P3-3's
- * ask_spoken will replace them, so questions arrive as spoken text. Models
+ * The agents hold ask_spoken as their only tool (Kvasir P3-3, D160): a
+ * reply is its spoken text plus the question ask_spoken accepted, and
+ * rejected calls (the validator, D163) are counted. Models
  * come from the Kvasir app's own settings (KV_EVAL_SETTINGS, default the
  * desktop app's settings.json), strong slot. Keys come from the app's key
  * file, read in place (KV_AUTH_FILE), never copied. Nothing is written to
@@ -39,6 +40,7 @@ const commit = `${git("rev-parse", "--short", "HEAD")}${dirty ? "-dirty" : ""}`;
 await import("../src/server/keys.ts"); // reflects the key file into the environment
 const { piEngineForSpec } = await import("../src/agent/models.ts");
 const { createProberAgent, createTeacherAgent } = await import("../src/agent/teacher-agent.ts");
+const { askSpokenToolFor } = await import("../src/agent/tools.ts");
 const { callCost } = await import("../src/server/pricing.ts");
 const { checkVoiceReply, wordCount } = await import("../src/evals/voice-checks.ts");
 type Usage = import("@earendil-works/pi-ai").Usage;
@@ -67,34 +69,50 @@ const TEACHER_TURNS = [
 	"OK, let's move on.",
 ];
 
-interface Reply { agent: "prober" | "teacher"; learner: string; reply: string; words: number; checks: ReturnType<typeof checkVoiceReply> }
+interface Reply { agent: "prober" | "teacher"; learner: string; reply: string; words: number; rejected: number; checks: ReturnType<typeof checkVoiceReply> }
 
 const usage: Usage[] = [];
 const replies: Reply[] = [];
 
-function lastAssistantText(messages: unknown[], from: number): string {
-	return messages
-		.slice(from)
-		.filter((m): m is { role: string; content: unknown } => (m as { role?: string }).role === "assistant")
-		.flatMap((m) => (Array.isArray(m.content) ? m.content : []))
-		.filter((c): c is { type: "text"; text: string } => (c as { type?: string }).type === "text")
-		.map((c) => c.text)
-		.join("\n")
-		.trim();
+/** What the listener hears from one turn: the assistant's text, then the
+ *  question ask_spoken accepted; and how many calls the validator rejected. */
+function spokenTurn(messages: unknown[], from: number): { text: string; rejected: number } {
+	const added = messages.slice(from) as { role?: string; content?: unknown; toolCallId?: string; isError?: boolean }[];
+	const failed = new Set(added.filter((m) => m.role === "toolResult" && m.isError).map((m) => m.toolCallId));
+	const texts: string[] = [];
+	let question = "";
+	let rejected = 0;
+	for (const m of added) {
+		if (m.role !== "assistant" || !Array.isArray(m.content)) continue;
+		for (const part of m.content as { type?: string; text?: string; name?: string; id?: string; arguments?: { question?: string } }[]) {
+			if (part.type === "text" && part.text?.trim()) texts.push(part.text.trim());
+			if (part.type === "toolCall" && part.name === "ask_spoken") {
+				if (failed.has(part.id)) rejected++;
+				else question = part.arguments?.question?.trim() ?? "";
+			}
+		}
+	}
+	return { text: [...texts, ...(question ? [question] : [])].join("\n\n"), rejected };
 }
 
 async function converse(agent: "prober" | "teacher", turns: string[]) {
-	const opts = { engine: engine(), tools: {}, promptProfile: "voice" as const, onUsage: (u: Usage) => void usage.push(u) };
-	const a = agent === "prober" ? createProberAgent({} as never, opts) : createTeacherAgent(undefined, opts);
+	const opts = { engine: engine(), promptProfile: "voice" as const, onUsage: (u: Usage) => void usage.push(u) };
+	let a: ReturnType<typeof createTeacherAgent> | undefined;
 	for (const learner of turns) {
+		// Agents are rebuilt every turn in the app; here one agent runs the
+		// session, so each turn gets a fresh ask_spoken (its one-question
+		// count is per turn).
+		const tools = { ask_spoken: askSpokenToolFor() };
+		a ??= agent === "prober" ? createProberAgent({} as never, { ...opts, tools }) : createTeacherAgent(undefined, { ...opts, tools });
+		a.state.tools = Object.values(tools);
 		const from = a.state.messages.length;
 		await a.prompt(learner);
-		const reply = lastAssistantText(a.state.messages as unknown[], from);
+		const { text: reply, rejected } = spokenTurn(a.state.messages as unknown[], from);
 		const checks = checkVoiceReply(reply);
 		if (!reply) checks.push({ name: "short", pass: false, detail: "no spoken reply" });
-		replies.push({ agent, learner, reply, words: wordCount(reply), checks });
+		replies.push({ agent, learner, reply, words: wordCount(reply), rejected, checks });
 		const failed = checks.filter((c) => !c.pass);
-		console.log(`${agent} ${replies.length}: ${failed.length ? `FAIL (${failed.map((c) => `${c.name}: ${c.detail}`).join("; ")})` : "pass"}`);
+		console.log(`${agent} ${replies.length}: ${failed.length ? `FAIL (${failed.map((c) => `${c.name}: ${c.detail}`).join("; ")})` : "pass"}${rejected ? ` (${rejected} question${rejected > 1 ? "s" : ""} rejected and fixed)` : ""}`);
 	}
 }
 
@@ -110,7 +128,8 @@ const dollars = usage.reduce((sum, u) => sum + (callCost({ inputTokens: u.input,
 const passed = replies.filter((r) => r.checks.every((c) => c.pass)).length;
 const out = path.join(REPO, "evals", "voice", `${commit}.json`);
 fs.mkdirSync(path.dirname(out), { recursive: true });
-fs.writeFileSync(out, JSON.stringify({ commit, model: modelId, at: new Date().toISOString(), passed, total: replies.length, dollars: Math.round(dollars * 100) / 100, tokens: total, replies }, null, "\t") + "\n");
-console.log(`${passed} of ${replies.length} replies pass. About $${dollars.toFixed(2)}. Written to ${path.relative(REPO, out)}`);
+const rejectedCalls = replies.reduce((n, r) => n + r.rejected, 0);
+fs.writeFileSync(out, JSON.stringify({ commit, model: modelId, at: new Date().toISOString(), passed, total: replies.length, rejectedCalls, dollars: Math.round(dollars * 100) / 100, tokens: total, replies }, null, "\t") + "\n");
+console.log(`${passed} of ${replies.length} replies pass; ${rejectedCalls} question calls rejected by the validator and fixed. About $${dollars.toFixed(2)}. Written to ${path.relative(REPO, out)}`);
 fs.rmSync(process.env.KV_DATA_DIR, { recursive: true, force: true });
 process.exit(passed === replies.length ? 0 : 1);

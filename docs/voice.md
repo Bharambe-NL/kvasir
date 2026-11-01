@@ -24,17 +24,36 @@ Cost (D154): Aura-2 is $0.030 per 1,000 characters, about $0.81 for an hour in w
 
 `tests/voice-loop.test.ts` drives a full scripted session with faux speech through the real chat handler; `tests/speech-adapters.test.ts` checks the Deepgram adapters against a fake socket.
 
+## Voice sessions and spoken questions
+
+A chat is a voice session when its record has `voice: true` (P3-3, D161), set when it is created (`POST /api/chats` with `voice: true`) and never changed. Practice has no voice. In a voice session the chat handler builds the prober and the teacher on the voice prompt profile, with `ask_spoken` as their only question tool (D160): it replaces quiz, free recall and `ask_user_question`.
+
+- **Graded:** with `correctAnswer`, committed before he hears the question. The tutor grades his spoken words against it in its next reply (D159).
+- **Open:** without `correctAnswer`, for questions with no right answer (the setup questions, a preference).
+
+The validator, `askSpokenProblems` in `src/core/question-core.ts` (D163), sends a call back to the model to fix when:
+- the turn already asked a question
+- the question has more than one question mark
+- it offers options
+- it holds a formula or symbols, or Markdown
+- it runs past 40 words
+
+The voice loop speaks a question only after the validator has accepted it, so a rejected question is never heard. The next utterance then goes to the chat as that question's answer, through the same answer path as the written dock (D162). A voice session opened in the written window shows an open spoken question as a text answer, like free recall.
+
+`tests/ask-spoken.test.ts` checks the validator and the tool sets, and `tests/voice-loop.test.ts` checks spoken questions end to end.
+
 ## The voice prompt profile
 
-A voice session uses the `voice` profile (P3-1, D149): an overlay on the prober and teacher prompts. The agents keep their normal method; in voice the Markdown and LaTeX guide (`shared/40-formatting.md`) is dropped, and three fragments close the prompt:
+A voice session uses the `voice` profile (P3-1, D149): an overlay on the prober and teacher prompts. The agents keep their normal method; in voice the Markdown and LaTeX guide (`shared/40-formatting.md`) and the written question guide (`shared/20-question-tools.md`) are dropped, and four fragments close the prompt:
 
 | Fragment | Agent | What it covers |
 |---|---|---|
+| `src/agent/prompts/voice/shared/20-spoken-questions.md` | prober and teacher | `ask_spoken` for every question, graded or open, one per turn and spoken last; strict grading of transcribed answers (P3-3; replaces `shared/20-question-tools.md` in voice) |
 | `src/agent/prompts/voice/shared/10-spoken-session.md` | prober and teacher | heard, not read; one question per turn; small chunks; short turns; simple language; formulas in words; no formatting; numbers as spoken; no options; transcribed answers |
 | `src/agent/prompts/voice/prober/10-setup.md` | prober | the four setup questions first, one at a time |
 | `src/agent/prompts/voice/teacher/10-spoken-teaching.md` | teacher | pace, confirm and correct and add a layer, hints, examples from his field, recaps |
 
-The profile is chosen with `promptProfile: "voice"` when an agent is built (`src/agent/teacher-agent.ts`). Until P3-3 puts the flag on the chat record, nothing in the app sets it (D150).
+The profile is chosen with `promptProfile: "voice"` when an agent is built (`src/agent/teacher-agent.ts`); the chat handler sets it for a voice session.
 
 ## The contract, rule by rule
 
@@ -54,7 +73,7 @@ The profile is chosen with `promptProfile: "voice"` when an agent is built (`src
 
 ## The live check
 
-`npm run voice:check` runs the real prober and teacher with the voice profile against fixed learner replies on DORA Article 28 (D153). It checks every reply (`src/evals/voice-checks.ts`): at most one question, no formula symbols, no option lists, no Markdown, at most 130 words. The question tools are held back, as `ask_spoken` will replace them, so questions arrive as spoken text.
+`npm run voice:check` runs the real prober and teacher with the voice profile against fixed learner replies on DORA Article 28 (D153). It checks every reply (`src/core/voice-checks.ts`): at most one question, no formula symbols, no option lists, no Markdown, at most 130 words. The agents ask through `ask_spoken`: a reply is the spoken text plus the accepted question, and the report counts calls the validator rejected.
 
 - Models: the strong slot of the Kvasir app's settings (`KV_EVAL_SETTINGS` to point elsewhere).
 - Keys: the app's key file, read in place (`KV_AUTH_FILE`), never copied. An encrypted install's key file cannot be read outside the app.

@@ -26,6 +26,19 @@ for (const adapter of ADAPTERS) {
 			assert.ok(list.every((c) => c.messageCount === 0 && !("messages" in c)));
 		});
 
+		it("a voice session keeps its flag; written sessions and practice never carry one (P3-3, D161)", () => {
+			const { chats } = adapter.fresh();
+			const voice = chats.createChat("Spoken", undefined, { voice: true });
+			const written = chats.createChat("Written");
+			const practice = chats.createChat("Drill", "practice", { voice: true });
+			assert.equal(chats.getChat(voice.id)!.voice, true);
+			assert.equal("voice" in chats.getChat(written.id)!, false, "absent, not false: old records read the same");
+			assert.equal("voice" in chats.getChat(practice.id)!, false, "practice has no voice");
+			chats.saveMessages(voice.id, [user("hi")]);
+			chats.renameChat(voice.id, "Spoken two");
+			assert.equal(chats.getChat(voice.id)!.voice, true, "fixed from birth");
+		});
+
 		it("saveMessages bumps updatedAt and the list order; tree, settings and rename do not", async () => {
 			const { chats } = adapter.fresh();
 			const a = chats.createChat("A");
