@@ -7,13 +7,13 @@ Updated by Claude Code at the end of each session. Read this first.
 - Phases in progress:
   - P1 Retention and the learner layer: every task is merged (P1-1 to P1-8). The gate waits for two weeks of real use. Milestone 2, tracking issue #13.
   - P2 Regulation grounding: opened 2026-10-31, runs alongside P1 (the roadmap allows it). Milestone 3, tracking issue #37, task issues #31 to #36.
-- Task: P2-5 Version diff (#35) is ready on #43, waiting for Sagar's review.
-- Branch: `p2/version-diff`
-- PR: #43 ready
+- Task: P2-5 merged via #43. Next: P2-6 Teacher citations (#36), the last P2 task, not started.
+- Branch: `main`
+- PR: none open
 
 ## Done
 
-- P2-5 built on #43: `src/core/source-diff.ts` (`diffUnits`, `citationStatus`, `outdatedNodes`), `CitationView.outdated` and `GraphSnapshot.outdated`, `versionOf` and `GET /api/sources/documents`, diff-only extraction in `importSource`, the chip's "Outdated" tag, the panel's "Changed/Removed in version" note and the dialog's "Version of" select. `tests/source-diff.test.ts` flags exactly Art. 28(2) and 30(2)(f) across two DORA versions. Decisions D080 (outdated when the newest version drops the unit or the quote; points at the first such version), D081 (a new version extracts only new and changed units), D082 ("Version of" choice for PDF and Markdown in the import dialog), D083 (amber "Outdated" tag; panel shows "Changed in version" or "Removed in version"). Plan approved on #35.
+- P2-5 merged via #43 (contracts and text approved by Sagar): `src/core/source-diff.ts` (`diffUnits`, `citationStatus`, `outdatedNodes`), `CitationView.outdated` and `GraphSnapshot.outdated`, `versionOf` and `GET /api/sources/documents`, diff-only extraction in `importSource`, the chip's "Outdated" tag, the panel's "Changed/Removed in version" note and the dialog's "Version of" select. `tests/source-diff.test.ts` flags exactly Art. 28(2) and 30(2)(f) across two DORA versions. Decisions D080 (outdated when the newest version drops the unit or the quote; points at the first such version), D081 (a new version extracts only new and changed units), D082 ("Version of" choice for PDF and Markdown in the import dialog), D083 (amber "Outdated" tag; panel shows "Changed in version" or "Removed in version"). Plan approved on #35.
 - P2-4 merged via #42 (store, contracts and text approved by Sagar): the units store (`writeDocumentUnits`, `readDocumentUnits`, `DOCUMENT_UNITS_DIR`), `citationLabel`, `chipText`, `citationLabels` and `CitationView` in `src/core/sources.ts`, the snapshot `citations` map, `citationViews` and `GET /api/graph/citations`, `components/citation-chip.tsx` on the canvas detail card, Chains table rows and the graph context card. Browser-checked on a seeded copy from the Chains table and a transcript; the canvas card was not clicked in the browser. Decisions D076 (every version's units stored at import in `data/graph/document-units/<versionId>.json`), D077 (legal short-form chip labels, "+N" for more), D078 (right-side panel with the quote highlighted), D079 (chip in the graph context card). Plan approved on #34.
 - P2-3 merged via #41 (prompt, contracts and text approved by Sagar): `src/core/source-extract.ts` (labels, chunking, view, `validateCitations`, `locateQuote`, `actDateOf`), citations on `ExtractedProposition` and written by `mergeFindings`, `SOURCES_PREAMBLE` and `SOURCES_CITATION_RULE`, `extraction.importSource` and `SourceImportError`, `importSourceFile`, `POST /api/sources/import`, `components/source-import.tsx` (dialog and routing). Tests: `tests/source-extraction.test.ts` (the Done-when), `tests/sources-import-route.test.ts` (DORA end to end with a citing faux model), `tests/render-source-import.test.tsx`. Decisions D068 (cite by unit label), D069 (one or more citations), D070 (quote check: exact after folding whitespace, quotes and dashes; at least 4 words; failures sent back), D071 (import route and button in P2-3), D072 (Official Journal version date is the act's date), D073 (duplicate version refused), D074 (PDF and Markdown ask for a label, prefilled with the file name), D075 (Markdown stays notes unless "Cite as source"). Plan approved on #33.
 - P2-2 merged via #40 (contracts approved by Sagar): `SourceUnit`, `ParsedSource`, `LoadedSource` and the `SourceLoader` port; `src/server/source-loader.ts` (format detection), `src/server/sources.ts` (`parseSource`), `src/server/source-pdf.ts` (`pdfLines`), and the parsers in `src/core/source-parse/` (`eurlex.ts`, `pdf.ts`, `markdown.ts`). `tests/source-parse.test.ts`: DORA 64 articles and 106 recitals, PSD2 117 articles, 113 recitals and 2 annexes, EBA/GL/2019/04 paragraphs 1 to 98 from Section 3.1. Decisions D064 (EUR-Lex paths are the full hierarchy), D065 (recitals, articles and annexes are citable), D066 (PDF and Markdown follow the document's numbering; page fallback), D067 (DORA and PSD2 from Cellar, EBA/GL/2019/04 PDF, committed under `tests/fixtures/sources/`). Plan approved on #32.
@@ -35,13 +35,12 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. After Sagar approves #43: squash merge, tick P2-5 in #37. Then P2-6 Teacher citations (#36), the last P2 task. The P2 gate's first check (import DORA, every citation opens the right paragraph) needs P2-4's citation panel and a live model run.
+1. P2-6 Teacher citations (#36): run `/kv-task P2-6`. Its "Done when" is a live session on a DORA article, so it needs a configured model. The P2 gate's first check (import DORA, every citation opens the right paragraph) needs P2-4's citation panel and a live model run.
 2. In parallel, Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
 
 ## Waiting for Sagar
 
 - All P1 open decisions are taken (D030, D031, D032, D036, D038, D041). All five P2 open decisions are taken (D058 to D062).
-- Review of #43 (the outdated contracts, `versionOf` and the new UI text).
 
 Self-merge is allowed in P1 (D029, recorded in #13) and P2 (D057, recorded in #37) for PRs that need no review from Sagar.
 
