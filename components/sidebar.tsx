@@ -66,6 +66,8 @@ declare global {
 			platform?: string;
 			/** Resolve an OS-backed File without copying/uploading its contents. */
 			getPathForFile?: (file: File) => string;
+			/** Show an export folder in Finder (Kvasir P6-3); false when refused. */
+			revealExport?: (path: string) => Promise<boolean>;
 			/** External Next desktop-dev uses the server's web connections. */
 			subscriptionTransport?: "desktop" | "web";
 			openSubscriptionBrowser?: (action: string) => Promise<void>;

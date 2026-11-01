@@ -65,6 +65,7 @@
 
 import { useRouter } from "next/navigation";
 import { DueChip, RetentionToggle } from "@/components/review/retention-controls";
+import { GraphExportMenu } from "@/components/graph-export";
 import { useRetentionOverlay, useReviewSummary } from "@/components/review/use-review-summary";
 import { useReviewExclusions } from "@/components/review/use-review-exclusions";
 import { CitationChip, useCitationPanel } from "@/components/citation-chip";
@@ -1640,6 +1641,7 @@ export function GraphView({
 						<>
 							<DueChip due={reviewSummary?.due ?? 0} onOpen={() => router.push("/review")} />
 							<RetentionToggle on={retentionOn} onChange={setRetentionOn} />
+							<GraphExportMenu />
 						</>
 					}
 				/>

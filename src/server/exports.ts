@@ -18,9 +18,16 @@ export type ExportKind = "obsidian" | "anki";
 export interface ExportResult {
 	/** The folder written, absolute. */
 	path: string;
+	/** The same, with the home folder shown as "~", for the done line. */
+	display: string;
 	/** Propositions in the export. */
 	propositions: number;
 }
+
+const shown = (p: string) => {
+	const home = os.homedir();
+	return p === home || p.startsWith(home + path.sep) ? `~${p.slice(home.length)}` : p;
+};
 
 /** Where exports go: KV_EXPORT_DIR, else ~/Documents/Kvasir exports (D105). */
 export function exportRoot(): string {
@@ -63,11 +70,11 @@ export function exportGraph(kind: ExportKind, now: Date = new Date()): ExportRes
 		const vault = path.join(dir, "Kvasir vault");
 		fs.mkdirSync(vault);
 		for (const file of obsidianVault(input)) fs.writeFileSync(path.join(vault, file.path), file.text, { flag: "wx" });
-		return { path: dir, propositions: input.nodes.length };
+		return { path: dir, display: shown(dir), propositions: input.nodes.length };
 	}
 	const deck = ankiDeck(input, excludedSessions(stores.learnerStore.readExclusions()));
 	fs.writeFileSync(path.join(dir, "kvasir-anki.txt"), deck.text, { flag: "wx" });
-	return { path: dir, propositions: deck.notes };
+	return { path: dir, display: shown(dir), propositions: deck.notes };
 }
 
 /** Whether a path is inside the export root (the Show in Finder guard). */

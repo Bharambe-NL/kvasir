@@ -43,6 +43,9 @@ contextBridge.exposeInMainWorld("lh", {
 	// Resolve only a renderer-supplied, OS-backed File. No filesystem API,
 	// uploads, copies, or DOM File IPC to main; sandbox/isolation stay on.
 	getPathForFile: (file) => webUtils.getPathForFile(file),
+	// Show an export folder in Finder; main allows only paths inside the
+	// export root (Kvasir P6-3).
+	revealExport: (target) => ipcRenderer.invoke("lh:exports:reveal", target),
 	...(process.argv?.includes("--lh-web-subscriptions") ? {
 		subscriptionTransport: "web",
 		openSubscriptionBrowser: (action) => ipcRenderer.invoke("lh:subscriptions:web-browser", action),

@@ -1,7 +1,7 @@
 /**
  * POST /api/graph/export { kind: "obsidian" | "anki" } (Kvasir P6-3, D100,
  * D105): writes the export into a new dated folder and returns
- * { path, propositions }.
+ * { path, display, propositions }.
  */
 import { exportGraph } from "@/src/server";
 
