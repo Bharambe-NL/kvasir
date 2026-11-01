@@ -68,7 +68,7 @@ describe("generated SVG image boundary", () => {
 				const { document } = parseHTML(html);
 				const holder = document.querySelector(mode === "inline" ? '[data-testid="visual-svg"]' : "[data-lh-overlay-chart]")!;
 				assertImageBoundary(holder, source);
-				assert.ok(holder.classList.contains("bg-white"), "white backing retained");
+				assert.ok(holder.classList.contains("bg-paper"), "white backing retained");
 			});
 		}
 
@@ -95,7 +95,7 @@ describe("generated SVG image boundary", () => {
 			const { document } = parseHTML(html);
 			const holder = document.querySelector(mode === "inline" ? '[data-testid="visual-svg"]' : "[data-lh-overlay-chart]")!;
 			assert.match(holder.getAttribute("style")!, /invert\(1\) hue-rotate\(180deg\)/);
-			assert.ok(holder.classList.contains("bg-white"));
+			assert.ok(holder.classList.contains("bg-paper"));
 			assertImageBoundary(holder, FIGURE);
 		});
 	}

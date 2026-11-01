@@ -118,6 +118,9 @@ export interface CanvasColors {
 	edge: string;
 	label: string;
 	hoverText: string;
+	/** The retention overlay's band colours, resolved from --heat-* (P7-1);
+	 *  absent = no overlay colours known, so the overlay is not drawn. */
+	heat?: Readonly<Record<HeatBand, string>>;
 }
 
 export interface CanvasData {
@@ -179,11 +182,18 @@ const REGION_LABEL_LINE_HEIGHT = 1.3;
  *  node-label discipline), capped at maxLines. Overflow folds into the
  *  last line, ellipsized to fit. measure is the canvas measureText (or a
  *  fake in tests) — pure otherwise. */
-/** The overlay's three band colours (D046): slipping, fading, strong. */
+/** The overlay's three band colours (D046): slipping, fading, strong, as
+ *  their tokens (P7-1, D124). For DOM styles; the canvas gets them
+ *  resolved in CanvasColors.heat. */
+export const HEAT_TOKENS: Readonly<Record<HeatBand, string>> = Object.freeze({
+	low: "--heat-low",
+	mid: "--heat-mid",
+	high: "--heat-high",
+});
 export const HEAT_COLORS: Readonly<Record<HeatBand, string>> = Object.freeze({
-	low: "#e5484d",
-	mid: "#f5a524",
-	high: "#30a46c",
+	low: `var(${HEAT_TOKENS.low})`,
+	mid: `var(${HEAT_TOKENS.mid})`,
+	high: `var(${HEAT_TOKENS.high})`,
 });
 
 /** The overlay colour for a recall chance (D046). */
@@ -1701,9 +1711,12 @@ export class GraphCanvasRenderer {
 		ctx.fillStyle = data.colors.node;
 		ctx.fill(this.nodesPath);
 		// 5. Retention overlay (P1-6): band colours over the reviewed nodes.
-		for (const { band, path } of this.heatPaths) {
-			ctx.fillStyle = HEAT_COLORS[band];
-			ctx.fill(path);
+		const heat = data.colors.heat;
+		if (heat) {
+			for (const { band, path } of this.heatPaths) {
+				ctx.fillStyle = heat[band];
+				ctx.fill(path);
+			}
 		}
 
 		// 6. Node labels — one global gate, faded together. World-scaled

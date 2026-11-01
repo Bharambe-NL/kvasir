@@ -276,7 +276,7 @@ export function MermaidOverlay({
 							{rawSvg !== undefined ? (
 								<div
 									data-lh-overlay-chart
-									className="bg-white"
+									className="bg-paper"
 									style={inverted ? { filter: "invert(1) hue-rotate(180deg)" } : undefined}
 								>
 									<SvgImage svg={svg} className="block h-auto w-full" />

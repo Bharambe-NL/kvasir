@@ -128,3 +128,8 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D120 | 2026-11-01 | P1's real-use check (two weeks of reviews on schedule) stays as a later, non-blocking check, recorded once Sagar has used reviews for two weeks | Sagar | |
 | D121 | 2026-11-01 | New phase P7 Look and feel: a new app symbol, colour themes users can pick, a light mode and a polish pass. Opened first, before P3 | Sagar | |
 | D122 | 2026-11-01 | Self-merge is allowed in P7 for PRs that need no review from Sagar; anything visible (colours, the symbol, text) still waits for his approval | Sagar | |
+| D123 | 2026-11-01 | Tailwind palette classes (`text-red-500`, `bg-white` and the like) count as hard-coded colours; with hex, rgb, hsl and oklch literals they move onto tokens | Sagar | |
+| D124 | 2026-11-01 | Status colour tokens are `--danger`, `--warning`, `--success` (beside `--destructive`), with `--heat-low`, `--heat-mid`, `--heat-high` for the retention overlay, `--confidence-0` to `--confidence-100` for the rail, and `--scrim` for dark overlays | Sagar | |
+| D125 | 2026-11-01 | A test fails `npm test` on any hard-coded colour outside the token files, with a short allow list for real exceptions | Sagar | |
+| D126 | 2026-11-01 | Today's shades are kept exactly: each status colour gets a main and a soft token (`--danger` and `--danger-soft` as red-500 and red-400, and the same for warning and success); red-300's two uses become `--danger-soft` | Sagar | |
+| D127 | 2026-11-01 | Two more colour tokens: `--paper` (the white backing behind rendered SVGs and demos, white in every theme) and `--ink-bright` (the plan diagram ink and the callout border, white in dark mode); `--on-accent` is text on coloured buttons | Sagar | |

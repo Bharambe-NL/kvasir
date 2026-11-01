@@ -82,7 +82,7 @@ export function VisualOutputCard({
 			<div className="rounded-xl border bg-card p-4 text-card-foreground" data-testid="visual-card-failed">
 				<div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
 					Figure
-					<span className="rounded bg-red-500/15 px-1.5 py-0.5 text-red-500">failed</span>
+					<span className="rounded bg-danger/15 px-1.5 py-0.5 text-danger">failed</span>
 				</div>
 				<p className="mt-2 text-sm text-muted-foreground">{result.notes ?? "The figure could not be drawn."}</p>
 			</div>
@@ -105,14 +105,14 @@ export function VisualOutputCard({
 			{/* Natural sizing (owner, 2026-10-07): a declared-width svg sits at
 			   ITS size; max-w-full still shrinks oversized ones to fit. No
 			   declared size (viewBox-only, %-width) keeps the full-width law.
-			   The invert filter rides the bg-white holder, so the backing flips
+			   The invert filter rides the bg-paper holder, so the backing flips
 			   white→black together with the strokes; transparent areas ARE the
 			   backing. */}
 			<div
 				className={
 					natural !== null
-						? "w-fit max-w-full overflow-hidden rounded-lg bg-white"
-						: "w-full overflow-hidden rounded-lg bg-white"
+						? "w-fit max-w-full overflow-hidden rounded-lg bg-paper"
+						: "w-full overflow-hidden rounded-lg bg-paper"
 				}
 				style={{ filter: inverted ? "invert(1) hue-rotate(180deg)" : undefined }}
 				data-testid="visual-svg"
