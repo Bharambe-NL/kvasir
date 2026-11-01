@@ -76,6 +76,7 @@ Dependency arrows point **down only**. Each layer may import the core barrel; no
 | `app/**` | `@/src/core` + `@/src/server` (the barrels) | Route handlers are transport; they delegate to server entry points |
 | `src/core/**` | nothing below itself (never `agent`/`server`/`store`) | The core is pure; adapters implement its ports, never the reverse |
 | `src/mcp/**` | never `agent`/`server`/`store` | The MCP tools receive read functions only; `scripts/mcp-server.ts` wires the store readers (Kvasir P6-2) |
+| `src/evals/**` | never `server`/`store` | The eval driver receives a session port and engines; `scripts/eval.ts` wires the chat handler and stores (Kvasir P6-4) |
 | `src/agent/**` | never `server`/`store` | The agent layer receives its dependencies (ports, engines, seams) via factories/closures |
 
 ```mermaid
@@ -387,6 +388,8 @@ EUR-Lex itself refuses scripted requests, so the app never fetches: Sagar picks 
 
 **The MCP server** (Kvasir P6-2, D090 to D093): a third entry point beside the Next server and the Electron main, for Claude Desktop. `scripts/mcp-server.ts` (the composition root) wires the fs store readers into a `KvasirReadContext` of read functions only and serves `src/mcp/server.ts` over stdio. `src/mcp/tools.ts` holds the six read-only tools (`search_graph`, `get_proposition`, `list_sources`, `read_source`, `list_sessions`, `review_status`) as pure functions over core derivations; `read_source` shares `readSource`, moved to `src/core/source-read.ts`. `src/mcp` has its own ESLint zone: it imports core only. The entry point routes console output to stderr (stdout is the protocol) and lists chats with `readdir` plus `getChat`, so it never creates a folder. `KV_DATA_DIR` picks the data folder; unset, it is the desktop app's. Setup: `docs/mcp.md` and `npm run mcp:config`.
 
+**The teaching evals** (Kvasir P6-4, D094 to D098): a fourth entry point, `npm run eval` (`scripts/eval.ts`). It copies `evals/fixtures/data/` to a temp folder, points `KV_DATA_DIR` at it, and runs each scenario in `evals/scenarios/` through the real `handleChatRequest`. `src/evals/driver.ts` loops a simulated learner (the cheap slot, `src/evals/roles.ts`) against the session (the strong slot) up to 12 replies; answers are built with the dock's `questionDataFor` (`src/core/question-data.ts`) and `buildAnswer`. Deterministic checks (`src/evals/checks.ts`) read the stored messages and a judge (the strong slot) scores the rubric. Results go to `evals/results/<short commit>/` and are committed. `src/evals` has its own ESLint zone: never `server` or `store`. Details: `docs/evals.md`.
+
 ```mermaid
 flowchart TB
     TRIG["trigger seam (turn-service): coverageOf(record, coverageLedger)<br/>— uncovered tokens ≥ graph.extractionChunkTokens (settings)?"] -->|"yes, single-flight per source"| RUN["extraction.runExtraction(chatId)"]
@@ -603,6 +606,7 @@ Every place the architecture is designed to be cut — the "one file" a future c
 | Push events | `src/core/events.ts` (bus) + `src/server/events-stream.ts` (SSE seam) + `components/server-events.tsx` (the window's EventSource) | change notification, end to end |
 | Agent construction (tests) | `handleChatRequest(req, buildAgent?)` | scripted engines, no refactor |
 | Sub-agent verification | `sub-agents/headless.ts` (`headlessOverride`) | demo/SVG verification, no Chrome |
+| Eval session (P6) | `SessionPort` in `src/evals/driver.ts`, wired in `scripts/eval.ts` | how a scenario reaches a session; faux in tests, the chat handler live |
 | MCP read context (P6) | `KvasirReadContext` in `src/mcp/tools.ts`, wired in `scripts/mcp-server.ts` | what Claude Desktop can read through Kvasir; read functions only |
 | Source text for the teacher (P2) | `SourceToolContext` in `src/agent/tools/sources.ts`, built in `src/server/chat-handler.ts` | what `read_source` can read; read functions only; absent context = no tool |
 | Citation views (Library, P2) | `citationViews` in `src/server/citations.ts`, `GET /api/graph/citations` | what the chip and panel show; unit text from `data/graph/document-units/` |
