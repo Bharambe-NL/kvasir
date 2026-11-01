@@ -164,3 +164,8 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D156 | 2026-11-01 | Text-to-speech uses a short-lived Deepgram token minted by the server, as dictation does; the window streams text to Deepgram and plays the audio directly | Sagar | |
 | D157 | 2026-11-01 | The voice SpeechIn adapter is new, beside dictation, reusing its pure helpers; moving dictation onto it is a later change | Sagar | |
 | D158 | 2026-11-01 | The default voice is `aura-2-thalia-en`, one setting value; a voice picker can come with drive mode (P3-5) | Sagar | |
+| D159 | 2026-11-01 | The tutor grades a spoken answer in its next reply, against the answer it committed before asking (as free recall does); no separate grader call | Sagar | |
+| D160 | 2026-11-01 | In a voice session `ask_spoken` replaces quiz, free recall and `ask_user_question`: with a committed answer it is a graded question, without one an open question with no right answer. No options anywhere | Sagar | |
+| D161 | 2026-11-01 | A chat is a voice session when its record has `voice: true`, set at creation and never changed | Sagar | |
+| D162 | 2026-11-01 | With an `ask_spoken` open, the voice loop's turn sender sends the next utterance as that question's answer, through the existing answer path; the server is unchanged there | Sagar | |
+| D163 | 2026-11-01 | The `ask_spoken` validator rejects a second question call in the turn, more than one question mark, option lists, formula symbols, Markdown, and more than 40 words, so the model fixes the call before anything is spoken | Sagar | |

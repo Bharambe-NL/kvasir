@@ -12,12 +12,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P3 Voice tutor and drive mode: opened 2026-11-01. Milestone 6, tracking issue #88, task issues #82 to #87 (P3-1 to P3-6). Release tags now count up (D147): P3's gate takes the next minor after the latest release. Self-merge allowed for PRs that need no review (D148).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: none in progress. Next is P3-3 spoken questions (`/kv-task P3-3`).
-- Branch: none
-- PR: none open
+- Task: P3-3 Spoken questions (#84) is in progress; plan approved on #84.
+- Branch: `p3/spoken-questions`
+- PR: P3-3 draft, linked to #84
 
 ## Done
 
+- P3-3 started: D159 (the tutor grades), D160 (`ask_spoken` replaces every question tool in voice), D161 (`voice: true` at creation), D162 (the voice loop sends the answer), D163 (the full spoken check in the validator). Plan approved on #84.
 - P3-2 merged via #92 (ports approved by Sagar): D154 (Deepgram Aura-2), D155 (sentence by sentence), D156 (short-lived token), D157 (new SpeechIn adapter beside dictation), D158 (voice `aura-2-thalia-en`). Plan approved on #83. Built: `src/core/speech.ts` (ports, splitter, reply tracker, `runVoiceLoop`), `components/speech/` (Deepgram in and out, chat turn sender), a lint zone, `tests/voice-loop.test.ts` (faux speech, real chat handler). Not yet tried with real audio: the Aura-2 socket with the minted token is unverified until a screen exists (P3-4 or P3-5).
 - P3-1 merged via #90 (prompts approved by Sagar): D149 (an overlay folder), D150 (composition only until P3-3), D151 (the prober asks the four setup questions), D152 (examples from the learner's field), D153 (a scripted live check). Plan approved on #82. Built: `PromptProfile`, the `voice/` overlay (three fragments), `promptProfile` on agent builds, `src/evals/voice-checks.ts`, `npm run voice:check`, `docs/voice.md`. Live runs on Opus 5.5: e215d41 (teacher turns too long, $0.24), then 3d2fd06 after tightening (14 of 14, $0.20). Finding: two prober questions bundle a second part ("who ... and why"); they pass the one-question check.
 - P3 opened: milestone 6, tracking issue #88, task issues #82 to #87. D147: release tags count up in release order. D148: P3 self-merge.
