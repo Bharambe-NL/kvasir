@@ -21,8 +21,12 @@ const { createGraphStore } = await import("../src/store/graph.ts");
 const { createLearnerStore } = await import("../src/store/learner.ts");
 const { createChatStore } = await import("../src/store/chats.ts");
 const { PATHS } = await import("../config.ts");
+// Encrypted data (P6-6, D118): no key leaves the app, so every tool
+// answers with this, and no store is opened.
+const { ENCRYPTION_FILE } = await import("../src/store/data-key.ts");
+const ENCRYPTED = fs.existsSync(ENCRYPTION_FILE) ? "Kvasir data on this Mac is encrypted; the MCP server cannot read it." : null;
 // The same choice as the app (D108); a database is opened read-only.
-const backend = activeBackend({ readOnly: true });
+const backend = ENCRYPTED ? null! : activeBackend({ readOnly: true });
 const graphStore = createGraphStore(backend);
 const learnerStore = createLearnerStore(backend);
 const chatStore = createChatStore(backend);
@@ -46,21 +50,38 @@ const localDayStart = () => {
 };
 
 const version = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")).version as string;
+const refuse = (): never => {
+	throw new Error(ENCRYPTED!);
+};
 const server = createKvasirMcpServer(
-	{
-		readNodes: () => graphStore.readNodes(),
-		readChains: () => graphStore.readChains(),
-		readCitations: () => graphStore.readCitations(),
-		readDocumentVersions: () => graphStore.readDocumentVersions(),
-		readDocumentUnits: (v) => graphStore.readDocumentUnits(v),
-		readSources: () => graphStore.readSources(),
-		readReviews: () => learnerStore.readReviews(),
-		readExclusions: () => learnerStore.readExclusions(),
-		listChats: listChatsReadOnly,
-		now: () => new Date().toISOString(),
-		dayStart: localDayStart,
-	},
+	ENCRYPTED
+		? {
+				readNodes: refuse,
+				readChains: refuse,
+				readCitations: refuse,
+				readDocumentVersions: refuse,
+				readDocumentUnits: refuse,
+				readSources: refuse,
+				readReviews: refuse,
+				readExclusions: refuse,
+				listChats: refuse,
+				now: () => new Date().toISOString(),
+				dayStart: localDayStart,
+			}
+		: {
+				readNodes: () => graphStore.readNodes(),
+				readChains: () => graphStore.readChains(),
+				readCitations: () => graphStore.readCitations(),
+				readDocumentVersions: () => graphStore.readDocumentVersions(),
+				readDocumentUnits: (v) => graphStore.readDocumentUnits(v),
+				readSources: () => graphStore.readSources(),
+				readReviews: () => learnerStore.readReviews(),
+				readExclusions: () => learnerStore.readExclusions(),
+				listChats: listChatsReadOnly,
+				now: () => new Date().toISOString(),
+				dayStart: localDayStart,
+			},
 	version,
 );
 await server.connect(new StdioServerTransport());
-console.error(`[kvasir-mcp] serving ${PATHS.data}${backend.kind === "sqlite" ? " from kvasir.db" : ""} (read-only)`);
+console.error(`[kvasir-mcp] serving ${PATHS.data}${ENCRYPTED ? " (encrypted: every tool refuses)" : backend.kind === "sqlite" ? " from kvasir.db" : ""} (read-only)`);
