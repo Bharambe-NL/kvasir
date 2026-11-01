@@ -9,7 +9,9 @@
  *
  * Path grammar: "system-prompt.md" (the shared base), "shared/<fragment>"
  * (sources v1: fragments composed by BOTH agents), "prober/<fragment>" /
- * "teacher/<fragment>" — where <fragment> is numeric-prefixed + .md
+ * "teacher/<fragment>", and the voice profile's overlay (Kvasir P3-1):
+ * "voice/shared/<fragment>", "voice/prober/<fragment>",
+ * "voice/teacher/<fragment>" — where <fragment> is numeric-prefixed + .md
  * (e.g. 20-teaching.md). POSIX-relative, no traversal, no nesting.
  */
 
@@ -21,6 +23,11 @@ export const FRAGMENT_RE = /^\d+-[\w.-]+\.md$/;
  *  teaching base, no shared fragments (the doctrine contradicts the
  *  teaching philosophy; its 00-base.md plays the base role). */
 export type PromptAgent = "prober" | "teacher" | "practice";
+
+/** A prompt profile (Kvasir P3-1, D149): an overlay that adds fragments
+ *  to the prober and teacher prompts for one kind of session. "voice" is
+ *  the spoken session: src/agent/prompts/voice/. */
+export type PromptProfile = "voice";
 
 /** One segment of one agent's composed prompt. */
 export interface PromptSegmentInfo {
@@ -44,7 +51,7 @@ export interface PromptSegmentInfo {
  *  CURRENT source segment list. */
 export function isValidSegmentPath(segmentPath: string): boolean {
 	if (segmentPath === "system-prompt.md") return true;
-	const m = /^(prober|teacher|practice|shared)\/([\w.-]+\.md)$/.exec(segmentPath);
-	if (!m || m[2] === undefined) return false;
-	return FRAGMENT_RE.test(m[2]);
+	const m = /^(?:prober|teacher|practice|shared|voice\/(?:shared|prober|teacher))\/([\w.-]+\.md)$/.exec(segmentPath);
+	if (!m || m[1] === undefined) return false;
+	return FRAGMENT_RE.test(m[1]);
 }
