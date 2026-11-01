@@ -90,9 +90,9 @@ export function FilePathDropZone({ children, className }: { children: React.Reac
 		>
 			{children}
 			{dragging && (
-				<div data-testid="file-path-drop-indicator" className="pointer-events-none absolute inset-2 z-50 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-background/85 p-6 text-center backdrop-blur-sm">
+				<div data-testid="file-path-drop-indicator" className="pointer-events-none absolute inset-2 z-50 flex items-center justify-center rounded-xl border-2 border-dashed border-highlight bg-background/85 p-6 text-center backdrop-blur-sm">
 					<div className="flex max-w-md flex-col items-center gap-3">
-						<FileSymlinkIcon className="size-8 text-primary" aria-hidden />
+						<FileSymlinkIcon className="size-8 text-highlight" aria-hidden />
 						<span className="font-ui text-sm">{window.lh?.getPathForFile ? "Drop to attach file paths" : BROWSER_NOTICE}</span>
 					</div>
 				</div>

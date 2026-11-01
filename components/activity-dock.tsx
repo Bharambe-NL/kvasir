@@ -487,7 +487,7 @@ function ActivityBlobRow({
 								<span className="tabular-nums text-card-foreground">{blob.steps}</span>
 							</div>
 						)}
-						<a href={`/chat/${blob.chatId}`} className="text-primary hover:underline">
+						<a href={`/chat/${blob.chatId}`} className="text-highlight hover:underline">
 							Open session →
 						</a>
 					</div>

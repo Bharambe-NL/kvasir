@@ -246,6 +246,16 @@
 	background: color-mix(in srgb, var(--highlight) 30%, transparent);
 }
 
+/* Switches that are on take the highlight in the coloured themes (P7-3);
+   Kvasir keeps its grey track and ink knob. */
+:is(.theme-sepia, .theme-forest, .theme-eink) [role="switch"][aria-checked="true"] {
+	background-color: var(--highlight);
+}
+:is(.theme-sepia, .theme-forest, .theme-eink) [role="switch"][aria-checked="true"] > span {
+	background-color: var(--on-highlight);
+	color: var(--highlight);
+}
+
 /* E-ink (D136): no motion, as with the OS reduce-motion setting, and a
    symbol before status text, which has no colour here. */
 .theme-eink *,
