@@ -10,13 +10,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Task: P6-2 MCP server (#48) is in progress; plan approved on #48.
+- Task: P6-2 MCP server (#48) is ready on #55, waiting for Sagar's review and his Claude Desktop check.
 - Branch: `p6/mcp-server`
-- PR: #55 (draft)
+- PR: #55 ready
 
 ## Done
 
-- P6-2 MCP server started: D090 (six read-only tools), D091 (stdio command reading the data folder), D092 (learner state shared read-only), D093 (config snippet via `npm run mcp:config`). Plan approved on #48.
+- P6-2 built on #55: `src/mcp/tools.ts` and `src/mcp/server.ts` (six read-only tools), `scripts/mcp-server.ts` (stdio), `scripts/mcp-config.ts` (`npm run mcp:config`), `docs/mcp.md`, the `src/mcp` lint zone, `readSource` moved to `src/core/source-read.ts`. Decisions D090 (six read-only tools), D091 (stdio command reading the data folder), D092 (learner state shared read-only), D093 (config snippet via `npm run mcp:config`). Plan approved on #48.
 - P6 opened via #54 (D089 self-merge allowed).
 - P2 gate passed via #45 (approved by Sagar in #37): all three checks live with his models on a temp data copy. Released as `v0.2.0` (notes only, D027; the tag's release workflow run was cancelled before building). D088: P2 is `v0.2.0` and P1 gets no separate tag.
 - P2-6 merged via #44 (prompt, tool and link form approved by Sagar): the `#src-` link form (`src/core/source-cite.ts`), `GET /api/graph/source-unit`, `citationSourceLines` in the graph-context marker, `read_source` (`src/agent/tools/sources.ts`) for the teacher behind the graph tools gate, the "Citing sources" prompt section, and lesson links rendered as chips (`components/source-link.tsx`). Live check done 2026-11-01 with Sagar's models on a temp data copy: DORA imported (138 propositions, 258 citations, none uncited), and the teacher cited Art. 28(1)(a) through `read_source`; the chip opens it. Decisions D084 (lesson citations are links rendered as the chip), D085 (session context carries picked propositions' citations; `read_source` tool), D086 (`read_source` rides Graph tools), D087 (teacher only). Plan approved on #36.
@@ -42,9 +42,10 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
-2. In the meantime, a P6 task: run `/kv-task P6-<n>`. Each asks its own questions; P6-2 confirms the tool list, P6-6 the key recovery method.
-3. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
+1. Sagar adds the `npm run mcp:config` entry to Claude Desktop and asks it a question from his graph (P6-2's "Done when"); then merge #55 and tick P6-2 in #53.
+2. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
+3. In the meantime, a P6 task: run `/kv-task P6-<n>`. Each asks its own questions; P6-2 confirms the tool list, P6-6 the key recovery method.
+4. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
 
 ## Waiting for Sagar
 
