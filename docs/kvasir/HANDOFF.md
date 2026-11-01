@@ -11,13 +11,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P7 Look and feel: opened 2026-11-01, before P3 (D121). Milestone 5, tracking issue #69, task issues #64 to #68 (P7-1 to P7-5). Self-merge allowed for PRs that need no review (D122).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: P7-1 Theme tokens (#64) is ready and waiting for Sagar's review (six small colour changes, named in the PR).
-- Branch: `p7/theme-tokens`
-- PR: #71, linked to #64
+- Task: none in progress. P7-1 merged via #71; next is `/kv-task P7-2` (light mode).
+- Branch: `main`
+- PR: none open
 
 ## Done
 
-- P7-1 built on #71, waiting for review: tokens in `app/globals.css`, 86 palette classes in 22 files swapped, heat colours resolved for the canvas, the guard `tests/no-hardcoded-colors.test.ts`. Screenshots before and after match except six named spots. D123 (palette classes count as hard-coded), D124 (token names), D125 (a test guards against hard-coded colours), D126 (today's shades kept, main and soft), D127 (`--paper` and `--ink-bright`). Plan approved on #64. Sagar's e-ink theme idea and the cluster region colours are noted on #66 for P7-3.
+- P7-1 merged via #71 (approved by Sagar): tokens in `app/globals.css`, 86 palette classes in 22 files swapped, heat colours resolved for the canvas, the guard `tests/no-hardcoded-colors.test.ts`. Screenshots before and after match except six named spots. D123 (palette classes count as hard-coded), D124 (token names), D125 (a test guards against hard-coded colours), D126 (today's shades kept, main and soft), D127 (`--paper` and `--ink-bright`). Plan approved on #64. Sagar's e-ink theme idea and the cluster region colours are noted on #66 for P7-3.
 - P7 opened: D119 (gates block no phase), D120 (P1 real-use check later), D121 (P7 Look and feel, before P3), D122 (P7 self-merge). Brief `docs/kvasir/phases/P7-look-and-feel.md`.
 - P6-6 merged via #62 (UI text, format and key path approved by Sagar; live check passed in a packaged build, run 41296962901): sealing (`src/store/crypto.ts`), the key slot (`src/store/data-key.ts`), `encryptionLayer`, the in-place conversion, `auth.json` sealing, the server IPC side and 423 in `proxy.ts`, `electron/encryption.cjs` (safeStorage, recovery, turn on and off), the Security section and the Locked screen, the MCP and eval refusals, `docs/encryption.md`. Tested end to end with a fake keychain against the real server side. D112 (store data plus `auth.json`), D113 (`safeStorage`, key over IPC), D114 (recovery key shown once), D115 (Settings, Security section), D116 (Locked screen), D117 (AES-256-GCM per value), D118 (the MCP server refuses). Plan approved on #52.
 - P6-1 merged via #60 (store format approved by Sagar): `StoreBackend` (`src/store/backend.ts`) under the four stores, `fileBackend`, the SQLite backend (`src/store/sqlite/`), `src/store/active.ts` (SQLite when `data/kvasir.db` exists), `src/store/migrate.ts` with `npm run migrate:sqlite` and `npm run migrate:files`, `tests/store-contract/`, `docs/sqlite.md`. Live round trip on a copy of Sagar's data: migrated, browsed in the production build, migrated back; files identical except positions the app saved while on SQLite. D106 (`node:sqlite`), D107 (what moves into `data/kvasir.db`), D108 (SQLite when `kvasir.db` exists), D109 (migration both ways, old side moved aside), D110 (JSON rows plus key columns), D111 (shared port contract suites). Plan approved on #47.
@@ -56,7 +56,7 @@ Updated by Claude Code at the end of each session. Read this first.
 4. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 5. Optional for Sagar: move his app data to SQLite with the app closed (`docs/sqlite.md`).
 6. Optional for Sagar: turn on encryption in his own app (Settings > Security; `docs/encryption.md`). Save the recovery key.
-7. P7-1 theme tokens (`/kv-task P7-1`), then P7-2 to P7-5; then P3, P4 and P5.
+7. P7-2 light mode (`/kv-task P7-2`), then P7-3 (colour themes, with the e-ink preset Sagar asked for, see #66), P7-4 and P7-5; then P3, P4 and P5.
 8. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
 9. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.
 10. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
