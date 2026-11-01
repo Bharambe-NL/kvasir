@@ -21,6 +21,7 @@
 	"scripts": {
 		"mcp": "tsx scripts/mcp-server.ts",
 		"mcp:config": "tsx scripts/mcp-config.ts",
+		"eval": "tsx scripts/eval.ts",
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
