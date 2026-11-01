@@ -32,8 +32,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+	DEFAULT_BACKGROUNDS,
 	EXTRACTION_CHUNK_TOKENS_FLOOR,
 	resolveSettings,
+	type AppearanceMode,
 	type AppearanceSettings,
 	type GraphSettings,
 } from "@/src/core";
@@ -186,22 +188,42 @@ export function AppearanceSection({
 
 	return (
 		<>
-			<SettingsRow label="Mode" hint="Coming soon" testid="row-mode" dimmed>
-				<ThinSelect value="dark" ariaLabel="mode" onChange={() => {}} testid="select-mode" disabled>
+			<SettingsRow label="Mode" testid="row-mode">
+				<ThinSelect
+					value={resolved.mode}
+					ariaLabel="mode"
+					onChange={(v) => onSectionChange({ ...appearance, mode: v as AppearanceMode })}
+					testid="select-mode"
+				>
 					<option value="dark">Dark</option>
+					<option value="light">Light</option>
+					<option value="system">System</option>
 				</ThinSelect>
 			</SettingsRow>
 			<SettingsRow
-				label="Background"
-				hint={`Empty = ${resolved.background ?? "#141414"}`}
+				label="Dark background"
+				hint={`Empty = ${resolved.background ?? DEFAULT_BACKGROUNDS.dark}`}
 				testid="row-background"
 			>
 				<CommitInput
 					value={appearance?.background ?? ""}
-					placeholder="#141414"
-					ariaLabel="background hex"
+					placeholder={DEFAULT_BACKGROUNDS.dark}
+					ariaLabel="dark background hex"
 					testid="input-background"
 					onCommit={(v) => onSectionChange({ ...appearance, background: v === "" ? null : v })}
+				/>
+			</SettingsRow>
+			<SettingsRow
+				label="Light background"
+				hint={`Empty = ${resolved.lightBackground ?? DEFAULT_BACKGROUNDS.light}`}
+				testid="row-light-background"
+			>
+				<CommitInput
+					value={appearance?.lightBackground ?? ""}
+					placeholder={DEFAULT_BACKGROUNDS.light}
+					ariaLabel="light background hex"
+					testid="input-light-background"
+					onCommit={(v) => onSectionChange({ ...appearance, lightBackground: v === "" ? null : v })}
 				/>
 			</SettingsRow>
 			<SettingsRow

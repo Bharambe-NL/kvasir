@@ -88,3 +88,4 @@ export { formatInterval, heatBand, type HeatBand, type ReviewExclusionsView, typ
 export { chipText, citationLabel, citationLabels, documentShortName, shortPath, versionLabel, type CitationView } from "./sources.ts";
 export { parseSourceRef, sourceHref, sourceLink, type SourceRef, type SourceUnitView } from "./source-cite.ts";
 export { questionDataFor } from "./question-data.ts";
+export * from "./background-defaults.ts";

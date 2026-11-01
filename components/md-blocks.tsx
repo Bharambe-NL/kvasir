@@ -38,6 +38,7 @@ import {
 } from "streamdown";
 import type { ExtraProps } from "streamdown";
 import { MERMAID_FONT_SIZE, renderMermaid } from "@/components/mermaid-render";
+import { useColorScheme } from "@/components/settings/appearance";
 import { MermaidError } from "@/components/mermaid-error";
 import { blurAfterPointerClick } from "@/components/focus-hygiene";
 import { chartSize, useSessionMermaid } from "@/components/session-overlay";
@@ -162,12 +163,14 @@ function MermaidInline({ chart }: { chart: string }) {
 		setCapW((w * fs) / MERMAID_FONT_SIZE);
 	}, [svg]);
 
+	// Charts follow light or dark (P7-2): a mode change re-renders them.
+	const scheme = useColorScheme();
 	useEffect(() => {
 		if (incomplete) return;
 		let cancelled = false;
 		setSvg(null);
 		setError(null);
-		renderMermaid(chart)
+		renderMermaid(chart, scheme)
 			.then((s) => {
 				if (!cancelled) setSvg(s);
 			})
@@ -177,7 +180,7 @@ function MermaidInline({ chart }: { chart: string }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [chart, attempt, incomplete]);
+	}, [chart, attempt, incomplete, scheme]);
 
 	if (incomplete || (svg === null && error === null)) {
 		return (

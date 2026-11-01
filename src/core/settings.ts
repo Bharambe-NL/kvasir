@@ -381,13 +381,21 @@ export interface MdRenderingSettings {
 	italicColor?: string | null;
 }
 
+/** How the app picks light or dark (Kvasir P7-2, D128). */
+export type AppearanceMode = "dark" | "light" | "system";
+export const APPEARANCE_MODES: readonly AppearanceMode[] = ["dark", "light", "system"];
+
 /** Appearance settings — mode, colors, type, markdown emphasis. */
 export interface AppearanceSettings {
-	/** "dark" | "light" (default dark). */
-	mode?: "dark" | "light";
-	/** The one user-chosen color; everything else derives per-mode in code.
-	 *  null = the mode's default background. */
+	/** "dark" | "light" | "system" (default dark; system follows the OS
+	 *  appearance live). Kvasir P7-2, D128, D131. */
+	mode?: AppearanceMode;
+	/** The dark mode's background; everything else derives in code.
+	 *  null = the dark default. (The name predates light mode, D131.) */
 	background?: string | null;
+	/** The light mode's background (P7-2, D130, D131). null = the light
+	 *  default. */
+	lightBackground?: string | null;
 	/** The main reading font (everything that is Source Sans 3 today), by
 	 *  name — user-chosen from installed fonts. null = Source Sans 3. */
 	fontFamily?: string | null;
@@ -491,8 +499,9 @@ export interface FactorySettings {
 	general: Required<GeneralSettings>;
 	dictation: Required<DictationSettings>;
 	appearance: {
-		mode: "dark" | "light";
+		mode: AppearanceMode;
 		background: string | null;
+		lightBackground: string | null;
 		fontFamily: string | null;
 		proseFontSize: number;
 		sessionNameSerif: boolean;
@@ -512,7 +521,8 @@ export const FACTORY_SETTINGS: FactorySettings = {
 	dictation: { language: "en" },
 	appearance: {
 		mode: "dark",
-		background: null, // the dark default (#141414) lives in the mode's derivation curve
+		background: null, // the dark default lives in app/globals.css
+		lightBackground: null, // the light default lives in app/globals.css
 		fontFamily: null, // Source Sans 3
 		proseFontSize: 16,
 		sessionNameSerif: true,
@@ -738,8 +748,9 @@ function sanitizeMdRendering(raw: unknown): MdRenderingSettings {
 
 function sanitizeAppearance(raw: Record<string, unknown>): AppearanceSettings {
 	const out: AppearanceSettings = {};
-	if (raw.mode === "dark" || raw.mode === "light") out.mode = raw.mode;
+	if (APPEARANCE_MODES.includes(raw.mode as AppearanceMode)) out.mode = raw.mode as AppearanceMode;
 	if (raw.background !== undefined) out.background = sanitizeHexOrNull(raw.background);
+	if (raw.lightBackground !== undefined) out.lightBackground = sanitizeHexOrNull(raw.lightBackground);
 	if (raw.fontFamily !== undefined) {
 		out.fontFamily = typeof raw.fontFamily === "string" && raw.fontFamily.trim() ? raw.fontFamily : null;
 	}

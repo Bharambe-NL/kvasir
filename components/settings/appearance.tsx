@@ -28,6 +28,7 @@ export function resolveAppearance(delta: AppearanceSettings | undefined) {
 	return {
 		mode: delta?.mode ?? f.mode,
 		background: delta?.background ?? f.background,
+		lightBackground: delta?.lightBackground ?? f.lightBackground,
 		fontFamily: delta?.fontFamily ?? f.fontFamily,
 		proseFontSize: delta?.proseFontSize ?? f.proseFontSize,
 		sessionNameSerif: delta?.sessionNameSerif ?? f.sessionNameSerif,
@@ -39,36 +40,51 @@ export function resolveAppearance(delta: AppearanceSettings | undefined) {
 	};
 }
 
-/** One channel clamped on the dark curve: additive offsets matching today's
- *  hand-picked palette (#141414 → card #1c1c1c (+8) → accent #2a2a2a (+22)
- *  → border #434343 (+47)) — the "per-mode derivation in code" the schema
- *  promises, as the thinnest curve that keeps the palette's relationships. */
-function raise(hex: string, add: number): string {
+/** One colour shifted on every channel, clamped: additive offsets matching
+ *  the hand-picked palettes (dark: #141414 → card +8 → accent +22 → border
+ *  +47; light, P7-2: card -8 → accent -19 → border -33) — the "per-mode
+ *  derivation in code" the schema promises, as the thinnest curve that
+ *  keeps each palette's relationships. */
+function shift(hex: string, by: number): string {
 	const n = hex.length === 4
 		? hex.slice(1).split("").map((c) => parseInt(c + c, 16))
 		: [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
-	return `#${n.map((c) => Math.min(255, c + add).toString(16).padStart(2, "0")).join("")}`;
+	return `#${n.map((c) => Math.max(0, Math.min(255, c + by)).toString(16).padStart(2, "0")).join("")}`;
 }
 
-/** The derived palette a chosen background implies (dark curve): background
- *  itself, the raised surfaces (card/popover/secondary/muted, +8), the
- *  accent (+22), the edges (border/input, +47), and primary-foreground
- *  (the inverted text on primary = the background's own color, as today). */
-export function derivedPalette(background: string): Record<string, string> {
-	const card = raise(background, 8);
-	const accent = raise(background, 22);
-	const border = raise(background, 47);
+/** The derived palette a chosen background implies, for its own mode only
+ *  (P7-2, D130): the background, the surfaces (card/popover/secondary/
+ *  muted), the accent, the edges (border/input) and primary-foreground (the
+ *  text on primary = the background itself). Written to the per-mode hooks
+ *  app/globals.css reads (--lh-dark-* or --lh-light-*), so a dark choice
+ *  never reaches light mode and the reverse. */
+export function derivedPalette(background: string, mode: "dark" | "light" = "dark"): Record<string, string> {
+	const step = mode === "dark" ? { card: 8, accent: 22, border: 47 } : { card: -8, accent: -19, border: -33 };
+	const card = shift(background, step.card);
+	const accent = shift(background, step.accent);
+	const border = shift(background, step.border);
+	const hook = (name: string) => `--lh-${mode}-${name}`;
 	return {
-		"--background": background,
-		"--card": card,
-		"--popover": card,
-		"--secondary": card,
-		"--muted": card,
-		"--accent": accent,
-		"--border": border,
-		"--input": border,
-		"--primary-foreground": background,
+		[hook("background")]: background,
+		[hook("card")]: card,
+		[hook("popover")]: card,
+		[hook("secondary")]: card,
+		[hook("muted")]: card,
+		[hook("accent")]: accent,
+		[hook("border")]: border,
+		[hook("input")]: border,
+		[hook("primary-foreground")]: background,
 	};
+}
+
+/** The <html> classes a mode may set (P7-2, D128); app/globals.css maps
+ *  each to its colour-scheme. */
+export const MODE_CLASSES = ["dark", "light", "system"] as const;
+
+/** Put the mode's class on <html>, removing the others. */
+export function applyModeClass(root: { classList: DOMTokenList }, mode: (typeof MODE_CLASSES)[number]): void {
+	for (const c of MODE_CLASSES) if (c !== mode) root.classList.remove(c);
+	root.classList.add(mode);
 }
 
 /** THE mapping: resolved appearance → the CSS variables to set on <html>.
@@ -76,7 +92,8 @@ export function derivedPalette(background: string): Record<string, string> {
  *  exported for tests. */
 export function appearanceVars(a: ReturnType<typeof resolveAppearance>): Record<string, string> {
 	const vars: Record<string, string> = {};
-	if (a.background !== null) Object.assign(vars, derivedPalette(a.background));
+	if (a.background !== null) Object.assign(vars, derivedPalette(a.background, "dark"));
+	if (a.lightBackground !== null) Object.assign(vars, derivedPalette(a.lightBackground, "light"));
 	if (a.fontFamily !== null) {
 		vars["--font-prose"] = `"${a.fontFamily}", var(--font-sans3), ui-sans-serif, system-ui, sans-serif`;
 	}
@@ -125,6 +142,14 @@ export function useAppearance() {
 
 export function AppearanceProvider({ children }: { children: React.ReactNode }) {
 	const [delta, setDelta] = useState<AppearanceSettings | undefined>(undefined);
+	// The server already rendered the saved mode's class (app/layout.tsx);
+	// the client takes over only once the record has arrived, so the
+	// factory default never flips a light page dark for a moment.
+	const [loaded, setLoaded] = useState(false);
+	const mode = resolveAppearance(delta).mode;
+	useEffect(() => {
+		if (loaded) applyModeClass(document.documentElement, mode);
+	}, [loaded, mode]);
 	const appliedRef = useRef<string>("");
 
 	// The vars apply on every change — stringified as the change signal.
@@ -166,6 +191,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
 				setDelta(
 					appearance && typeof appearance === "object" ? (appearance as AppearanceSettings) : undefined,
 				);
+				setLoaded(true);
 			})
 			.catch(() => {/* settings stay factory — not worth a crash */});
 		return () => {
@@ -175,6 +201,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
 
 	const onAppearanceChange = useCallback((next: AppearanceSettings | undefined) => {
 		setDelta(next);
+		setLoaded(true);
 	}, []);
 
 	const value = useMemo(
@@ -182,4 +209,21 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
 		[delta, onAppearanceChange],
 	);
 	return <AppearanceContext.Provider value={value}>{children}</AppearanceContext.Provider>;
+}
+
+/** The scheme on screen now: the mode, or with System the OS appearance,
+ *  following it live (P7-2). For code that draws colours itself, such as
+ *  the graph canvas and Mermaid, so it can redraw when this changes. */
+export function useColorScheme(): "dark" | "light" {
+	const { appearance } = useAppearance();
+	const [osDark, setOsDark] = useState(true);
+	useEffect(() => {
+		if (typeof window === "undefined" || !window.matchMedia) return;
+		const mq = window.matchMedia("(prefers-color-scheme: dark)");
+		setOsDark(mq.matches);
+		const on = (e: MediaQueryListEvent) => setOsDark(e.matches);
+		mq.addEventListener("change", on);
+		return () => mq.removeEventListener("change", on);
+	}, []);
+	return appearance.mode === "system" ? (osDark ? "dark" : "light") : appearance.mode;
 }

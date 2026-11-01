@@ -24,7 +24,7 @@
  *     would shadow every settings-page key change until restart.
  */
 
-const { app, BrowserWindow, Menu, ipcMain, safeStorage, session, shell } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain, nativeTheme, safeStorage, session, shell } = require("electron");
 const { createChatGPT, fileStore } = require("./chatgpt.cjs");
 const { attachChatGPTChild, trustedSender, chatGPTControl } = require("./chatgpt-ipc.cjs");
 const { revealTarget } = require("./export-reveal.cjs");
@@ -249,6 +249,20 @@ function startServer(port) {
 	});
 }
 
+/** The window's colour before the page paints (Kvasir P7-2, D128): the
+ *  saved mode's background, so a light install never flashes dark. These
+ *  match the defaults in app/globals.css. */
+function firstPaintColor() {
+	let mode = "dark";
+	try {
+		mode = JSON.parse(fs.readFileSync(path.join(DATA_DIR(), "settings.json"), "utf8"))?.appearance?.mode ?? "dark";
+	} catch {
+		/* no settings yet: the default, dark */
+	}
+	const light = mode === "light" || (mode === "system" && !nativeTheme.shouldUseDarkColors);
+	return light ? "#faf8f4" : "#141414";
+}
+
 // ─── Encryption at rest (Kvasir P6-6, D113 to D116) ───────────────────────
 // The data key travels only over the server child's private IPC channel.
 // The server says "hello" once it listens; main answers with the key from
@@ -372,7 +386,7 @@ function createWindow(url) {
 		// The app background (#141414) fills the lag instead. `show: false` +
 		// ready-to-show is the same treatment for first paint: the window
 		// appears only once the page has actually rendered.
-		backgroundColor: "#141414",
+		backgroundColor: firstPaintColor(),
 		show: false,
 		// Narrow-window behavior (owner, 2026-09-17): 640px is the floor —
 		// below it even a wrapped chrome row gets cramped and the chat header
