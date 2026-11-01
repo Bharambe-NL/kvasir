@@ -7,6 +7,7 @@
  */
 
 import { activeBackend } from "../store/active.ts";
+import { encryptionLayer } from "../store/encrypted-backend.ts";
 import { chatStore as fileChatStore, createChatStore } from "../store/chats.ts";
 import { createGraphStore, graphStore as fileGraphStore } from "../store/graph.ts";
 import { createJobStore, jobStore as fileJobStore } from "../store/jobs.ts";
@@ -17,7 +18,11 @@ import type { GraphReader } from "../core/ports.ts";
 import { syncCustomProvider } from "./custom-provider.ts";
 // On files, the stores are the adapter modules' own singletons (the same
 // objects as before P6-1); on SQLite, new stores over the database.
-const backend = activeBackend();
+// Both are wrapped in the encrypting layer (P6-6), which passes through
+// on a plain folder.
+/** The storage below the encrypting layer, for the encryption conversion. */
+export const storageBackend = activeBackend();
+const backend = encryptionLayer(storageBackend);
 const onFiles = backend.kind === "files";
 if (!onFiles) console.info("[stores] using data/kvasir.db");
 const chatStore = onFiles ? fileChatStore : createChatStore(backend);
@@ -57,6 +62,10 @@ export type Stores = typeof stores;
 export function effectiveSettings(): EffectiveSettings {
 	return resolveSettings(settingsStore.readSettings());
 }
+
+// Boot: ask the Electron main process for the data key (P6-6). Loaded
+// lazily so stores.ts and encryption.ts can import each other.
+void import("./encryption.ts").then((m) => m.installEncryptionBridge());
 
 // Boot: register the custom endpoint (when configured) into piModels(); the
 // POST /api/custom-provider route re-syncs after every connect.

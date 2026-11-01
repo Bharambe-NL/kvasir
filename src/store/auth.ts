@@ -21,17 +21,29 @@ import { AUTH_FILE } from "../../config.ts";
 import type { AuthStore } from "../core/ports.ts";
 import { CUSTOM_PROVIDER } from "../core/auth-keys.ts";
 import { CUSTOM_AUTH_BINDING, parseCustomAuthBinding, type CustomAuthBinding } from "../core/custom-provider-auth.ts";
+import { isEnvelope, openValue, sealValue } from "./crypto.ts";
+import { currentKey, DataLockedError, encryptionFile } from "./data-key.ts";
+
+/** Kvasir P6-6 (D112): on an encrypted data folder auth.json holds one
+ *  sealed envelope instead of the map. */
+export const AUTH_AAD = "auth";
+
+/** The parsed file contents, opened when sealed. Throws DataLockedError
+ *  when sealed and locked. */
+function openAuth(raw: unknown): unknown {
+	return isEnvelope(raw) ? openValue(currentKey(), AUTH_AAD, raw) : raw;
+}
 
 /** The flat string→string map, or {} for absent/corrupt/non-object. */
 function readMap(): Record<string, string> {
 	try {
-		const raw = JSON.parse(fs.readFileSync(AUTH_FILE, "utf-8"));
+		const raw = openAuth(JSON.parse(fs.readFileSync(AUTH_FILE, "utf-8")));
 		if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
 		return Object.fromEntries(
 			Object.entries(raw).filter(([, v]) => typeof v === "string") as [string, string][],
 		);
 	} catch {
-		return {}; // absent or corrupt — the documented state is "no keys yet"
+		return {}; // absent, corrupt or locked — the documented state is "no keys yet"
 	}
 }
 
@@ -40,6 +52,13 @@ function readMap(): Record<string, string> {
  *  tmp-in-same-dir + rename keeps the swap atomic; chmod BEFORE the
  *  rename so the mode never exists relaxed on the final path. */
 function writeMap(map: Record<string, unknown>): void {
+	const file = encryptionFile();
+	writeAuthRaw(file && file.state !== "unsealing" ? sealValue(currentKey(), AUTH_AAD, map) : map);
+}
+
+/** The atomic 0600 write of whatever auth.json should hold. */
+export function writeAuthRaw(content: unknown): void {
+	const map = content;
 	const dir = path.dirname(AUTH_FILE);
 	fs.mkdirSync(dir, { recursive: true });
 	const tmp = path.join(dir, `.auth.json.tmp-${process.pid}`);
@@ -76,6 +95,9 @@ function readCustomMap(): Record<string, unknown> {
 	catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return {}; throw new Error("Custom authorization storage unavailable"); }
 	let raw: unknown;
 	try { raw = JSON.parse(text); } catch { throw new Error("Custom authorization storage unavailable"); }
+	if (isEnvelope(raw)) {
+		try { raw = openValue(currentKey(), AUTH_AAD, raw); } catch (error) { if (error instanceof DataLockedError) throw error; throw new Error("Custom authorization storage unavailable"); }
+	}
 	if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Custom authorization storage unavailable");
 	const map = raw as Record<string, unknown>;
 	if (Object.hasOwn(map, CUSTOM_AUTH_BINDING) && !parseCustomAuthBinding(map[CUSTOM_AUTH_BINDING])) throw new Error("Invalid custom authorization record");
@@ -99,4 +121,15 @@ export function writeCustomAuth(binding: CustomAuthBinding | undefined, fileKey:
 	if (binding === undefined) delete map[CUSTOM_AUTH_BINDING];
 	else Object.defineProperty(map, CUSTOM_AUTH_BINDING, { value: JSON.stringify(binding), enumerable: true, configurable: true, writable: true });
 	writeMap(map);
+}
+
+/** auth.json's raw contents (null when absent), for the encryption
+ *  conversion. */
+export function readAuthRaw(): unknown | null {
+	try {
+		return JSON.parse(fs.readFileSync(AUTH_FILE, "utf-8"));
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+		throw new Error("auth.json is unreadable; the encryption change stops here so it is not overwritten.");
+	}
 }

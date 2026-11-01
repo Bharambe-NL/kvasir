@@ -54,6 +54,35 @@ describe("the stdio server (D091)", () => {
 	});
 });
 
+describe("an encrypted data folder (Kvasir P6-6, D118)", () => {
+	it("every tool refuses; nothing is read", async () => {
+		const ENC = fs.mkdtempSync(path.join(os.tmpdir(), "kv-mcp-encrypted-"));
+		try {
+			fs.writeFileSync(path.join(ENC, "encryption.json"), JSON.stringify({ version: 1, state: "on" }));
+			const transport = new StdioClientTransport({
+				command: process.execPath,
+				args: [path.join(REPO, "node_modules", "tsx", "dist", "cli.mjs"), path.join(REPO, "scripts", "mcp-server.ts")],
+				env: { ...(process.env as Record<string, string>), KV_DATA_DIR: ENC },
+				stderr: "pipe",
+			});
+			const client = new Client({ name: "kvasir-test", version: "0.0.0" });
+			await client.connect(transport);
+			try {
+				for (const [name, args] of [["search_graph", { query: "knowledge tracing" }], ["list_sessions", {}], ["review_status", {}]] as const) {
+					const r = await client.callTool({ name, arguments: args });
+					assert.equal(r.isError, true, `${name}: ${text(r)}`);
+					assert.equal(text(r), "Kvasir data on this Mac is encrypted; the MCP server cannot read it.");
+				}
+			} finally {
+				await client.close();
+			}
+			assert.deepEqual(fs.readdirSync(ENC), ["encryption.json"], "nothing created");
+		} finally {
+			fs.rmSync(ENC, { recursive: true, force: true });
+		}
+	});
+});
+
 describe("the src/mcp lint zone", () => {
 	it("refuses an import of the store, the server or the agent from src/mcp", async () => {
 		const eslint = new ESLint({ cwd: REPO });

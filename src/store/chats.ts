@@ -16,6 +16,8 @@ import { activeProblemOf, danglingQuestionOf } from "../core/native-messages.ts"
 import { phaseAt3Lh } from "../core/phases.ts";
 import type { StoreBackend } from "./backend.ts";
 import { fileBackend } from "./file-backend.ts";
+import { DataLockedError } from "./data-key.ts";
+import { encryptionLayer } from "./encrypted-backend.ts";
 
 /** Kvasir P6-1: the logic runs over a StoreBackend (backend.ts), so the same
  *  store works on data/chats/ (the `chatStore` export) and on SQLite. */
@@ -106,7 +108,8 @@ export function createChatStore(backend: StoreBackend): ChatStore {
 				})
 				.filter((s): s is ChatSummary => s !== null)
 				.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-		} catch {
+		} catch (err) {
+			if (err instanceof DataLockedError) throw err; // locked is not "none" (P6-6)
 			return [];
 		}
 	}
@@ -207,4 +210,4 @@ export function createChatStore(backend: StoreBackend): ChatStore {
 }
 
 /** The file-backed store (data/chats/), as wired before P6-1. */
-export const chatStore: ChatStore = createChatStore(fileBackend);
+export const chatStore: ChatStore = createChatStore(encryptionLayer(fileBackend));

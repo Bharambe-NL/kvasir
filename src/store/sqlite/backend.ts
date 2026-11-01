@@ -105,6 +105,11 @@ export function sqliteBackend(db: DatabaseSync): StoreBackend {
 			const row = db.prepare("SELECT json FROM singles WHERE name = ?").get(name) as { json: string } | undefined;
 			return row ? parse(row.json) : null;
 		},
+		compact() {
+			db.exec("PRAGMA wal_checkpoint(TRUNCATE);");
+			db.exec("VACUUM;");
+			db.exec("PRAGMA wal_checkpoint(TRUNCATE);");
+		},
 		writeSingle(name, value) {
 			db.prepare("INSERT INTO singles (name, json) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET json = excluded.json").run(name, JSON.stringify(value));
 		},

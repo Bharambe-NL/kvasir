@@ -35,6 +35,17 @@ const copySettings = fs.existsSync(copySettingsFile) ? JSON.parse(fs.readFileSyn
 fs.writeFileSync(copySettingsFile, JSON.stringify({ ...copySettings, models: appSettings.models }, null, "\t"));
 process.env.KV_DATA_DIR = TMP;
 process.env.KV_AUTH_FILE ||= path.join(path.dirname(appData), "auth.json");
+// An encrypted install (P6-6) keeps auth.json sealed; the eval cannot read
+// the keys outside the app.
+try {
+	const auth = JSON.parse(fs.readFileSync(process.env.KV_AUTH_FILE, "utf8"));
+	if (auth && auth.kv === 1 && typeof auth.ct === "string") {
+		console.error("Kvasir data on this Mac is encrypted; npm run eval cannot read your API keys. Turn encryption off in Settings, or point KV_AUTH_FILE at a plain key file.");
+		process.exit(1);
+	}
+} catch {
+	/* no key file: the provider calls report it */
+}
 
 const git = (...args: string[]) => execFileSync("git", args, { cwd: REPO, encoding: "utf8" }).trim();
 // next build rewrites next-env.d.ts; it is not code the eval measures.

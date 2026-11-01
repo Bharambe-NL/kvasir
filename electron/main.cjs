@@ -24,10 +24,11 @@
  *     would shadow every settings-page key change until restart.
  */
 
-const { app, BrowserWindow, Menu, ipcMain, session, shell } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain, safeStorage, session, shell } = require("electron");
 const { createChatGPT, fileStore } = require("./chatgpt.cjs");
 const { attachChatGPTChild, trustedSender, chatGPTControl } = require("./chatgpt-ipc.cjs");
 const { revealTarget } = require("./export-reveal.cjs");
+const { createEncryption } = require("./encryption.cjs");
 const { createSubscriptions, loadSubscriptionSDK } = require("./subscriptions.cjs");
 const { attachSubscriptionChild, subscriptionControl } = require("./subscription-ipc.cjs");
 const { desktopAPIHeaders } = require("./desktop-api.cjs");
@@ -228,6 +229,7 @@ function startServer(port) {
 			},
 		);
 		serverProcess = child;
+		attachEncryptionChild(child);
 		chatgptChild = attachChatGPTChild(child, chatgpt);
 		subscriptionChild = attachSubscriptionChild(child, subscriptions);
 		const fwd = (buf) => buf.toString().trimEnd().split("\n").forEach((l) => l && log(`server: ${l}`));
@@ -244,6 +246,49 @@ function startServer(port) {
 			subscriptions?.close();
 		});
 		resolve(child);
+	});
+}
+
+// ─── Encryption at rest (Kvasir P6-6, D113 to D116) ───────────────────────
+// The data key travels only over the server child's private IPC channel.
+// The server says "hello" once it listens; main answers with the key from
+// the keychain, or "locked" when the keychain cannot unseal it.
+const encryptionPending = new Map();
+let encryptionChild = null;
+const encryption = createEncryption({
+	dataDir: DATA_DIR,
+	safeStorage,
+	log,
+	notify: (msg) => {
+		if (encryptionChild?.connected) encryptionChild.send({ channel: "lh:encryption", ...msg }, () => {});
+	},
+	request: (msg) =>
+		new Promise((resolve) => {
+			if (!encryptionChild?.connected) return resolve({ ok: false, error: "The Kvasir server is not running." });
+			const id = crypto.randomUUID();
+			encryptionPending.set(id, resolve);
+			encryptionChild.send({ channel: "lh:encryption", id, ...msg }, () => {});
+		}),
+});
+
+function attachEncryptionChild(child) {
+	encryptionChild = child;
+	child.on("message", (m) => {
+		if (m?.channel !== "lh:encryption") return;
+		if (m.op === "hello") {
+			encryption.onServerHello().catch((err) => log(`encryption: unlock failed: ${err.message}`));
+			return;
+		}
+		const done = m.id && encryptionPending.get(m.id);
+		if (done) {
+			encryptionPending.delete(m.id);
+			done({ ok: m.ok === true, value: m.value, error: m.error });
+		}
+	});
+	child.on("exit", () => {
+		if (encryptionChild === child) encryptionChild = null;
+		for (const done of encryptionPending.values()) done({ ok: false, error: "The Kvasir server stopped." });
+		encryptionPending.clear();
 	});
 }
 
@@ -719,6 +764,20 @@ async function main() {
 		if (!devUrl || !trustedAppWindows.has(BrowserWindow.fromWebContents(event.sender)) || !trustedSender(event, new URL(url).origin, BrowserWindow)) throw new Error("Untrusted development request.");
 		await openWebSubscriptionBrowser(action, new URL(url).origin, { openExternal: (target) => shell.openExternal(target) });
 	});
+
+	// Encryption at rest (Kvasir P6-6): turn on (returns the recovery key,
+	// shown once), turn off, and recover from the Locked screen.
+	for (const [channel, run] of [
+		["lh:encryption:enable", () => encryption.enable()],
+		["lh:encryption:disable", () => encryption.disable()],
+		["lh:encryption:recover", (_event, recoveryKey) => encryption.recover(recoveryKey)],
+	]) {
+		ipcMain.handle(channel, async (event, ...args) => {
+			if (!trustedAppWindows.has(BrowserWindow.fromWebContents(event.sender)) || !trustedSender(event, new URL(url).origin, BrowserWindow)) throw new Error("Untrusted desktop request.");
+			if (devUrl) throw new Error("Encryption needs the packaged Kvasir app.");
+			return run(event, ...args);
+		});
+	}
 
 	// Show in Finder for an export folder (Kvasir P6-3): paths inside the
 	// export root only.

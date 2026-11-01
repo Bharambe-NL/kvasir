@@ -38,6 +38,7 @@ It prints the counts per ledger and the folder the files went to. Nothing is del
 It refuses when:
 
 - `kvasir.db` already exists
+- the folder is encrypted (`docs/encryption.md`): turn encryption off, migrate, then turn it on again
 - the Kvasir app is running and the folder is the app's own
 
 ## Move back to files

@@ -14,6 +14,8 @@ import type { CreateJobInit, JobPatch } from "../core/ports.ts";
 import type { JobRecord } from "../core/contracts.ts";
 import type { StoreBackend } from "./backend.ts";
 import { fileBackend } from "./file-backend.ts";
+import { DataLockedError } from "./data-key.ts";
+import { encryptionLayer } from "./encrypted-backend.ts";
 
 /** Kvasir P6-1: the logic runs over a StoreBackend (backend.ts), so the same
  *  store works on data/jobs/ (the `jobStore` export) and on SQLite. */
@@ -68,7 +70,8 @@ export function createJobStore(backend: StoreBackend): JobStore {
 				.map((id) => getJob(id))
 				.filter((j): j is JobRecord => j !== null && j.chatId === chatId)
 				.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-		} catch {
+		} catch (err) {
+			if (err instanceof DataLockedError) throw err; // locked is not "none" (P6-6)
 			return [];
 		}
 	}
@@ -104,4 +107,4 @@ export function createJobStore(backend: StoreBackend): JobStore {
 }
 
 /** The file-backed store (data/jobs/), as wired before P6-1. */
-export const jobStore: JobStore = createJobStore(fileBackend);
+export const jobStore: JobStore = createJobStore(encryptionLayer(fileBackend));

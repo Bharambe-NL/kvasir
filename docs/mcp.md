@@ -36,3 +36,7 @@ npm run mcp
 ```
 
 It runs the server on stdio against the same data folder, and logs go to stderr. Set `KV_DATA_DIR` to point it at another folder.
+
+## Encrypted data
+
+When encryption at rest is on (`docs/encryption.md`), the MCP server cannot read the data: no key leaves the Kvasir app. Every tool answers "Kvasir data on this Mac is encrypted; the MCP server cannot read it."

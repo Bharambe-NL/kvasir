@@ -121,5 +121,10 @@ test("desktop wiring uses only the private JSON path, with no Electron safeStora
 	const main = await fs.readFile(new URL("../electron/main.cjs", import.meta.url), "utf8");
 	const auth = await fs.readFile(new URL("../electron/chatgpt.cjs", import.meta.url), "utf8");
 	assert.match(main, /store: fileStore\(path\.join\(app\.getPath\("userData"\), "chatgpt-credentials\.json"\)\)/);
-	assert.doesNotMatch(main + auth, /safeStorage|encryptedStore|chatgpt-credentials\.enc\.json/);
+	assert.doesNotMatch(auth, /safeStorage|encryptedStore|chatgpt-credentials\.enc\.json/);
+	assert.doesNotMatch(main, /encryptedStore|chatgpt-credentials\.enc\.json/);
+	// Kvasir P6-6: main uses safeStorage only for the data key, handed to
+	// the encryption module; never for ChatGPT credentials.
+	const uses = main.split("\n").filter((l) => /safeStorage/.test(l)).map((l) => l.trim());
+	assert.deepEqual(uses, ['const { app, BrowserWindow, Menu, ipcMain, safeStorage, session, shell } = require("electron");', "safeStorage,"]);
 });
