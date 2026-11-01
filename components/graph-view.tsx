@@ -1467,6 +1467,7 @@ export function GraphView({
 				label: tokenHex("--muted-foreground"),
 				hoverText: tokenHex("--foreground"),
 				heat: { low: tokenHex(HEAT_TOKENS.low), mid: tokenHex(HEAT_TOKENS.mid), high: tokenHex(HEAT_TOKENS.high) },
+				scheme,
 			},
 			// Match the app typography (Geist via the body's stack).
 			fontFamily: getComputedStyle(document.body).fontFamily,
