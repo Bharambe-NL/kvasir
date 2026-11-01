@@ -38,7 +38,7 @@ export function CitationChip({
 			<FileTextIcon aria-hidden="true" className="size-3 shrink-0" />
 			<span className="truncate">{chipText(labels)}</span>
 			{outdated && (
-				<span data-testid="citation-outdated" className="shrink-0 rounded-sm bg-amber-400/15 px-1 text-[10px] font-medium text-amber-500">
+				<span data-testid="citation-outdated" className="shrink-0 rounded-sm bg-warning-soft/15 px-1 text-[10px] font-medium text-warning">
 					Outdated
 				</span>
 			)}
@@ -53,7 +53,7 @@ export function highlight(text: string, quote: string): ReactNode[] {
 	let from = 0;
 	for (let at = text.indexOf(quote); at >= 0; at = text.indexOf(quote, from)) {
 		if (at > from) out.push(text.slice(from, at));
-		out.push(<mark key={at} className="rounded-sm bg-amber-300/30 px-0.5 text-foreground">{quote}</mark>);
+		out.push(<mark key={at} className="rounded-sm bg-warning-soft/30 px-0.5 text-foreground">{quote}</mark>);
 		from = at + quote.length;
 	}
 	if (from < text.length) out.push(text.slice(from));
@@ -98,14 +98,14 @@ export function CitationPanel({ views, onClose }: { views: readonly CitationView
 						) : (
 							<>
 								<p className="mt-2 text-sm leading-relaxed">
-									<mark className="rounded-sm bg-amber-300/30 px-0.5">{v.quote}</mark>
+									<mark className="rounded-sm bg-warning-soft/30 px-0.5">{v.quote}</mark>
 								</p>
 								<p className="mt-1 text-xs text-muted-foreground">The source text for this version is not stored.</p>
 							</>
 						)}
 						{v.outdated && (
-							<div data-testid="citation-outdated-note" className="mt-3 rounded-md border border-amber-400/40 bg-amber-400/5 px-3 py-2">
-								<div className="text-xs font-medium text-amber-500">
+							<div data-testid="citation-outdated-note" className="mt-3 rounded-md border border-warning-soft/40 bg-warning-soft/5 px-3 py-2">
+								<div className="text-xs font-medium text-warning">
 									{v.outdated.kind === "changed" ? `Changed in version ${v.outdated.versionLabel}` : `Removed in version ${v.outdated.versionLabel}`}
 								</div>
 								{v.outdated.text !== undefined && <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{v.outdated.text}</p>}

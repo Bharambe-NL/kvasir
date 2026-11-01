@@ -65,6 +65,32 @@
 	--lh-prose-leading: 1.5;
 	/* Markdown heading weight (appearance settings; 900 = the Black cut). */
 	--lh-heading-weight: 900;
+	/* Kvasir P7-1 (D124, D126, D127): every colour outside the base palette
+	   above, as named tokens with today's exact values. Light mode (P7-2)
+	   and colour themes (P7-3) change these, never the components. */
+	--danger: oklch(63.7% 0.237 25.331); /* was red-500 */
+	--danger-soft: oklch(70.4% 0.191 22.216); /* was red-400 */
+	--warning: oklch(76.9% 0.188 70.08); /* was amber-500 */
+	--warning-soft: oklch(82.8% 0.189 84.429); /* was amber-400 */
+	--success: oklch(72.3% 0.219 149.579); /* was green-500 */
+	--success-soft: oklch(79.2% 0.209 151.711); /* green-400 */
+	--heat-low: #e5484d;
+	--heat-mid: #f5a524;
+	--heat-high: #30a46c;
+	--confidence-0: #ef4444;
+	--confidence-30: #f97316;
+	--confidence-50: #eab308;
+	--confidence-70: #84cc16;
+	--confidence-90: #22c55e;
+	--confidence-100: #10b981;
+	--confidence-track: #141414;
+	--confidence-tick: rgba(230, 230, 230, 0.35);
+	--scrim: #000;
+	--on-accent: #fff;
+	--paper: #fff;
+	--ink-bright: #fff;
+	--mark-fill: rgb(148, 148, 148);
+	--mark-detail: #fff;
 }
 
 /* The app is always dark (<html class="dark">); mirror the same values so
@@ -100,6 +126,32 @@
 	--lh-prose-leading: 1.5;
 	/* Markdown heading weight (appearance settings; 900 = the Black cut). */
 	--lh-heading-weight: 900;
+	/* Kvasir P7-1 (D124, D126, D127): every colour outside the base palette
+	   above, as named tokens with today's exact values. Light mode (P7-2)
+	   and colour themes (P7-3) change these, never the components. */
+	--danger: oklch(63.7% 0.237 25.331); /* was red-500 */
+	--danger-soft: oklch(70.4% 0.191 22.216); /* was red-400 */
+	--warning: oklch(76.9% 0.188 70.08); /* was amber-500 */
+	--warning-soft: oklch(82.8% 0.189 84.429); /* was amber-400 */
+	--success: oklch(72.3% 0.219 149.579); /* was green-500 */
+	--success-soft: oklch(79.2% 0.209 151.711); /* green-400 */
+	--heat-low: #e5484d;
+	--heat-mid: #f5a524;
+	--heat-high: #30a46c;
+	--confidence-0: #ef4444;
+	--confidence-30: #f97316;
+	--confidence-50: #eab308;
+	--confidence-70: #84cc16;
+	--confidence-90: #22c55e;
+	--confidence-100: #10b981;
+	--confidence-track: #141414;
+	--confidence-tick: rgba(230, 230, 230, 0.35);
+	--scrim: #000;
+	--on-accent: #fff;
+	--paper: #fff;
+	--ink-bright: #fff;
+	--mark-fill: rgb(148, 148, 148);
+	--mark-detail: #fff;
 }
 
 /* CMU Serif bold (titles) — bundled local file, no CDN dependency. */
@@ -170,6 +222,16 @@
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
 	--color-destructive: var(--destructive);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+	--color-warning: var(--warning);
+	--color-warning-soft: var(--warning-soft);
+	--color-success: var(--success);
+	--color-success-soft: var(--success-soft);
+	--color-scrim: var(--scrim);
+	--color-on-accent: var(--on-accent);
+	--color-paper: var(--paper);
+	--color-ink-bright: var(--ink-bright);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
