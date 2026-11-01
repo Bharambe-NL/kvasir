@@ -159,3 +159,8 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D151 | 2026-11-01 | In voice, the prober asks the four setup questions (background, goal, session length, hint style) first, one at a time; the answers stay in the transcript, where the teacher reads them. No `probe_done` change | Sagar | |
 | D152 | 2026-11-01 | Voice examples come from the field the learner names in the background question; the prompt gives EU payments, EPI, Wero and regulators as Sagar's case | Sagar | |
 | D153 | 2026-11-01 | P3-1's "prompt eval cases pass" is a scripted live check: the real prober and teacher with the voice profile against fixed learner replies, each reply checked for one question, no formula symbols, no option lists, no Markdown and a length cap; asked before each run. Deterministic composition tests run in `npm test` | Sagar | |
+| D154 | 2026-11-01 | Text-to-speech is Deepgram Aura-2 ($0.030 per 1,000 characters, about $0.81 an hour of session), on the Deepgram key dictation already uses | Sagar | |
+| D155 | 2026-11-01 | A reply is spoken sentence by sentence as it streams; stopping cuts the rest | Sagar | |
+| D156 | 2026-11-01 | Text-to-speech uses a short-lived Deepgram token minted by the server, as dictation does; the window streams text to Deepgram and plays the audio directly | Sagar | |
+| D157 | 2026-11-01 | The voice SpeechIn adapter is new, beside dictation, reusing its pure helpers; moving dictation onto it is a later change | Sagar | |
+| D158 | 2026-11-01 | The default voice is `aura-2-thalia-en`, one setting value; a voice picker can come with drive mode (P3-5) | Sagar | |
