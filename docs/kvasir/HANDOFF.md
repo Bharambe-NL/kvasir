@@ -7,9 +7,9 @@ Updated by Claude Code at the end of each session. Read this first.
 - Phases in progress:
   - P1 Retention and the learner layer: every task is merged (P1-1 to P1-8). The gate waits for two weeks of real use. Milestone 2, tracking issue #13.
   - P2 Regulation grounding: opened 2026-10-31, runs alongside P1 (the roadmap allows it). Milestone 3, tracking issue #37, task issues #31 to #36.
-- Task: every P2 task is merged (P2-1 to P2-6). Next: the P2 gate (`/kv-gate P2`).
-- Branch: `main`
-- PR: none open
+- Task: the P2 gate is on the `p2/gate` PR, waiting for Sagar's approval in #37. After approval: tag `v0.2.0`, publish the release, close milestone 3.
+- Branch: `p2/gate`
+- PR: the P2 gate PR
 
 ## Done
 
@@ -36,7 +36,7 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. The P2 gate (`/kv-gate P2`): import DORA (every citation opens the right paragraph), two versions (only changed propositions flagged), no uncited proposition.
+1. After Sagar approves the P2 gate in #37: merge the gate PR, tag `v0.2.0`, publish the release from the merged PR titles, close milestone 3, point this file at the next phase.
 2. Follow-up: a lesson citation showed " [blocked]" once while the reply was streaming (rehype-harden), then rendered as the chip; not reproduced. The P2 gate's first check (import DORA, every citation opens the right paragraph) needs P2-4's citation panel and a live model run.
 2. In parallel, Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
 

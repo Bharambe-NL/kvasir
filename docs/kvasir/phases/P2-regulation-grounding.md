@@ -45,4 +45,16 @@ Sagar can import a regulation, guideline or paper as a PDF or official HTML, lea
 
 ## Gate results
 
-(record here)
+Recorded 2026-11-01. The live checks ran with Sagar's configured models (strong `claude-opus-5-5`, cheap `claude-sonnet-5-5`) on a temp copy of his data folder, with the production build of the P2-6 branch (`6686b58`; its code is what merged as `d126635`). His real data was not touched, and his key file was read in place by the app, never opened or copied.
+
+| # | Check | Result | Evidence |
+|---|---|---|---|
+| 1 | Import DORA (Regulation (EU) 2022/2554) from EUR-Lex. Every extracted proposition has a citation that opens the correct paragraph. | Pass | DORA's Official Journal XHTML (the EUR-Lex text, fetched through the Publications Office's Cellar service because EUR-Lex refuses scripts, D067) was imported through `POST /api/sources/import` in 6 min 24 s: 23 chunks, 138 propositions, 117 chains, 258 citations (174 in articles, 84 in recitals). A script over the ledgers resolved **all 258** citations to a stored paragraph of their version that contains the exact stored quote. In the app, a citation chip opened the panel on "Chapter V > Section I > Article 28 > paragraph 1 > point (a)" with the regulation's text (PR #44 comment). |
+| 2 | Import two versions of one document. The diff flags only propositions tied to changed units. | Pass | Version 2 was simulated from the same file by four edits: the act date (2024-01-17), a reworded quote in Art. 28(2), an unquoted change in Art. 28(3), and Art. 28(8)(c) deleted. Importing it took 13 s: the diff reported 0 added, 2 changed, 1 removed, 873 unchanged, and only the changed units went to the model. `outdated` then listed **exactly** "Third-party risk strategy policy" (Art. 28(2), changed in 2024-01-17) and "Exit strategy requirements" (Art. 28(8)(c), removed in 2024-01-17). The Art. 28(3) proposition stayed current. `tests/source-diff.test.ts` pins the same behaviour deterministically. |
+| 3 | No proposition from the sources door is stored without a citation. | Pass | All 138 propositions born in the DORA document carry at least one citation (live ledgers). The schema requires citations, the submit step checks them (the model resubmitted 4 times and fixed each), and the merger refuses an uncited proposition before writing anything (`tests/source-extraction.test.ts`). |
+
+**Gates on a fresh clone of `main` at `d126635`:** typecheck, lint, build and house style pass. `npm test`: 3164 of 3165 pass. The one failure is the firewall-only "binds 127.0.0.1", which passes in CI.
+
+**Findings for later, not blocking:**
+- **The outdated flag:** a proposition is marked outdated when any of its citations is. In check 2 the extractor re-read the changed Art. 28(2), and the auditor linked it to the same proposition, so "Third-party risk strategy policy" now has a current 2024-01-17 citation as well as the outdated 2022-12-14 one, and still shows "Outdated". It may be clearer to treat a proposition as current when it has a citation of the newest version.
+- **A streaming glimpse:** a lesson citation showed " [blocked]" once while a reply was streaming (`rehype-harden`), then rendered as the chip. It was not reproduced.
