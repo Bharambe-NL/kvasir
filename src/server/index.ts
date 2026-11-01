@@ -9,7 +9,7 @@ export * from "./events-stream.ts";
 export * from "./chats.ts";
 export * from "./graph.ts";
 export { NotesImportError, SourceImportError } from "../agent/subagents/extraction.ts";
-export { importSourceFile } from "./sources.ts";
+export { importSourceFile, sourceDocumentList, type SourceDocumentItem } from "./sources.ts";
 export * from "./citations.ts";
 export { UnsupportedSourceError } from "./source-loader.ts";
 export * from "./commit-positions.ts";

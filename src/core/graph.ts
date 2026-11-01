@@ -71,6 +71,7 @@ import type { ChatStore, GraphStore } from "./ports.ts";
 import type { SourceUnit } from "./contracts/sources.ts";
 import { locateQuote } from "./source-extract.ts";
 import { citationLabels } from "./sources.ts";
+import { outdatedNodes } from "./source-diff.ts";
 
 /** The storage ports every graph operation needs, passed explicitly. */
 export interface GraphDeps {
@@ -634,6 +635,10 @@ export function graphSnapshot(deps: GraphDeps): GraphSnapshot {
 	const live = new Set(graph.nodes.map((n) => n.id));
 	const allLabels = citationLabels(deps.graphStore.readCitations(), deps.graphStore.readDocumentVersions());
 	const citations = Object.fromEntries(Object.entries(allLabels).filter(([id]) => live.has(id)));
+	// Kvasir P2-5: cited propositions whose quote a newer version dropped (D080).
+	const outdated = Object.keys(citations).length
+		? outdatedNodes(deps.graphStore.readCitations(), deps.graphStore.readDocumentVersions(), (v) => deps.graphStore.readDocumentUnits(v), live)
+		: [];
 
 	return {
 		nodes,
@@ -648,6 +653,7 @@ export function graphSnapshot(deps: GraphDeps): GraphSnapshot {
 		clusters,
 		...(Object.keys(positions).length > 0 ? { positions } : {}),
 		...(Object.keys(citations).length > 0 ? { citations } : {}),
+		...(outdated.length > 0 ? { outdated } : {}),
 	};
 }
 

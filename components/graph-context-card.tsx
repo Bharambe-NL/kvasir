@@ -25,7 +25,7 @@ export function GraphContextCard({ data }: { data: GraphContextData }) {
 	const [open, setOpen] = useState(false);
 	const { propositions = [], chains = [] } = data ?? {};
 	// Kvasir P2-4 (D079): cited propositions show their chip when expanded.
-	const labels = useCitationLabels(propositions.map((p) => p.id), open);
+	const { labels, outdated } = useCitationLabels(propositions.map((p) => p.id), open);
 	const citation = useCitationPanel();
 	const noun = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 	return (
@@ -51,7 +51,7 @@ export function GraphContextCard({ data }: { data: GraphContextData }) {
 							<span className="text-muted-foreground"> — {p.statement}</span>
 							{labels[p.id] && (
 								<div className="mt-0.5">
-									<CitationChip labels={labels[p.id]} onOpen={() => citation.open(p.id)} testid={`citation-chip-${p.id}`} />
+									<CitationChip labels={labels[p.id]} outdated={outdated.has(p.id)} onOpen={() => citation.open(p.id)} testid={`citation-chip-${p.id}`} />
 								</div>
 							)}
 						</div>

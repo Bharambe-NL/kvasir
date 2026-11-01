@@ -33,7 +33,8 @@ import { auditorGraphTools } from "../tools/graph.ts";
 import { runSubmitAgent, healStringifiedArrays } from "./submit-agent.ts";
 import type { DocumentVersion, ParsedSource, SourceUnit } from "../../core/contracts/sources.ts";
 import { chunkUnits, labelUnits, sourceView, validateCitations } from "../../core/source-extract.ts";
-import { versionLabel } from "../../core/sources.ts";
+import { sourceDocuments, versionLabel } from "../../core/sources.ts";
+import { diffUnits } from "../../core/source-diff.ts";
 
 /**
  * The extraction pipeline (vision §1 construction, 2026-09-02 redesign;
@@ -1548,6 +1549,33 @@ export function createExtractionPipeline(deps: ExtractionPipelineDeps): Extracti
 		}
 	}
 
+	/** What a version extracts (Kvasir P2-5, D081): everything for a first
+	 *  version (or when the previous version's units are missing); otherwise
+	 *  only the units that are new or whose text changed. Labels still number
+	 *  the whole document, so a label means the same unit in every version,
+	 *  and a container stays as context only when something inside it is
+	 *  extracted. */
+	function unitsToExtract(sourceId: string, parsed: ParsedSource) {
+		const labelled = labelUnits(parsed.units);
+		const previous = sourceDocuments(graphStore.readDocumentVersions()).find((d) => d.id === sourceId)?.versions.at(-1);
+		const prevUnits = previous ? graphStore.readDocumentUnits(previous.versionId) : null;
+		if (!previous || !prevUnits) return labelled;
+		const diff = diffUnits(prevUnits, parsed.units);
+		console.info(
+			`[extraction ${sourceId}] version diff against ${versionLabel(previous)}: ` +
+				`${diff.added.length} added, ${diff.changed.length} changed, ${diff.removed.length} removed, ${diff.unchanged.length} unchanged`,
+		);
+		const key = (p: readonly string[]) => p.join("\u0000");
+		const wanted = new Set([...diff.added, ...diff.changed].map(key));
+		const kept = labelled.filter((l) => l.label && wanted.has(key(l.unit.path)));
+		const keptPaths = kept.map((l) => l.unit.path);
+		return labelled.filter((l) =>
+			l.label
+				? wanted.has(key(l.unit.path))
+				: keptPaths.some((p) => p.length > l.unit.path.length && l.unit.path.every((seg, i) => p[i] === seg)),
+		);
+	}
+
 	/** The sources door (Kvasir P2-3). Same run law as the notes door:
 	 *  chunks strictly in order per source, each continuing the source's
 	 *  digest, extract under the shared slot, audit and merge under the lock.
@@ -1574,7 +1602,7 @@ export function createExtractionPipeline(deps: ExtractionPipelineDeps): Extracti
 			// version diff (D076). Written once; a retry finds it in place.
 			graphStore.writeDocumentUnits(version.versionId, parsed.units);
 			const chunkTokens = deps.getChunkTokens?.() ?? FACTORY_SETTINGS.graph.extractionChunkTokens;
-			const chunks = chunkUnits(labelUnits(parsed.units), chunkTokens);
+			const chunks = chunkUnits(unitsToExtract(id, parsed), chunkTokens);
 			console.info(`[extraction ${id}] sources pipeline start (${parsed.title}, ${label}) — ${chunks.length} chunk(s) of ≤${chunkTokens} tok`);
 			const settled: PromiseSettledResult<EmissionStats>[] = [];
 			for (const [chunkIndex, chunk] of chunks.entries()) {

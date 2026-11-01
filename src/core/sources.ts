@@ -73,6 +73,9 @@ export interface CitationView {
 	quote: string;
 	/** The cited unit's full text; null when the version's units are not stored. */
 	unitText: string | null;
+	/** Kvasir P2-5 (D080, D083): present when a newer version dropped the unit
+	 *  or the quote: the first such version, and its text for the unit. */
+	outdated?: { versionLabel: string; kind: "removed" | "changed"; text?: string };
 }
 
 /** A document's short name (D077): the act's type and number for EUR-Lex

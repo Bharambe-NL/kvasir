@@ -340,6 +340,9 @@ export interface GraphSnapshot {
 	/** Kvasir P2-4 (D077): each cited proposition's citation chip labels, in
 	 *  citation order. Absent when nothing is cited. */
 	citations?: Record<string, string[]>;
+	/** Kvasir P2-5 (D080): cited propositions with at least one outdated
+	 *  citation, sorted. Absent when none. */
+	outdated?: string[];
 	/** nodeId → chatIds that touched the node (click-through provenance). */
 	nodeSessions: Record<string, string[]>;
 	/** Birth-session communities (core/session-clusters.ts: each

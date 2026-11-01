@@ -11,7 +11,18 @@ import { createPortal } from "react-dom";
 import { FileTextIcon, XIcon } from "lucide-react";
 import { chipText, type CitationView } from "@/src/core";
 
-export function CitationChip({ labels, onOpen, testid = "citation-chip" }: { labels: readonly string[] | undefined; onOpen: () => void; testid?: string }) {
+export function CitationChip({
+	labels,
+	onOpen,
+	outdated = false,
+	testid = "citation-chip",
+}: {
+	labels: readonly string[] | undefined;
+	onOpen: () => void;
+	/** Kvasir P2-5 (D083): a newer version dropped a cited quote. */
+	outdated?: boolean;
+	testid?: string;
+}) {
 	if (!labels || labels.length === 0) return null;
 	return (
 		<button
@@ -26,6 +37,11 @@ export function CitationChip({ labels, onOpen, testid = "citation-chip" }: { lab
 		>
 			<FileTextIcon aria-hidden="true" className="size-3 shrink-0" />
 			<span className="truncate">{chipText(labels)}</span>
+			{outdated && (
+				<span data-testid="citation-outdated" className="shrink-0 rounded-sm bg-amber-400/15 px-1 text-[10px] font-medium text-amber-500">
+					Outdated
+				</span>
+			)}
 		</button>
 	);
 }
@@ -87,6 +103,14 @@ export function CitationPanel({ views, onClose }: { views: readonly CitationView
 								<p className="mt-1 text-xs text-muted-foreground">The source text for this version is not stored.</p>
 							</>
 						)}
+						{v.outdated && (
+							<div data-testid="citation-outdated-note" className="mt-3 rounded-md border border-amber-400/40 bg-amber-400/5 px-3 py-2">
+								<div className="text-xs font-medium text-amber-500">
+									{v.outdated.kind === "changed" ? `Changed in version ${v.outdated.versionLabel}` : `Removed in version ${v.outdated.versionLabel}`}
+								</div>
+								{v.outdated.text !== undefined && <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{v.outdated.text}</p>}
+							</div>
+						)}
 					</section>
 				))}
 			</div>
@@ -114,21 +138,26 @@ export function useCitationPanel(): { open: (nodeId: string) => void; panel: Rea
 }
 
 /** Chip labels for a list of propositions (the transcript's graph context
- *  card, which has no snapshot), fetched once while `enabled`. */
-export function useCitationLabels(nodeIds: readonly string[], enabled: boolean): Record<string, string[]> {
-	const [labels, setLabels] = useState<Record<string, string[]>>({});
+ *  card, which has no snapshot), fetched once while `enabled`, with the
+ *  nodes that have an outdated citation (Kvasir P2-5). */
+export function useCitationLabels(nodeIds: readonly string[], enabled: boolean): { labels: Record<string, string[]>; outdated: ReadonlySet<string> } {
+	const [state, setState] = useState<{ labels: Record<string, string[]>; outdated: ReadonlySet<string> }>({ labels: {}, outdated: new Set() });
 	const key = nodeIds.join(",");
 	useEffect(() => {
 		if (!enabled || !key) return;
 		let live = true;
 		fetchViews(key.split(","))
 			.then((byNode) => {
-				if (live) setLabels(Object.fromEntries(Object.entries(byNode).map(([id, vs]) => [id, vs.map((v) => v.label)])));
+				if (!live) return;
+				setState({
+					labels: Object.fromEntries(Object.entries(byNode).map(([id, vs]) => [id, vs.map((v) => v.label)])),
+					outdated: new Set(Object.entries(byNode).filter(([, vs]) => vs.some((v) => v.outdated)).map(([id]) => id)),
+				});
 			})
 			.catch(() => {});
 		return () => {
 			live = false;
 		};
 	}, [key, enabled]);
-	return labels;
+	return state;
 }

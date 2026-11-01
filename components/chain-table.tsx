@@ -121,6 +121,7 @@ export function ChainTableBody({
 	reviewExcluded,
 	onReviewExclusion,
 	citations,
+	outdated,
 	onOpenCitation,
 }: {
 	nodes: GraphNode[];
@@ -154,6 +155,8 @@ export function ChainTableBody({
 	onReviewExclusion?: (sessionId: string, excluded: boolean) => void;
 	/** Kvasir P2-4: cited propositions' chip labels and the panel opener. */
 	citations?: Record<string, string[]>;
+	/** Kvasir P2-5: nodes with an outdated citation (the snapshot's list). */
+	outdated?: readonly string[];
 	onOpenCitation?: (nodeId: string) => void;
 }) {
 	const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
@@ -505,7 +508,7 @@ export function ChainTableBody({
 																{node.statement}
 																{citations?.[id] && onOpenCitation && (
 																	<span className="mt-1 block">
-																		<CitationChip labels={citations[id]} onOpen={() => onOpenCitation(id)} testid={`citation-chip-${id}`} />
+																		<CitationChip labels={citations[id]} outdated={outdated?.includes(id) ?? false} onOpen={() => onOpenCitation(id)} testid={`citation-chip-${id}`} />
 																	</span>
 																)}
 															</span>
@@ -651,6 +654,7 @@ export function ChainTableOverlay({
 	reviewExcluded,
 	onReviewExclusion,
 	citations,
+	outdated,
 	onOpenCitation,
 }: {
 	open: boolean;
@@ -667,6 +671,8 @@ export function ChainTableOverlay({
 	/** Kvasir P2-4: cited propositions' chip labels (the snapshot's
 	 *  `citations`) and the panel opener. Absent = no chips. */
 	citations?: Record<string, string[]>;
+	/** Kvasir P2-5: nodes with an outdated citation (the snapshot's list). */
+	outdated?: readonly string[];
 	onOpenCitation?: (nodeId: string) => void;
 }) {
 	const [query, setQuery] = useState("");
@@ -756,6 +762,7 @@ export function ChainTableOverlay({
 					reviewExcluded={reviewExcluded}
 					onReviewExclusion={onReviewExclusion}
 					citations={citations}
+					outdated={outdated}
 					onOpenCitation={onOpenCitation}
 					onClose={onClose}
 					selectMode={selectMode}

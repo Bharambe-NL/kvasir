@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { createRoot, type Root } from "react-dom/client";
 import { parseHTML } from "linkedom";
-import { IMPORT_ACCEPT, importKindOf, planImport, resolvePending, SourceImportDialog, type PendingSourceFile } from "../components/source-import.tsx";
+import { IMPORT_ACCEPT, importKindOf, planImport, preselectVersions, resolvePending, SourceImportDialog, versionChoices, type PendingSourceFile } from "../components/source-import.tsx";
 
 const dom = parseHTML("<html><body></body></html>");
 Object.assign(globalThis, { window: dom.window, document: dom.document });
@@ -103,5 +103,37 @@ describe("the dialog (D074, D075)", () => {
 		mounted = { root, host };
 		await act(async () => root.render(<SourceImportDialog pending={[]} onChange={() => {}} onImport={() => {}} onCancel={() => {}} />));
 		assert.equal(q("source-import-dialog"), null);
+	});
+});
+
+describe("Version of (Kvasir P2-5, D082)", () => {
+	const DOCS = [
+		{ id: "doc_gl", title: "FINAL REPORT", format: "pdf" as const, label: "EBA/GL/2019/04", fileNames: ["gl.pdf"] },
+		{ id: "doc_md", title: "Policy", format: "markdown" as const, label: "v1", fileNames: ["policy.md"] },
+		{ id: "doc_eu", title: "REGULATION", format: "eurlex-html" as const, label: "2022-12-14", fileNames: ["dora.xhtml"] },
+	];
+	it("preselects a document whose earlier file name matches, of the same format", () => {
+		const { pending } = planImport([file("gl.pdf"), file("other.pdf"), file("policy.md")]);
+		assert.deepEqual(preselectVersions(pending, DOCS).map((p) => p.versionOf), ["doc_gl", "", "doc_md"]);
+		assert.deepEqual(versionChoices(pending[0]!, DOCS).map((d) => d.id), ["doc_gl"]);
+	});
+	it("passes the choice into the plan", () => {
+		const { ready, pending } = planImport([file("gl.pdf")]);
+		assert.deepEqual(resolvePending(ready, [{ ...pending[0]!, versionOf: "doc_gl" }]).sources.map((s) => s.versionOf), ["doc_gl"]);
+		assert.deepEqual(resolvePending(ready, pending).sources.map((s) => s.versionOf), [undefined]);
+	});
+	it("shows the select for PDFs and cited Markdown, with A new document first", async () => {
+		const host = document.createElement("div");
+		document.body.append(host);
+		const root = createRoot(host);
+		mounted = { root, host };
+		const pending = preselectVersions(planImport([file("gl.pdf"), file("policy.md")]).pending, DOCS);
+		await act(async () => root.render(<SourceImportDialog pending={pending} documents={DOCS} onChange={() => {}} onImport={() => {}} onCancel={() => {}} />));
+		const selects = [...document.querySelectorAll<HTMLSelectElement>("[data-testid='source-import-version-of']")];
+		assert.equal(selects.length, 1, "Markdown kept as notes has no select");
+		assert.deepEqual([...selects[0]!.querySelectorAll("option")].map((o) => [o.getAttribute("value"), o.textContent]), [["", "A new document"], ["doc_gl", "EBA/GL/2019/04"]]);
+		assert.match(document.body.textContent!, /Version of/);
+		await act(async () => root.render(<SourceImportDialog pending={pending.map((p) => ({ ...p, asSource: true }))} documents={DOCS} onChange={() => {}} onImport={() => {}} onCancel={() => {}} />));
+		assert.equal(document.querySelectorAll("[data-testid='source-import-version-of']").length, 2, "cited Markdown gets one too");
 	});
 });

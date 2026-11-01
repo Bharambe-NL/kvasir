@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { planImport, postSourcesImport, resolvePending, type ImportPlan, type PendingSourceFile } from "@/components/source-import";
+import { planImport, postSourcesImport, preselectVersions, resolvePending, type ImportedDocument, type ImportPlan, type PendingSourceFile } from "@/components/source-import";
 
 // Transport-only types: never import the server's extraction/agent module here.
 export interface NotesImportResult {
@@ -60,6 +60,8 @@ export function useNotesImport(callbacks: { onStart?: () => void; onFinish?: () 
 	// The sources door (Kvasir P2-3): PDF and Markdown wait in the dialog
 	// for a version label (and, for Markdown, "Cite as source").
 	const [dialog, setDialog] = useState<{ ready: ImportPlan; pending: PendingSourceFile[] } | null>(null);
+	// Kvasir P2-5 (D082): the imported documents, for "Version of".
+	const [documents, setDocuments] = useState<ImportedDocument[]>([]);
 	const describe = (r: { filePath: string; error?: string; code?: string; provider?: string; missing?: string[]; slots?: string[] }) =>
 		`${r.filePath}: ${r.error}${r.code ? `\n${r.code}${r.provider ? ` — ${r.provider}` : ""}${r.missing?.length ? ` — ${r.missing.join(", ")}` : ""}${r.slots?.length ? ` — ${r.slots.join(", ")}` : ""}` : ""}`;
 	const run = async (plan: ImportPlan) => {
@@ -98,8 +100,18 @@ export function useNotesImport(callbacks: { onStart?: () => void; onFinish?: () 
 	};
 	const select = (files: File[]) => {
 		const { ready, pending: waiting } = planImport(files);
-		if (waiting.length) setDialog({ ready, pending: waiting });
-		else void run(ready);
+		if (!waiting.length) {
+			void run(ready);
+			return;
+		}
+		setDialog({ ready, pending: waiting });
+		fetch("/api/sources/documents", { cache: "no-store" })
+			.then((r) => (r.ok ? (r.json() as Promise<ImportedDocument[]>) : []))
+			.then((docs) => {
+				setDocuments(docs);
+				setDialog((d) => (d ? { ...d, pending: preselectVersions(d.pending, docs) } : d));
+			})
+			.catch(() => {});
 	};
 	return {
 		errors, importing,
@@ -107,6 +119,7 @@ export function useNotesImport(callbacks: { onStart?: () => void; onFinish?: () 
 		/** Props for <SourceImportDialog>: render it wherever the button is. */
 		sourceDialog: {
 			pending: dialog?.pending ?? [],
+			documents,
 			onChange: (index: number, next: PendingSourceFile) =>
 				setDialog((d) => (d ? { ...d, pending: d.pending.map((p, i) => (i === index ? next : p)) } : d)),
 			onImport: () => {

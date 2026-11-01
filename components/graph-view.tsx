@@ -1682,7 +1682,11 @@ export function GraphView({
 					<div className="mt-1 text-xs leading-relaxed text-muted-foreground">{selected.node.statement}</div>
 					{snapshot?.citations?.[selected.node.id] && (
 						<div className="mt-2">
-							<CitationChip labels={snapshot.citations[selected.node.id]} onOpen={() => citation.open(selected.node.id)} />
+							<CitationChip
+								labels={snapshot.citations[selected.node.id]}
+								outdated={snapshot.outdated?.includes(selected.node.id) ?? false}
+								onOpen={() => citation.open(selected.node.id)}
+							/>
 						</div>
 					)}
 					{selected.sourceIds.length > 0 ? (
@@ -1740,6 +1744,7 @@ export function GraphView({
 				sessions={snapshot?.sessions ?? {}}
 				fileSources={snapshot?.fileSources ?? {}}
 				citations={snapshot?.citations}
+				outdated={snapshot?.outdated}
 				onOpenCitation={citation.open}
 				reviewExcluded={reviewExclusions.excluded}
 				onReviewExclusion={(sessionId, excluded) => void reviewExclusions.setExcluded(sessionId, excluded)}
