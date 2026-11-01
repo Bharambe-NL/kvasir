@@ -13,7 +13,7 @@ import { it } from "node:test";
 
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 const ROOTS = ["components", "app", "src"];
-const TOKEN_FILES = new Set(["app/globals.css"]);
+const TOKEN_FILES = new Set(["app/globals.css", "src/core/background-defaults.ts"]);
 
 /** Exceptions: file, the exact text allowed there, and why. */
 const ALLOWED: { file: string; text: string; why: string }[] = [
@@ -21,7 +21,6 @@ const ALLOWED: { file: string; text: string; why: string }[] = [
 	{ file: "src/agent/subagents/headless.ts", text: "#ffffff", why: "the same page background for the headless screenshot" },
 	{ file: "components/graph-view.tsx", text: "#888888", why: "the canvas fallback when a token cannot be resolved" },
 	{ file: "components/graph-canvas.ts", text: "rgba(", why: "turns an already resolved token colour into rgba with an alpha" },
-	{ file: "components/settings/appearance-section.tsx", text: "#141414", why: "the background setting's default value, shown as its placeholder and hint" },
 	{ file: "components/graph-canvas.ts", text: "hsla(", why: "cluster regions take a hue generated from the cluster id; their saturation and lightness become theme settings in P7-3" },
 ];
 

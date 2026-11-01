@@ -45,27 +45,42 @@ describe("resolveAppearance — delta over factory", () => {
 describe("derivedPalette — the dark curve keeps today's relationships", () => {
 	it("the factory background reproduces today's palette EXACTLY", () => {
 		assert.deepEqual(derivedPalette("#141414"), {
-			"--background": "#141414",
-			"--card": "#1c1c1c",
-			"--popover": "#1c1c1c",
-			"--secondary": "#1c1c1c",
-			"--muted": "#1c1c1c",
-			"--accent": "#2a2a2a",
-			"--border": "#434343",
-			"--input": "#434343",
-			"--primary-foreground": "#141414",
+			"--lh-dark-background": "#141414",
+			"--lh-dark-card": "#1c1c1c",
+			"--lh-dark-popover": "#1c1c1c",
+			"--lh-dark-secondary": "#1c1c1c",
+			"--lh-dark-muted": "#1c1c1c",
+			"--lh-dark-accent": "#2a2a2a",
+			"--lh-dark-border": "#434343",
+			"--lh-dark-input": "#434343",
+			"--lh-dark-primary-foreground": "#141414",
 		});
 	});
 
 	it("an off-factory background shifts every surface with it (clamped at 255)", () => {
 		const p = derivedPalette("#f0f0f0");
-		assert.equal(p["--background"], "#f0f0f0");
-		assert.equal(p["--card"], "#f8f8f8"); // 240 + 8 per channel
-		assert.equal(p["--border"], "#ffffff", "240 + 47 clamps to 255 on every channel");
+		assert.equal(p["--lh-dark-background"], "#f0f0f0");
+		assert.equal(p["--lh-dark-card"], "#f8f8f8"); // 240 + 8 per channel
+		assert.equal(p["--lh-dark-border"], "#ffffff", "240 + 47 clamps to 255 on every channel");
 	});
 
 	it("3-digit hex expands", () => {
-		assert.equal(derivedPalette("#abc")["--card"], "#b2c3d4"); // aa bb cc each +8
+		assert.equal(derivedPalette("#abc")["--lh-dark-card"], "#b2c3d4"); // aa bb cc each +8
+	});
+});
+
+describe("derivedPalette — the light curve (Kvasir P7-2, D130)", () => {
+	it("the light default reproduces the warm paper palette's relationships, into the light hooks only", () => {
+		const p = derivedPalette("#faf8f4", "light");
+		assert.deepEqual(Object.keys(p).every((k) => k.startsWith("--lh-light-")), true);
+		assert.equal(p["--lh-light-background"], "#faf8f4");
+		assert.equal(p["--lh-light-card"], "#f2f0ec"); // each channel 8 darker
+		assert.equal(p["--lh-light-accent"], "#e7e5e1"); // 19 darker
+		assert.equal(p["--lh-light-border"], "#d9d7d3"); // 33 darker
+		assert.equal(p["--lh-light-primary-foreground"], "#faf8f4");
+	});
+	it("darker steps clamp at 0", () => {
+		assert.equal(derivedPalette("#101010", "light")["--lh-light-border"], "#000000");
 	});
 });
 
@@ -76,7 +91,7 @@ describe("appearanceVars — the mapping the provider applies", () => {
 		assert.equal(vars["--lh-heading-weight"], "900");
 		assert.equal(vars["--font-prose"], undefined, "no font override at factory");
 		assert.equal(vars["--font-title"], undefined, "CMU stays");
-		assert.equal(vars["--background"], undefined, "factory palette untouched");
+		assert.equal(vars["--lh-dark-background"], undefined, "factory palette untouched");
 		assert.equal(vars["--lh-ink-strong"], undefined, "default ink");
 	});
 
@@ -90,8 +105,9 @@ describe("appearanceVars — the mapping the provider applies", () => {
 				mdRendering: { headingWeight: 700, boldColor: "#ff0000", italicColor: "#00ff00" },
 			}),
 		);
-		assert.equal(vars["--background"], "#101820");
-		assert.equal(vars["--card"], "#182028", "raised +8 per channel: 10→18, 18→20, 20→28");
+		assert.equal(vars["--lh-dark-background"], "#101820");
+		assert.equal(vars["--lh-dark-card"], "#182028", "raised +8 per channel: 10→18, 18→20, 20→28");
+		assert.equal(Object.keys(vars).some((k) => k.startsWith("--lh-light-")), false, "a dark background never reaches light mode");
 		assert.equal(vars["--font-prose"], `"Georgia", var(--font-sans3), ui-sans-serif, system-ui, sans-serif`);
 		assert.equal(vars["--lh-prose-size"], "18px");
 		assert.equal(vars["--font-title"], "var(--font-prose)", "serif off → titles follow the prose font");
@@ -120,7 +136,7 @@ describe("staleVarNames — the removal half of application (owner repro: resets
 		const applied = Object.keys(fullDelta);
 		const factory = appearanceVars(resolveAppearance(undefined));
 		const stale = staleVarNames(applied, factory);
-		assert.ok(stale.includes("--background"));
+		assert.ok(stale.includes("--lh-dark-background"));
 		assert.ok(stale.includes("--font-prose"));
 		assert.ok(stale.includes("--font-title"), "serif toggle back ON must clear the title override");
 		assert.ok(stale.includes("--lh-ink-strong"));
@@ -133,9 +149,9 @@ describe("staleVarNames — the removal half of application (owner repro: resets
 		const withBg = appearanceVars(resolveAppearance({ background: "#101010" }));
 		const emptied = appearanceVars(resolveAppearance({ background: null }));
 		const stale = staleVarNames(Object.keys(withBg), emptied);
-		assert.ok(stale.includes("--background"));
-		assert.ok(stale.includes("--card"), "the derived palette follows the background out");
-		assert.equal(emptied["--background"], undefined);
+		assert.ok(stale.includes("--lh-dark-background"));
+		assert.ok(stale.includes("--lh-dark-card"), "the derived palette follows the background out");
+		assert.equal(emptied["--lh-dark-background"], undefined);
 	});
 
 	it("no previous applications → nothing stale", () => {

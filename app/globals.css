@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark {
+	&:is(.dark *) {
+		@slot;
+	}
+	@media (prefers-color-scheme: dark) {
+		&:is(.system *) {
+			@slot;
+		}
+	}
+}
 
 /*
  * THE SKIN — wave 5. Design tokens, the single place to restyle the app.
@@ -30,26 +39,29 @@
 /* Palette (owner's hexes): main #141414, raised #1C1C1C, edges #434343.
    Mono chrome = JetBrains Mono; prose = Source Sans 3; titles = CMU Serif. */
 :root {
-	color-scheme: dark;
+	/* The surfaces a custom background derives (P7-2, D130) read per-mode
+	   hooks: components/settings/appearance.tsx sets --lh-dark-* or
+	   --lh-light-* for the mode whose background the user chose; unset,
+	   the defaults here apply. */
 	--radius: 8px;
-	--background: #141414;
-	--foreground: #e6e6e6;
-	--card: #1c1c1c;
-	--card-foreground: #e6e6e6;
-	--popover: #1c1c1c;
-	--popover-foreground: #e6e6e6;
-	--primary: #e6e6e6;
-	--primary-foreground: #141414;
-	--secondary: #1c1c1c;
-	--secondary-foreground: #e6e6e6;
-	--muted: #1c1c1c;
-	--muted-foreground: #8d8d8d;
-	--accent: #2a2a2a;
-	--accent-foreground: #e6e6e6;
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: #434343;
-	--input: #434343;
-	--ring: #8d8d8d;
+	--background: light-dark(var(--lh-light-background, #faf8f4), var(--lh-dark-background, #141414));
+	--foreground: light-dark(#1c1b19, #e6e6e6);
+	--card: light-dark(var(--lh-light-card, #f2efe9), var(--lh-dark-card, #1c1c1c));
+	--card-foreground: light-dark(#1c1b19, #e6e6e6);
+	--popover: light-dark(var(--lh-light-popover, #f2efe9), var(--lh-dark-popover, #1c1c1c));
+	--popover-foreground: light-dark(#1c1b19, #e6e6e6);
+	--primary: light-dark(#1c1b19, #e6e6e6);
+	--primary-foreground: light-dark(var(--lh-light-primary-foreground, #faf8f4), var(--lh-dark-primary-foreground, #141414));
+	--secondary: light-dark(var(--lh-light-secondary, #f2efe9), var(--lh-dark-secondary, #1c1c1c));
+	--secondary-foreground: light-dark(#1c1b19, #e6e6e6);
+	--muted: light-dark(var(--lh-light-muted, #f2efe9), var(--lh-dark-muted, #1c1c1c));
+	--muted-foreground: light-dark(#6f6a62, #8d8d8d);
+	--accent: light-dark(var(--lh-light-accent, #e7e2d8), var(--lh-dark-accent, #2a2a2a));
+	--accent-foreground: light-dark(#1c1b19, #e6e6e6);
+	--destructive: light-dark(oklch(50.5% 0.213 27.518), oklch(0.704 0.191 22.216));
+	--border: light-dark(var(--lh-light-border, #d9d4ca), var(--lh-dark-border, #434343));
+	--input: light-dark(var(--lh-light-input, #d9d4ca), var(--lh-dark-input, #434343));
+	--ring: light-dark(#6f6a62, #8d8d8d);
 	/* Emphasis inks default to the REGULAR TEXT COLOR (owner ruling,
 	   appearance wave 2026-09-26 — the old #ee928c/#6fa9d6 factory
 	   emphasis colors are gone). Explicit overrides land via the
@@ -68,12 +80,12 @@
 	/* Kvasir P7-1 (D124, D126, D127): every colour outside the base palette
 	   above, as named tokens with today's exact values. Light mode (P7-2)
 	   and colour themes (P7-3) change these, never the components. */
-	--danger: oklch(63.7% 0.237 25.331); /* was red-500 */
-	--danger-soft: oklch(70.4% 0.191 22.216); /* was red-400 */
-	--warning: oklch(76.9% 0.188 70.08); /* was amber-500 */
-	--warning-soft: oklch(82.8% 0.189 84.429); /* was amber-400 */
-	--success: oklch(72.3% 0.219 149.579); /* was green-500 */
-	--success-soft: oklch(79.2% 0.209 151.711); /* green-400 */
+	--danger: light-dark(oklch(44.4% 0.177 26.899), oklch(63.7% 0.237 25.331)); /* was red-500 */
+	--danger-soft: light-dark(oklch(50.5% 0.213 27.518), oklch(70.4% 0.191 22.216)); /* was red-400 */
+	--warning: light-dark(oklch(47.3% 0.137 46.201), oklch(76.9% 0.188 70.08)); /* was amber-500 */
+	--warning-soft: light-dark(oklch(55.5% 0.163 48.998), oklch(82.8% 0.189 84.429)); /* was amber-400 */
+	--success: light-dark(oklch(44.8% 0.119 151.328), oklch(72.3% 0.219 149.579)); /* was green-500 */
+	--success-soft: light-dark(oklch(52.7% 0.154 150.069), oklch(79.2% 0.209 151.711)); /* green-400 */
 	--heat-low: #e5484d;
 	--heat-mid: #f5a524;
 	--heat-high: #30a46c;
@@ -83,75 +95,29 @@
 	--confidence-70: #84cc16;
 	--confidence-90: #22c55e;
 	--confidence-100: #10b981;
-	--confidence-track: #141414;
-	--confidence-tick: rgba(230, 230, 230, 0.35);
+	--confidence-track: light-dark(#e7e2d8, #141414);
+	--confidence-tick: light-dark(rgba(28, 27, 25, 0.3), rgba(230, 230, 230, 0.35));
 	--scrim: #000;
 	--on-accent: #fff;
 	--paper: #fff;
-	--ink-bright: #fff;
-	--mark-fill: rgb(148, 148, 148);
-	--mark-detail: #fff;
+	--ink-bright: light-dark(#1c1b19, #fff);
+	--mark-fill: light-dark(#6f6a62, rgb(148, 148, 148));
+	--mark-detail: light-dark(#1c1b19, #fff);
 }
 
 /* The app is always dark (<html class="dark">); mirror the same values so
    the block stays coherent under Tailwind's variant. */
+/* Kvasir P7-2 (D128): the <html> class picks the colour scheme, and every
+   colour token above holds both values as light-dark(light, dark). System
+   follows the OS appearance live, with no script. */
 .dark {
-	--background: #141414;
-	--foreground: #e6e6e6;
-	--card: #1c1c1c;
-	--card-foreground: #e6e6e6;
-	--popover: #1c1c1c;
-	--popover-foreground: #e6e6e6;
-	--primary: #e6e6e6;
-	--primary-foreground: #141414;
-	--secondary: #1c1c1c;
-	--secondary-foreground: #e6e6e6;
-	--muted: #1c1c1c;
-	--muted-foreground: #8d8d8d;
-	--accent: #2a2a2a;
-	--accent-foreground: #e6e6e6;
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: #434343;
-	--input: #434343;
-	--ring: #8d8d8d;
-	/* Same emphasis ruling as the block above: unset = text color. */
-	--lh-ink-strong: var(--foreground);
-	--lh-ink-italic: var(--foreground);
-	/* THE READING SIZE = the ladder's 16px rung (--text-lg). Can't be
-	   var()-linked: @theme inline inlines literals into utilities without
-	   emitting runtime vars — so this is the one documented duplication:
-	   change one, change both. (owner, typography round 4: snapped from
-	   the reskin's hand-tuned 16.5 to the ladder's 16.) */
-	--lh-prose-size: 16px;
-	--lh-prose-leading: 1.5;
-	/* Markdown heading weight (appearance settings; 900 = the Black cut). */
-	--lh-heading-weight: 900;
-	/* Kvasir P7-1 (D124, D126, D127): every colour outside the base palette
-	   above, as named tokens with today's exact values. Light mode (P7-2)
-	   and colour themes (P7-3) change these, never the components. */
-	--danger: oklch(63.7% 0.237 25.331); /* was red-500 */
-	--danger-soft: oklch(70.4% 0.191 22.216); /* was red-400 */
-	--warning: oklch(76.9% 0.188 70.08); /* was amber-500 */
-	--warning-soft: oklch(82.8% 0.189 84.429); /* was amber-400 */
-	--success: oklch(72.3% 0.219 149.579); /* was green-500 */
-	--success-soft: oklch(79.2% 0.209 151.711); /* green-400 */
-	--heat-low: #e5484d;
-	--heat-mid: #f5a524;
-	--heat-high: #30a46c;
-	--confidence-0: #ef4444;
-	--confidence-30: #f97316;
-	--confidence-50: #eab308;
-	--confidence-70: #84cc16;
-	--confidence-90: #22c55e;
-	--confidence-100: #10b981;
-	--confidence-track: #141414;
-	--confidence-tick: rgba(230, 230, 230, 0.35);
-	--scrim: #000;
-	--on-accent: #fff;
-	--paper: #fff;
-	--ink-bright: #fff;
-	--mark-fill: rgb(148, 148, 148);
-	--mark-detail: #fff;
+	color-scheme: dark;
+}
+.light {
+	color-scheme: light;
+}
+.system {
+	color-scheme: light dark;
 }
 
 /* CMU Serif bold (titles) — bundled local file, no CDN dependency. */

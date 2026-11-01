@@ -66,6 +66,7 @@
 import { useRouter } from "next/navigation";
 import { DueChip, RetentionToggle } from "@/components/review/retention-controls";
 import { GraphExportMenu } from "@/components/graph-export";
+import { useColorScheme } from "@/components/settings/appearance";
 import { useRetentionOverlay, useReviewSummary } from "@/components/review/use-review-summary";
 import { useReviewExclusions } from "@/components/review/use-review-exclusions";
 import { CitationChip, useCitationPanel } from "@/components/citation-chip";
@@ -217,8 +218,16 @@ function cssColorToHex(css: string): string {
 		.join("")}`;
 }
 
+/** A token as #rrggbb. Tokens hold light-dark() pairs (P7-2), which only
+ *  an element in the page can resolve, so a hidden probe takes the token
+ *  as its colour and reports the computed result. */
 function tokenHex(cssVar: string): string {
-	const value = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+	const probe = document.createElement("span");
+	probe.style.display = "none";
+	probe.style.color = `var(${cssVar})`;
+	document.body.appendChild(probe);
+	const value = getComputedStyle(probe).color;
+	probe.remove();
 	return value ? cssColorToHex(value) : "#888888";
 }
 
@@ -1096,6 +1105,9 @@ export function GraphView({
 	const reviewExclusions = useReviewExclusions();
 	const citation = useCitationPanel();
 	const [retentionOn, setRetentionOn] = useRetentionOverlay();
+	// Light or dark on screen (P7-2): the canvas re-reads its colours when
+	// it changes.
+	const scheme = useColorScheme();
 	const heat = useMemo(
 		() => (retentionOn && reviewSummary ? new Map(Object.entries(reviewSummary.heat)) : undefined),
 		[retentionOn, reviewSummary],
@@ -1455,12 +1467,13 @@ export function GraphView({
 				label: tokenHex("--muted-foreground"),
 				hoverText: tokenHex("--foreground"),
 				heat: { low: tokenHex(HEAT_TOKENS.low), mid: tokenHex(HEAT_TOKENS.mid), high: tokenHex(HEAT_TOKENS.high) },
+				scheme,
 			},
 			// Match the app typography (Geist via the body's stack).
 			fontFamily: getComputedStyle(document.body).fontFamily,
 			heat,
 		});
-	}, [snapshot, isEmpty, heat]);
+	}, [snapshot, isEmpty, heat, scheme]);
 
 	// Feed #2 — settings: just marks the frame dirty. No rebuild, no
 	// re-layout, no camera touch (the whole point of the new renderer).

@@ -133,3 +133,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D125 | 2026-11-01 | A test fails `npm test` on any hard-coded colour outside the token files, with a short allow list for real exceptions | Sagar | |
 | D126 | 2026-11-01 | Today's shades are kept exactly: each status colour gets a main and a soft token (`--danger` and `--danger-soft` as red-500 and red-400, and the same for warning and success); red-300's two uses become `--danger-soft` | Sagar | |
 | D127 | 2026-11-01 | Two more colour tokens: `--paper` (the white backing behind rendered SVGs and demos, white in every theme) and `--ink-bright` (the plan diagram ink and the callout border, white in dark mode); `--on-accent` is text on coloured buttons | Sagar | |
+| D128 | 2026-11-01 | Mode offers Dark, Light and System (follows the Mac and switches live); the default stays Dark | Sagar | |
+| D129 | 2026-11-01 | The light palette is warm paper: background #faf8f4, cards #f2efe9, text #1c1b19, borders #d9d4ca | Sagar | |
+| D130 | 2026-11-01 | The Background setting becomes one per mode (Dark background, Light background), each with its own derivation: lighter steps in dark, darker steps in light | Sagar | |
+| D131 | 2026-11-01 | Settings shape: `appearance.mode` is `"dark" | "light" | "system"`; `appearance.background` keeps meaning the dark background; a new `appearance.lightBackground` (hex or null) is the light one. No migration | Sagar | |

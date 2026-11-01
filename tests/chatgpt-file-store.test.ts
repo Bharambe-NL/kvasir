@@ -126,5 +126,7 @@ test("desktop wiring uses only the private JSON path, with no Electron safeStora
 	// Kvasir P6-6: main uses safeStorage only for the data key, handed to
 	// the encryption module; never for ChatGPT credentials.
 	const uses = main.split("\n").filter((l) => /safeStorage/.test(l)).map((l) => l.trim());
-	assert.deepEqual(uses, ['const { app, BrowserWindow, Menu, ipcMain, safeStorage, session, shell } = require("electron");', "safeStorage,"]);
+	assert.equal(uses.length, 2);
+	assert.match(uses[0]!, /^const \{ [^}]*\bsafeStorage\b[^}]* \} = require\("electron"\);$/);
+	assert.equal(uses[1], "safeStorage,");
 });
