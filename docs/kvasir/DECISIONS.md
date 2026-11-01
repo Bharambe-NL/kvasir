@@ -124,3 +124,6 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D116 | 2026-11-01 | When the keychain cannot unlock the data, the app shows a Locked screen asking for the recovery key; a wrong key changes nothing, and no store is read or written while locked | Sagar | |
 | D117 | 2026-11-01 | Each value is sealed on its own with AES-256-GCM (random 12-byte nonce, the ledger or record id as associated data), stored as `{"kv":1,"iv","ct","tag"}` in base64 where the JSON was; `data/encryption.json` holds the sealed keys and a check value | Sagar | |
 | D118 | 2026-11-01 | The MCP server refuses clearly when the data is encrypted; no key leaves the app | Sagar | |
+| D119 | 2026-11-01 | A phase gate no longer blocks other phases: P3, P4 (after P3) and P5 may start now. Gates still record each phase's checks before its release tag | Sagar | ROADMAP "a phase starts only when the previous phase gate has passed" |
+| D120 | 2026-11-01 | P1's real-use check (two weeks of reviews on schedule) stays as a later, non-blocking check, recorded once Sagar has used reviews for two weeks | Sagar | |
+| D121 | 2026-11-01 | New phase P7 Look and feel: a new app symbol, colour themes users can pick, a light mode and a polish pass. Opened first, before P3 | Sagar | |
