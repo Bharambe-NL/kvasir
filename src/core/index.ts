@@ -85,3 +85,4 @@ export * from "./coverage.ts";
 // export share it. Pure, browser-safe.
 export * from "./session-markdown.ts";
 export { formatInterval, heatBand, type HeatBand, type ReviewExclusionsView, type ReviewSummary, type ReviewQueueItem, type ReviewQueueView, type QueueStats, type Retention } from "./review-view.ts";
+export { chipText, citationLabel, citationLabels, documentShortName, shortPath, versionLabel, type CitationView } from "./sources.ts";
