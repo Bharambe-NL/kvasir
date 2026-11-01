@@ -80,7 +80,7 @@ describe("ask_spoken, one question per turn (D163)", () => {
 
 describe("the voice tool sets (D160)", () => {
 	const chat = chatStore.createChat("voice tools", undefined, { voice: true });
-	const ctx = { chatId: chat.id, chatStore, jobStore, spawn: () => {}, searchAvailable: false, deliver: () => {} };
+	const ctx = { chatId: chat.id, chatStore, jobStore, spawn: () => {}, searchAvailable: false, deliver: () => {} } as unknown as Parameters<typeof createTeacherTools>[0] & Parameters<typeof createProberTools>[0];
 	const WRITTEN = ["quiz", "probe", "explain", "recall", "ask_user_question"];
 
 	it("in voice, ask_spoken replaces every question tool for the prober and the teacher", () => {
