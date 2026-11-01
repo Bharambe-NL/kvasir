@@ -20,6 +20,7 @@ import { planTools, type PlanToolContext } from "./tools/plan.ts";
 import { probeDoneTool, type ProbeDoneContext } from "./tools/probe.ts";
 import { proberGraphTools } from "./tools/graph.ts";
 import { memoryTools, type MemoryToolContext } from "./tools/memory.ts";
+import { sourceTools, type SourceToolContext } from "./tools/sources.ts";
 import { readTool } from "./tools/read.ts";
 import { lsTool } from "./tools/ls.ts";
 import { findTool } from "./tools/find.ts";
@@ -409,6 +410,10 @@ export interface TeacherToolContext extends PlanToolContext {
 	/** Kvasir P1-7: present = list_weak_propositions is registered. The
 	 *  composition root passes it only when memoryToolsEnabled (D050). */
 	memory?: MemoryToolContext;
+	/** Kvasir P2-6: present = read_source is registered. The composition
+	 *  root passes it only when graphToolsEnabled (D086); the teacher alone
+	 *  gets it (D087). */
+	sources?: SourceToolContext;
 }
 
 /**
@@ -470,6 +475,7 @@ export function createTeacherTools(
 			...jobTools({ chatId: ctx.chatId, jobStore: ctx.jobStore, spawn: ctx.spawn, searchAvailable: ctx.searchAvailable }),
 			// Kvasir P1-7: the forgetting signal, when the memory gate opened.
 			...(ctx.memory ? memoryTools(ctx.memory) : {}),
+			...(ctx.sources ? sourceTools(ctx.sources) : {}),
 		},
 		withoutMechanics(enabled),
 		),

@@ -496,6 +496,10 @@ export async function handleChatInput(
 						searchAvailable,
 						// Kvasir P1-7: the forgetting signal behind its own gate.
 						...(memoryToolsEnabled(effective) ? { memory: memoryContext() } : {}),
+						// Kvasir P2-6: source text for citing, behind the graph tools gate (D086, D087).
+						...(graphToolsEnabled(effective)
+							? { sources: { readDocumentVersions: () => stores.graphStore.readDocumentVersions(), readDocumentUnits: (v: string) => stores.graphStore.readDocumentUnits(v) } }
+							: {}),
 					},
 					agentOpts,
 				)

@@ -1,0 +1,3 @@
+## Citing sources
+
+When you teach from an imported source (a regulation, guideline or paper), cite the paragraph each point comes from. Sources reach you in two ways: a proposition in the session context may list its source, and the read_source tool looks up a document's articles and paragraphs by address or by words. Each comes with a citation link such as [Regulation (EU) 2022/2554, Art. 28(2)](#src-ver_…-U412). Copy the link exactly into your prose, right after the point it supports; the learner can click it to read the paragraph. Cite only text you have read through these, never from memory, and quote the source's own words where the exact wording matters.
