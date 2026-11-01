@@ -51,7 +51,7 @@ describe("the settings shape (D128, D131)", () => {
 });
 
 describe("the tokens (D129)", () => {
-	const SAME_IN_BOTH = ["--heat-low", "--heat-mid", "--heat-high", "--confidence-0", "--confidence-30", "--confidence-50", "--confidence-70", "--confidence-90", "--confidence-100", "--scrim", "--on-accent", "--paper"];
+	const SAME_IN_BOTH = ["--heat-low", "--heat-mid", "--heat-high", "--confidence-0", "--confidence-30", "--confidence-50", "--confidence-70", "--confidence-90", "--confidence-100", "--scrim", "--on-accent", "--paper", "--mark-detail"];
 	it("every colour token holds a light and a dark value, except the ones meant to read the same", () => {
 		const colour = [...tokens].filter(([, v]) => /#|rgb|oklch|light-dark|var\(--lh-/.test(v) && !v.startsWith("var(--foreground)")).map(([k]) => k);
 		const single = colour.filter((k) => !tokens.get(k)!.startsWith("light-dark("));

@@ -101,8 +101,10 @@
 	--on-accent: #fff;
 	--paper: #fff;
 	--ink-bright: light-dark(#1c1b19, #fff);
-	--mark-fill: light-dark(#6f6a62, rgb(148, 148, 148));
-	--mark-detail: light-dark(#1c1b19, #fff);
+	/* The in-app mark (P7-4, D140): the chevron in the theme's ink, the dot
+	   in Kvasir gold. */
+	--mark-fill: var(--foreground);
+	--mark-detail: #f2b544;
 	/* Kvasir P7-3 (D135, D138): the highlight (selected, active, focus) and
 	   the graph's cluster region numbers. Kvasir's highlight is today's
 	   primary ink, so the default theme looks as before. light-dark() takes
@@ -238,8 +240,7 @@
 	--confidence-100: light-dark(#444444, #bbbbbb);
 	--confidence-track: light-dark(#dcdcd8, #222222);
 	--confidence-tick: light-dark(#000000, #ffffff);
-	--mark-fill: light-dark(#4a4a4a, #b0b0b0);
-	--mark-detail: light-dark(#000000, #ffffff);
+	--mark-detail: light-dark(#6b6b6b, #9a9a9a);
 }
 
 /* Text selection takes the highlight in the coloured themes; Kvasir keeps

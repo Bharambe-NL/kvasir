@@ -90,3 +90,4 @@ export { parseSourceRef, sourceHref, sourceLink, type SourceRef, type SourceUnit
 export { questionDataFor } from "./question-data.ts";
 export * from "./background-defaults.ts";
 export * from "./theme-presets.ts";
+export * from "./kvasir-mark.ts";
