@@ -1,0 +1,479 @@
+{
+	"commit": "e215d41",
+	"model": "anthropic:claude-opus-5-5",
+	"at": "2026-11-01T16:24:55.548Z",
+	"passed": 9,
+	"total": 14,
+	"dollars": 0.24,
+	"tokens": {
+		"inputTokens": 56,
+		"outputTokens": 5067,
+		"cacheReadTokens": 123817,
+		"cacheWriteTokens": 23220,
+		"cacheWrite1hTokens": 0
+	},
+	"replies": [
+		{
+			"agent": "prober",
+			"learner": "I'd like to learn about DORA.",
+			"reply": "Before we start, I'll ask four quick setup questions. First, what do you do for work, and what do you already deal with day to day?",
+			"words": 26,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "I work in EU payments. I'm on the European Payments Initiative, on Wero.",
+			"reply": "That points to the Digital Operational Resilience Act, the EU regulation on financial firms' tech risk. What do you want to be able to do or understand about it by the end?",
+			"words": 32,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "I want to understand what Article 28 of DORA asks of a payment firm that relies on cloud providers.",
+			"reply": "Clear enough to work with. How many minutes do you have right now?",
+			"words": 13,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "About twenty minutes.",
+			"reply": "When you get stuck on a question, how do you like to be helped?",
+			"words": 14,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "Give me a nudge in the right direction, not the answer.",
+			"reply": "Thanks, that's all the setup. Now I'll find out what you already know, starting near the hard end.\n\nSuppose your cloud provider has an outage and payments stop. Under DORA, how is responsibility for that split between the payment firm and the cloud provider?",
+			"words": 44,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "I know DORA is about operational resilience and that it applies to us from January 2025.",
+			"reply": "That's right on both counts: it applies from the seventeenth of January twenty twenty-five. But it skips the question I asked, so let me ask it again plainly. If the cloud provider's outage stops your payments, who does the regulator hold responsible, and does your answer change because the provider caused it?",
+			"words": 52,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "Not really. I think it says something about contracts with providers, but I couldn't tell you what.",
+			"reply": "So that one's a gap: you don't yet know where DORA puts responsibility. That's fine, it tells me where to start.\n\nDifferent angle. Before DORA, payment firms already had rules on outsourcing from the European Banking Authority. Have you dealt with those, or with any outsourcing or vendor review at work, and if so, what did it involve?",
+			"words": 58,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "(The spoken probe is finished. Setup answers: background, EU payments, working on the European Payments Initiative and Wero. Goal: understand what DORA Article 28 asks of a payment firm that relies on cloud providers. Session length: twenty minutes. Hint style: a nudge in the right direction, not the answer. Probe result: he knows DORA is about operational resilience and when it applies; he does not know what Article 28 contains: the firm's full responsibility, the ICT third-party risk strategy, the register of information, or exit strategies.) Please start teaching.",
+			"reply": "Here's how I'd like to run the next twenty minutes, building toward what Article twenty-eight of DORA asks of a firm like the European Payments Initiative when it relies on cloud providers.\n\nWe'll start from one plain rule that everything else in the article follows from: when a payment firm hands a task to a cloud provider, it hands over the work but never the responsibility. If an outage at the provider stops Wero payments, the regulator looks at the firm, not the provider.\n\nOnce that rule feels obvious to you, the rest of the article becomes a set of answers to one question: if you stay fully responsible for something you don't run yourself, what would you need in order to stay in control of it?\n\nThe first answer is a strategy, meaning a deliberate policy for how you take on third-party risk. The second is a register, meaning a complete record of which providers you depend on and for what. The third is a set of checks before you sign and terms written into the contract. The last is an exit strategy, meaning a worked-out plan for leaving a provider without the service collapsing.\n\nI'll walk you to each of those one step at a time, and where I can, I'll let you work out the next piece yourself before I name it. Each piece will come with a Wero example, and I'll check the exact wording of the article as we go.\n\nDoes that plan suit you, or is there anything you'd like to change before we start?",
+			"words": 261,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": false,
+					"detail": "2 questions"
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": false,
+					"detail": "261 words"
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "I think the firm stays responsible for the service even when a cloud provider runs it.",
+			"reply": "I'll take that as a yes to the plan, and you've already stated the rule it rests on. That's the right starting point, and the article opens with almost exactly that idea: a financial entity using a third-party technology provider stays fully responsible, at all times, for meeting its obligations under DORA and the rest of financial services law.\n\nHere's what that means in practice. Say Wero's payment processing runs on a big cloud provider, and one afternoon a region goes down and instant payments stop. The firm can't tell the regulator that it was the cloud provider's fault and not theirs. The rules see only the firm, and the firm has to answer for that outage as if its own servers had failed.\n\nSo here's the puzzle. You carry full responsibility for something that runs on someone else's machines, operated by someone else's staff. What do you think the firm would need, as a minimum, to be able to carry that responsibility honestly?",
+			"words": 164,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": false,
+					"detail": "164 words"
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "And the register only has to list the critical providers, right?",
+			"reply": "Part of that is right. Providers that support what DORA calls critical or important functions do get special treatment in the register: those arrangements have to be marked out separately.\n\nBut the register itself is not limited to them. It covers every contractual arrangement the firm has for technology services from third-party providers, critical or not. I'll confirm the exact wording against the text as we go on.\n\nThe reason ties straight back to your rule. If you're fully responsible for a service, you need to know everything it depends on, and a dependency you never recorded is one you can't manage. A provider can also look minor on paper and still matter a lot. Take a small identity-check vendor that Wero uses only for onboarding. It looks peripheral until it fails, and then new users can't sign up at all.\n\nThe register also has a second job, beyond the firm's own control. The firm has to report it to its supervisor, and the supervisors can then lay registers from many firms side by side.\n\nWhat do you think a supervisor like the EBA could see from many firms' registers together that no single firm could see from its own?",
+			"words": 200,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": false,
+					"detail": "200 words"
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "I don't know.",
+			"reply": "That's fine, it's a genuine gap, so here's a nudge rather than the answer.\n\nPicture the registers from the European Payments Initiative, a dozen big eurozone banks, and a few other payment firms all laid side by side. Now imagine the same few cloud provider names keep turning up again and again across those lists.\n\nWhat would that pattern tell a supervisor about the risk to the payment system as a whole?",
+			"words": 72,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "No idea, sorry.",
+			"reply": "No need to apologise. Here's a stronger hint that leaves just one small step for you.\n\nSuppose that same cloud provider, the one sitting in almost every register, has a major outage on a Friday afternoon. Inside one firm, that's one firm's problem. But think about how many of those firms go down at the same moment, all from that single outage.\n\nSo what kind of risk does a supervisor spot only by looking across all the registers, and that no single firm can see from its own?",
+			"words": 88,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "So we need a plan to leave the provider without breaking the payment service.",
+			"reply": "Here's the answer to the register question. A supervisor looking across all the registers can spot concentration risk: many firms leaning on the same few providers, so that one provider's outage takes out a large part of the payment system at once. No single firm can see that from its own list, which is why the registers get passed up to the supervisors.\n\nYour answer still points somewhere real. A plan to leave a provider without breaking the service is exactly what Article twenty-eight calls an exit strategy. It's required for providers that support critical or important functions, and it follows from your rule: if you're fully responsible, you can't be trapped by a provider you can't walk away from.\n\nThe article also says the exit plan can't just sit in a drawer. It has to be written down, tested, and reviewed from time to time.\n\nSo take Wero's payment processing on a single cloud provider. What do you think the firm would have to have ready in advance for leaving that provider to actually work in practice?",
+			"words": 178,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": false,
+					"detail": "178 words"
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "OK, let's move on.",
+			"reply": "Fine, we'll leave that one.\n\nA quick recap of where we are. Everything rests on one rule: the firm stays fully responsible even when a cloud provider runs the service. The register is how it knows everything it depends on, and how supervisors spot concentration across the system. The exit strategy is how it avoids being trapped by any one provider.\n\nThe next piece is about the moment before the firm signs with a provider at all. Because the firm will carry full responsibility for whatever that provider does, the article requires it to assess the provider and the risks before entering the contract, not after something goes wrong.\n\nSo imagine the European Payments Initiative is about to sign with a new cloud provider to host part of Wero. What would you want to check about that provider before you sign?",
+			"words": 141,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": false,
+					"detail": "141 words"
+				}
+			]
+		}
+	]
+}

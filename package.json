@@ -22,6 +22,7 @@
 		"mcp": "tsx scripts/mcp-server.ts",
 		"mcp:config": "tsx scripts/mcp-config.ts",
 		"eval": "tsx scripts/eval.ts",
+		"voice:check": "tsx scripts/voice-check.ts",
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",

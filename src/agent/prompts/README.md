@@ -20,3 +20,6 @@ Rules for adding a fragment:
 - Document YOUR agent's tools/behaviors exactly; reference tool input field names verbatim (they must match the zod schemas).
 - Keep it tight: fragments are always in context. No restating the base prompt.
 - The two agents share one transcript but never one toolset — never reference the other agent's tools as if you had them.
+## Profiles (Kvasir P3-1)
+
+A profile is an overlay for one kind of session. `voice/` is the spoken session (D149): with `promptProfile: "voice"` the prober and the teacher compose as usual, minus `shared/40-formatting.md`, then `voice/shared/` and `voice/<agent>/` close the prompt so the spoken rules have the last word. Practice has no voice overlay. Voice fragments follow the same naming rule and can be overridden by path (`voice/teacher/10-spoken-teaching.md`). `docs/voice.md` maps the Socratic Tutor contract to the fragments.

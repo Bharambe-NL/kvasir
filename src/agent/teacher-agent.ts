@@ -6,6 +6,7 @@ import type { Usage } from "@earendil-works/pi-ai";
 import { PATHS } from "../../config.ts";
 import { APP_IDENTITY, piEngineFor, type PiEngine } from "./models.ts";
 import { effectivePromptSegments } from "./prompt-segments.ts";
+import type { PromptProfile } from "../core/prompt-segments.ts";
 import {
 	askUserQuestionTool,
 	createProberTools,
@@ -74,8 +75,8 @@ export type AgentKind = "prober" | "teacher" | "practice";
  *  tests/prompt-overrides.test.ts). Overrides are a static-file read
  *  through config paths, not request state — the store import carries no
  *  chat/job machinery. */
-export function composeInstructions(kind: AgentKind, switches?: Record<string, boolean>): string {
-	const segments = effectivePromptSegments(kind, switches ?? {});
+export function composeInstructions(kind: AgentKind, switches?: Record<string, boolean>, profile?: PromptProfile): string {
+	const segments = effectivePromptSegments(kind, switches ?? {}, profile);
 	return segments
 		.map((s) => (s.enabled ? s.overrideText! : s.sourceText))
 		.map((t) => t.trim())
@@ -91,6 +92,14 @@ const composedInstructions: Record<AgentKind, string> = {
 	prober: composeInstructions("prober"),
 	teacher: composeInstructions("teacher"),
 	practice: composeInstructions("practice"),
+};
+
+// The voice profile's source composition (Kvasir P3-1, D149), cached the
+// same way. Practice has no voice overlay, so it composes as before.
+const composedVoiceInstructions: Record<AgentKind, string> = {
+	prober: composeInstructions("prober", undefined, "voice"),
+	teacher: composeInstructions("teacher", undefined, "voice"),
+	practice: composedInstructions.practice,
 };
 
 // Money channel (wave 4): the chat-handler passes a per-turn collector;
@@ -123,6 +132,10 @@ export interface AgentBuildOptions {
 	 *  fresh per turn, honoring enabled overrides (switch on + file
 	 *  exists); absent → the cached pure-source composition. */
 	promptSwitches?: Record<string, boolean>;
+	/** The prompt profile (Kvasir P3-1, D149, D150): "voice" overlays the
+	 *  spoken-session fragments. Absent → the default prompt. Nothing in
+	 *  the app sets it until P3-3 puts the flag on the chat record. */
+	promptProfile?: PromptProfile;
 	/** Native conversation identity: the existing persisted chat id, reused
 	 * across reconstructed prober, teacher, and practice Agents.
 	 * Debug: when set AND KV_PROVIDER_EVENTS=1, raw provider stream events
@@ -184,8 +197,8 @@ function baseAgentOptions(kind: AgentKind, opts: AgentBuildOptions, tools: Agent
 	const engine = opts.engine ?? piEngineFor(kind as "prober" | "teacher");
 	const stopper = makeQuestionStopper(kind);
 	const systemPrompt = opts.promptSwitches
-		? composeInstructions(kind, opts.promptSwitches)
-		: composedInstructions[kind]!;
+		? composeInstructions(kind, opts.promptSwitches, opts.promptProfile)
+		: (opts.promptProfile === "voice" ? composedVoiceInstructions : composedInstructions)[kind]!;
 	// Debug recorder (owner, 2026-10-04): raw provider events when
 	// KV_PROVIDER_EVENTS=1 and the caller handed a chatId; undefined is
 	// the normal no-observer path (tests, env-off).
@@ -276,7 +289,9 @@ function baseAgentOptions(kind: AgentKind, opts: AgentBuildOptions, tools: Agent
  * handler keys teacher construction on.
  */
 export function createProberAgent(ctx: ProberToolContext, opts: AgentBuildOptions = {}) {
-	return baseAgentOptions("prober", opts, Object.values(createProberTools(ctx, opts.toolToggles)));
+	// An explicit registry is the caller's, as for the teacher (the voice
+	// check holds the question tools back, Kvasir P3-1).
+	return baseAgentOptions("prober", opts, Object.values(opts.tools ?? createProberTools(ctx, opts.toolToggles)));
 }
 
 /**
