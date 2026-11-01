@@ -127,3 +127,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D119 | 2026-11-01 | A phase gate no longer blocks other phases: P3, P4 (after P3) and P5 may start now. Gates still record each phase's checks before its release tag | Sagar | ROADMAP "a phase starts only when the previous phase gate has passed" |
 | D120 | 2026-11-01 | P1's real-use check (two weeks of reviews on schedule) stays as a later, non-blocking check, recorded once Sagar has used reviews for two weeks | Sagar | |
 | D121 | 2026-11-01 | New phase P7 Look and feel: a new app symbol, colour themes users can pick, a light mode and a polish pass. Opened first, before P3 | Sagar | |
+| D122 | 2026-11-01 | Self-merge is allowed in P7 for PRs that need no review from Sagar; anything visible (colours, the symbol, text) still waits for his approval | Sagar | |

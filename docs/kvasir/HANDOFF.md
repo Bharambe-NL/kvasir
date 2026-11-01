@@ -8,14 +8,16 @@ Updated by Claude Code at the end of each session. Read this first.
   - P0 Bootstrap and rename: done, `v0.0.1`.
   - P1 Retention and the learner layer: every task merged; the gate waits for two weeks of real use. No separate tag: its work ships in `v0.2.0` (D088). Milestone 2, tracking issue #13.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
+  - P7 Look and feel: opened 2026-11-01, before P3 (D121). Milestone 5, tracking issue #69, task issues #64 to #68 (P7-1 to P7-5). Self-merge allowed for PRs that need no review (D122).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
-- P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Task: none in progress. P6-6 merged via #62. Only P6-5 and P6-7 remain in P6; both need the P6-4 eval baseline, which needs a non-Anthropic learner sign-in (see Next).
+- Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
+- Task: none in progress. P7 opened (roadmap PR open); next is `/kv-task P7-1`. P6-5 and P6-7 wait on the P6-4 eval baseline.
 - Branch: `main`
 - PR: none open
 
 ## Done
 
+- P7 opened: D119 (gates block no phase), D120 (P1 real-use check later), D121 (P7 Look and feel, before P3), D122 (P7 self-merge). Brief `docs/kvasir/phases/P7-look-and-feel.md`.
 - P6-6 merged via #62 (UI text, format and key path approved by Sagar; live check passed in a packaged build, run 41296962901): sealing (`src/store/crypto.ts`), the key slot (`src/store/data-key.ts`), `encryptionLayer`, the in-place conversion, `auth.json` sealing, the server IPC side and 423 in `proxy.ts`, `electron/encryption.cjs` (safeStorage, recovery, turn on and off), the Security section and the Locked screen, the MCP and eval refusals, `docs/encryption.md`. Tested end to end with a fake keychain against the real server side. D112 (store data plus `auth.json`), D113 (`safeStorage`, key over IPC), D114 (recovery key shown once), D115 (Settings, Security section), D116 (Locked screen), D117 (AES-256-GCM per value), D118 (the MCP server refuses). Plan approved on #52.
 - P6-1 merged via #60 (store format approved by Sagar): `StoreBackend` (`src/store/backend.ts`) under the four stores, `fileBackend`, the SQLite backend (`src/store/sqlite/`), `src/store/active.ts` (SQLite when `data/kvasir.db` exists), `src/store/migrate.ts` with `npm run migrate:sqlite` and `npm run migrate:files`, `tests/store-contract/`, `docs/sqlite.md`. Live round trip on a copy of Sagar's data: migrated, browsed in the production build, migrated back; files identical except positions the app saved while on SQLite. D106 (`node:sqlite`), D107 (what moves into `data/kvasir.db`), D108 (SQLite when `kvasir.db` exists), D109 (migration both ways, old side moved aside), D110 (JSON rows plus key columns), D111 (shared port contract suites). Plan approved on #47.
 - P6-3 merged via #58 (UI text approved by Sagar): `src/core/exports.ts`, `src/server/exports.ts`, `POST /api/graph/export`, the Export menu (`components/graph-export.tsx`), the Show in Finder bridge (`lh.revealExport`, `electron/export-reveal.cjs`), `docs/exports.md`. D100 (Export menu in the graph toolbar), D101 (Anki text import file with guid), D102 (Basic card: name front; statement, chains and citations back), D103 (vault layout), D104 (vault has all; Anki skips excluded sessions), D105 (new dated folder in `~/Documents/Kvasir exports/`, Show in Finder). Plan approved on #49.
@@ -53,9 +55,10 @@ Updated by Claude Code at the end of each session. Read this first.
 4. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 5. Optional for Sagar: move his app data to SQLite with the app closed (`docs/sqlite.md`).
 6. Optional for Sagar: turn on encryption in his own app (Settings > Security; `docs/encryption.md`). Save the recovery key.
-7. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
-8. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.
-9. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
+7. P7-1 theme tokens (`/kv-task P7-1`), then P7-2 to P7-5; then P3, P4 and P5.
+8. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
+9. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.
+10. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
 
 ## Waiting for Sagar
 
