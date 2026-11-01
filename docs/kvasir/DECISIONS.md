@@ -89,3 +89,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D081 | 2026-11-01 | Importing a new version extracts only units that are new or whose text changed since the previous version; unchanged units are skipped and their propositions stay current | Sagar | |
 | D082 | 2026-11-01 | The import dialog has a "Version of" choice for PDF and Markdown: a new document, or one of the imported PDF or Markdown documents, preselected when the file name matches. EUR-Lex versions join their document by CELEX number | Sagar | |
 | D083 | 2026-11-01 | An outdated citation shows an amber "Outdated" tag on the chip; the panel adds "Changed in version <label>" with that version's text for the unit, or "Removed in version <label>" | Sagar | |
+| D084 | 2026-11-01 | In the teacher's lesson a citation is a link in a fixed form that the chat renders as the citation chip; a click opens the source panel on that paragraph | Sagar | |
+| D085 | 2026-11-01 | The teacher sees the citations of a session's picked propositions in the session context, and has a `read_source` tool to look up a document's articles and paragraphs by address or by words | Sagar | |
+| D086 | 2026-11-01 | `read_source` rides the existing "Graph tools" setting and the graph switch; no new setting | Sagar | |
+| D087 | 2026-11-01 | Only the teacher gets `read_source`; the prober keeps its map tools | Sagar | |

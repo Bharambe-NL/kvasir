@@ -1,6 +1,6 @@
 import { chainsForSelection, formatChainLine } from "@/src/core";
 import { newGraphContextMessage, type GraphContextPick } from "@/src/core";
-import { compactionInFlight, createChat, isTurnRunning, listChats, readSettingsRecord, stores, titleFromPrompt } from "@/src/server";
+import { citationSourceLines, compactionInFlight, createChat, isTurnRunning, listChats, readSettingsRecord, stores, titleFromPrompt } from "@/src/server";
 import type { ChatListItem } from "@/src/core";
 
 /** The session picker's list: record-derived summaries (phase, pending
@@ -65,7 +65,9 @@ export async function POST(req: Request) {
 		const chainLines = chainsForSelection(pickedNodes, stores.graphStore.readChains()).map((c) =>
 			formatChainLine(c, Object.fromEntries(byId)),
 		);
-		stores.chatStore.saveMessages(chat.id, [newGraphContextMessage(picks, chainLines)]);
+		// Kvasir P2-6 (D085): cited picks carry their sources for the teacher.
+		const sources = citationSourceLines(picks.map((p) => p.id));
+		stores.chatStore.saveMessages(chat.id, [newGraphContextMessage(picks, chainLines, sources)]);
 	}
 	return Response.json({ id: chat.id, title: chat.title });
 }
