@@ -152,7 +152,7 @@
 	--primary: light-dark(#2b2118, #ece2d0);
 	--secondary-foreground: light-dark(#2b2118, #ece2d0);
 	--accent-foreground: light-dark(#2b2118, #ece2d0);
-	--muted-foreground: light-dark(#75654f, #a39478);
+	--muted-foreground: light-dark(#6e5e49, #a39478);
 	--highlight: light-dark(#9a5b2e, #d29a62);
 	--on-highlight: light-dark(#ffffff, #1a1612);
 	--ring: var(--highlight);
@@ -162,6 +162,8 @@
 	--region-lightness-dark: 55%;
 	--region-label-lightness-light: 30%;
 	--region-label-lightness-dark: 78%;
+	/* Lighter red on the tinted dark cards, for contrast (P7-3). */
+	--danger: light-dark(oklch(44.4% 0.177 26.899), oklch(70.4% 0.191 22.216));
 }
 .theme-forest {
 	--background: light-dark(var(--lh-light-background, #f3f6f2), var(--lh-dark-background, #121714));
@@ -189,6 +191,8 @@
 	--region-lightness-dark: 55%;
 	--region-label-lightness-light: 30%;
 	--region-label-lightness-dark: 78%;
+	/* Lighter red on the tinted dark cards, for contrast (P7-3). */
+	--danger: light-dark(oklch(44.4% 0.177 26.899), oklch(70.4% 0.191 22.216));
 }
 .theme-eink {
 	--background: light-dark(var(--lh-light-background, #f4f4f1), var(--lh-dark-background, #000000));
