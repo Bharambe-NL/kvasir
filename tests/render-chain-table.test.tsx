@@ -84,7 +84,7 @@ const BASE = {
 	onClose: () => {},
 };
 
-function render(props: Partial<typeof BASE> = {}) {
+function render(props: Partial<typeof BASE> & { viewSwitch?: boolean; selectMode?: boolean } = {}) {
 	return renderToStaticMarkup(React.createElement(ChainTableBody, { ...BASE, ...props }));
 }
 
@@ -134,6 +134,15 @@ describe("ChainTableBody — THE shared TopBar + the lines law (owner, round 2)"
 		assert.ok(html.includes("chain"), "the counts remain");
 		assert.ok(html.includes('data-testid="chain-table-close"'), "the close X");
 		assert.ok(html.includes('data-testid="chain-table-search"'), "the search input");
+	});
+
+	it("opened from the graph: the Graph and Chains switch replaces the close X, Chains pressed (P7-5)", () => {
+		const html = render({ viewSwitch: true });
+		assert.ok(!html.includes('data-testid="chain-table-close"'), "no close X");
+		assert.match(html, /aria-pressed="true"[^>]*data-testid="open-chain-table"/, "Chains is the current side");
+		assert.ok(html.includes('data-testid="view-switch-graph"'), "Graph goes back");
+		const picking = render({ viewSwitch: true, selectMode: true });
+		assert.ok(picking.includes('data-testid="chain-table-close"'), "picking for practice keeps the close X");
 	});
 
 	it("the table is FRAMED: header rule + rules between groups + rule under the last group; rows stay lineless (owner round 5)", () => {

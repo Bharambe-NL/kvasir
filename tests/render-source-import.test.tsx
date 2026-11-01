@@ -14,7 +14,8 @@ import { parseHTML } from "linkedom";
 import { IMPORT_ACCEPT, importKindOf, planImport, preselectVersions, resolvePending, SourceImportDialog, versionChoices, type PendingSourceFile } from "../components/source-import.tsx";
 
 const dom = parseHTML("<html><body></body></html>");
-Object.assign(globalThis, { window: dom.window, document: dom.document });
+Object.assign(globalThis, { window: dom.window, document: dom.document, Element: dom.window.Element, HTMLElement: dom.window.HTMLElement, Node: dom.window.Node, CustomEvent: dom.window.CustomEvent,
+	requestAnimationFrame: (cb: () => void) => setTimeout(cb, 0) as unknown as number, cancelAnimationFrame: (id: number) => clearTimeout(id) });
 
 let mounted: { root: Root; host: HTMLElement } | null = null;
 afterEach(async () => {
@@ -129,11 +130,14 @@ describe("Version of (Kvasir P2-5, D082)", () => {
 		mounted = { root, host };
 		const pending = preselectVersions(planImport([file("gl.pdf"), file("policy.md")]).pending, DOCS);
 		await act(async () => root.render(<SourceImportDialog pending={pending} documents={DOCS} onChange={() => {}} onImport={() => {}} onCancel={() => {}} />));
-		const selects = [...document.querySelectorAll<HTMLSelectElement>("[data-testid='source-import-version-of']")];
+		// The settings menu select (P7-5): the trigger shows the choice; opened, the options.
+		const selects = [...document.querySelectorAll<HTMLButtonElement>("[data-testid^='source-import-version-of-']")];
 		assert.equal(selects.length, 1, "Markdown kept as notes has no select");
-		assert.deepEqual([...selects[0]!.querySelectorAll("option")].map((o) => [o.getAttribute("value"), o.textContent]), [["", "A new document"], ["doc_gl", "EBA/GL/2019/04"]]);
+		assert.match(selects[0]!.textContent!, /EBA\/GL\/2019\/04/, "the preselected document");
+		await act(async () => selects[0]!.click());
+		assert.deepEqual([...document.querySelectorAll("[role='option']")].map((o) => [o.getAttribute("data-value"), o.textContent]), [["", "A new document"], ["doc_gl", "EBA/GL/2019/04"]]);
 		assert.match(document.body.textContent!, /Version of/);
 		await act(async () => root.render(<SourceImportDialog pending={pending.map((p) => ({ ...p, asSource: true }))} documents={DOCS} onChange={() => {}} onImport={() => {}} onCancel={() => {}} />));
-		assert.equal(document.querySelectorAll("[data-testid='source-import-version-of']").length, 2, "cited Markdown gets one too");
+		assert.equal(document.querySelectorAll("button[data-testid^='source-import-version-of-']").length, 2, "cited Markdown gets one too");
 	});
 });

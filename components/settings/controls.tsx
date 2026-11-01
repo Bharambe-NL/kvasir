@@ -9,8 +9,9 @@
  * control together) and the control itself locks — the row owns the dim.
  */
 
-import { useState, type ComponentPropsWithRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentPropsWithRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { MenuShell } from "@/components/menu-shell";
 
 /** A section block: pronounced mono heading + content. */
 export function SettingsSection({
@@ -27,7 +28,7 @@ export function SettingsSection({
 }) {
 	return (
 		<section data-testid={testid} className="px-6 py-5">
-			<h2 className="text-sm uppercase tracking-widest text-foreground">{title}</h2>
+			<h2 className="text-xs uppercase tracking-widest text-foreground">{title}</h2>
 			{hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
 			<div className="mt-4 flex flex-col gap-3">{children}</div>
 		</section>
@@ -95,7 +96,7 @@ export function SettingsMenuTrigger({
 		{...props}
 		disabled={disabled}
 		className={cn(
-			"flex h-7 items-center gap-1 rounded-sm border border-border bg-background px-1.5 font-ui text-xs text-foreground transition-colors",
+			"flex h-8 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-left text-control text-foreground transition-colors",
 			disabled || unavailable ? "cursor-not-allowed" : "hover:border-muted-foreground/50",
 			className,
 		)}
@@ -169,36 +170,96 @@ export function Toggle({
 	);
 }
 
-/** A thin select — native element, options as given. */
-export function ThinSelect({
+/** A select drawn as the settings menu (Kvasir P7-5): the same trigger
+ *  and MenuShell the Reading font uses, so every choice in Settings looks
+ *  alike. The dropdown contract matches the font menu's: a click outside
+ *  the menu or an Esc closes it, and Esc is claimed so the dialog stays. */
+export function MenuSelect<T extends string>({
 	value,
+	options,
 	onChange,
-	children,
 	ariaLabel,
 	testid,
 	disabled,
+	wide = false,
 }: {
-	value: string;
-	onChange: (next: string) => void;
-	children: React.ReactNode;
+	value: T;
+	options: readonly { value: T; label: string }[];
+	onChange: (next: T) => void;
 	ariaLabel: string;
-	testid?: string;
+	testid: string;
 	disabled?: boolean;
+	/** Fill the row (form dialogs) instead of the compact settings width. */
+	wide?: boolean;
 }) {
+	const [open, setOpen] = useState(false);
+	const anchorRef = useRef<HTMLSpanElement>(null);
+	useEffect(() => {
+		if (!open) return;
+		const onPointerDown = (e: PointerEvent) => {
+			const target = e.target as Node;
+			if (anchorRef.current?.contains(target)) return;
+			if (target instanceof Element && target.closest("[data-lh-menu]")) return;
+			setOpen(false);
+		};
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				e.stopPropagation();
+				setOpen(false);
+			}
+		};
+		document.addEventListener("pointerdown", onPointerDown);
+		document.addEventListener("keydown", onKeyDown);
+		return () => {
+			document.removeEventListener("pointerdown", onPointerDown);
+			document.removeEventListener("keydown", onKeyDown);
+		};
+	}, [open]);
+	const current = options.find((o) => o.value === value)?.label ?? value;
 	return (
-		<select
-			value={value}
-			aria-label={ariaLabel}
-			data-testid={testid}
-			disabled={disabled}
-			onChange={(e) => onChange(e.target.value)}
-			className={cn(
-				"h-7 rounded-sm border border-border bg-background px-1.5 font-ui text-xs text-foreground outline-none",
-				disabled && "cursor-not-allowed",
+		<span ref={anchorRef} className={cn("relative flex items-center", wide && "w-full")}>
+			<SettingsMenuTrigger
+				value={current}
+				aria-label={ariaLabel}
+				aria-haspopup="listbox"
+				aria-expanded={open}
+				data-testid={testid}
+				disabled={disabled}
+				onClick={() => setOpen((o) => !o)}
+				className={wide ? "w-full" : "min-w-24"}
+			/>
+			{open && (
+				<MenuShell
+					preferredSide="down"
+					anchorTestid={testid}
+					testid={`${testid}-menu`}
+					align={wide ? "left" : "right"}
+					menuClass="lh-fade-in flex min-w-[10rem] flex-col gap-0.5 rounded-xl border border-border bg-card p-1.5 shadow-xl"
+				>
+					<div role="listbox" aria-label={ariaLabel}>
+						{options.map((o) => (
+							<button
+								key={o.value}
+								type="button"
+								role="option"
+								aria-selected={o.value === value}
+								data-value={o.value}
+								onClick={() => {
+									setOpen(false);
+									if (o.value !== value) onChange(o.value);
+								}}
+								className={cn(
+									"flex w-full items-center rounded-md px-2.5 py-1.5 text-left text-control transition-colors hover:bg-accent",
+									o.value === value ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+								)}
+							>
+								{o.label}
+							</button>
+						))}
+					</div>
+				</MenuShell>
 			)}
-		>
-			{children}
-		</select>
+		</span>
 	);
 }
 

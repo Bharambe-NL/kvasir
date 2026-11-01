@@ -9,7 +9,7 @@
  * - anything else: notes, as before.
  */
 import { createPortal } from "react-dom";
-import { Toggle } from "@/components/settings/controls";
+import { MenuSelect, Toggle } from "@/components/settings/controls";
 
 /** What the import buttons accept (notes plus the sources door). */
 export const IMPORT_ACCEPT = ".md,.markdown,.txt,.pdf,.xhtml,.html";
@@ -138,36 +138,31 @@ export function SourceImportDialog({
 	if (pending.length === 0 || typeof document === "undefined") return null;
 	return createPortal(
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80" onKeyDown={(e) => e.key === "Escape" && onCancel()}>
-			<div role="dialog" aria-modal="true" data-testid="source-import-dialog" className="w-[32rem] max-w-[calc(100vw-2rem)] rounded-xl border bg-card p-5 shadow-xl">
+			<div role="dialog" aria-modal="true" data-testid="source-import-dialog" className="settings-dialog-pop w-[32rem] max-w-[calc(100vw-2rem)] rounded-xl border bg-card p-6 shadow-xl">
 				{pending.map((p, i) => (
 					<div key={`${p.file.name}-${i}`} data-testid="source-import-row" className={i > 0 ? "mt-4 border-t border-border/60 pt-4" : ""}>
 						<code className="font-mono text-sm text-foreground">{p.file.name}</code>
-						<label className="mt-2 block text-xs text-muted-foreground">
+						<label className="mt-3 block text-sm text-muted-foreground">
 							Version label
 							<input
 								data-testid="source-import-label"
 								value={p.label}
 								onChange={(e) => onChange(i, { ...p, label: e.target.value })}
-								className="mt-1 block w-full rounded-sm border border-border/60 bg-background px-2 py-1 text-sm text-foreground"
+								className="mt-1.5 block h-8 w-full rounded-md border border-border bg-background px-2.5 text-control text-foreground outline-none focus:border-muted-foreground/50"
 							/>
 						</label>
 						{(p.kind === "pdf" || p.asSource) && (
-							<label className="mt-2 block text-xs text-muted-foreground">
-								Version of
-								<select
-									data-testid="source-import-version-of"
+							<div className="mt-3 text-sm text-muted-foreground">
+								<span className="mb-1.5 block">Version of</span>
+								<MenuSelect<string>
+									wide
 									value={p.versionOf}
-									onChange={(e) => onChange(i, { ...p, versionOf: e.target.value })}
-									className="mt-1 block w-full rounded-sm border border-border/60 bg-background px-2 py-1 text-sm text-foreground"
-								>
-									<option value="">A new document</option>
-									{versionChoices(p, documents).map((d) => (
-										<option key={d.id} value={d.id}>
-											{d.label}
-										</option>
-									))}
-								</select>
-							</label>
+									ariaLabel="Version of"
+									testid={`source-import-version-of-${i}`}
+									onChange={(v) => onChange(i, { ...p, versionOf: v })}
+									options={[{ value: "", label: "A new document" }, ...versionChoices(p, documents).map((d) => ({ value: d.id, label: d.label }))]}
+								/>
+							</div>
 						)}
 						{p.kind === "markdown" && (
 							<div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
@@ -177,11 +172,11 @@ export function SourceImportDialog({
 						)}
 					</div>
 				))}
-				<div className="mt-4 flex justify-end gap-2">
-					<button type="button" data-testid="source-import-cancel" onClick={onCancel} className="rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
+				<div className="mt-6 flex justify-end gap-2">
+					<button type="button" data-testid="source-import-cancel" onClick={onCancel} className="h-8 rounded-md px-3 text-control text-muted-foreground transition-colors hover:text-foreground">
 						Cancel
 					</button>
-					<button type="button" data-testid="source-import-confirm" onClick={onImport} className="rounded-sm border border-border px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-accent">
+					<button type="button" data-testid="source-import-confirm" onClick={onImport} className="h-8 rounded-md border border-border bg-background px-3 text-control text-foreground transition-colors hover:bg-accent">
 						Import
 					</button>
 				</div>

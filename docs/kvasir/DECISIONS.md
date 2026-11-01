@@ -146,3 +146,9 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D138 | 2026-11-01 | Cluster regions take `--region-saturation`, `--region-lightness` and `--region-label-lightness` per theme and mode (E-ink: saturation 0); the hue stays per cluster | Sagar | |
 | D139 | 2026-11-01 | The Kvasir symbol is a chevron and a round gold dot (a prompt, then the point) on a black squircle. Checked against the marks of Claude Code, Cursor, GitHub Copilot, Replit, v0 and OpenAI Codex (the closest: `›_` in a cloud) and terminal `>_` icons; no match found. Not a legal trademark search | Sagar | |
 | D140 | 2026-11-01 | In the app the mark's chevron takes the theme's ink and the dot stays Kvasir gold in every theme (grey in E-ink), through `--mark-fill` and `--mark-detail` | Sagar | |
+| D141 | 2026-11-01 | The P7-5 polish list has four areas: the chat session; review; home, graph and sidebar; settings and dialogs. Small motion runs across all four | Sagar | |
+| D142 | 2026-11-01 | Chat text runs in a centred column of about 72 characters; code blocks, tables and diagrams may run wider; the composer lines up with the column | Sagar | |
+| D143 | 2026-11-01 | Type keeps three families with set roles: mono only for small labels, numbers and keys; sans for controls and body text; serif only for page and session titles, at a calmer size; one type scale | Sagar | |
+| D144 | 2026-11-01 | Motion is subtle and quick: fades and short slides of 150 to 200 ms on dialogs, menus, the review card and new messages; off for reduced motion and in E-ink | Sagar | |
+| D145 | 2026-11-01 | Each polish area is done when Sagar approves before and after screenshots in Kvasir dark and light, plus one sheet across the four themes; each area is its own commit | Sagar | |
+| D146 | 2026-11-01 | The zero-keys notice reads "No provider key yet. Add one to start." ("Add one" is the link), true whenever it shows; replaces the plan's "No model yet." | Sagar | |

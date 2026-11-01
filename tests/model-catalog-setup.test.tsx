@@ -251,7 +251,7 @@ for (const result of ["override", "legacy", "http-failure", "network-failure"] a
 	await warm(body); const identities: Array<string | undefined> = [];
 	await render(<><Reader /><StatsBar turns={[]} chatId="fixture" onModelChange={(id) => { identities.push(id); }} /></>);
 	assert.ok(snapshot.catalog, "catalog is already known, not the deferred unknown-catalog case");
-	assert.equal(element("stats-model").textContent, "—▾");
+	assert.equal(element("stats-model").textContent, "▾", "blank while the session read is pending (P7-5), never a guess");
 	assert.equal(identities.at(-1), undefined);
 	assert.equal(selectedModelUnavailable(snapshot.catalog, identities.at(-1)), false, "pending session cannot block Send using global Strong");
 	await act(async () => {

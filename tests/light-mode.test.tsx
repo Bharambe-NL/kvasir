@@ -89,10 +89,10 @@ describe("Settings > Appearance", () => {
 	const text = (h: string) => h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 	it("Mode is a live select with Dark, Light and System; a background row per mode", () => {
 		const html = renderToStaticMarkup(<AppearanceSection appearance={{ mode: "light" }} onSectionChange={() => {}} />);
-		const mode = /<select[^>]*aria-label="mode"[^>]*>([\s\S]*?)<\/select>/.exec(html)!;
+		// Mode is the settings menu (P7-5): the closed trigger shows the choice.
+		const mode = /<button[^>]*aria-label="mode"[^>]*>([\s\S]*?)<\/button>/.exec(html)!;
 		assert.doesNotMatch(mode[0], /disabled/);
-		assert.equal(text(mode[1]!), "Dark Light System");
-		assert.match(mode[1]!, /value="light" selected/);
+		assert.equal(text(mode[1]!), "Light ▾");
 		assert.doesNotMatch(html, /Coming soon/);
 		assert.match(text(html), /Dark background Empty = #141414/);
 		assert.match(text(html), /Light background Empty = #faf8f4/);

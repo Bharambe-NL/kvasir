@@ -710,7 +710,8 @@ function SessionsSidebar() {
 				    half/half row): full-width rows read cleaner and give the
 				    labels room; teaching keeps the original draft route,
 				    practice carries its mode. */}
-				<div className="mx-3 mb-2 flex flex-col gap-1.5">
+				{/* Kvasir P7-5: more air between the doors and the session list. */}
+				<div className="mx-3 mb-5 flex flex-col gap-1">
 					<button
 						type="button"
 						data-testid="new-session"
@@ -840,8 +841,8 @@ function SessionsSidebar() {
 					{shown === null ? (
 						<div className="px-2 py-4 text-xs text-muted-foreground">Loading…</div>
 					) : shown.length === 0 ? (
-						<div className="px-2 py-4 text-xs text-muted-foreground">
-							{query.trim() ? "No sessions match." : "No sessions yet."}
+						<div className="px-2 py-4 text-sm leading-relaxed text-muted-foreground">
+							{query.trim() ? "No sessions match." : "No sessions yet. Start one with Teaching or Practice above."}
 						</div>
 					) : (
 						shown.map((c, i) =>

@@ -105,11 +105,12 @@ describe("the theme class (D132)", () => {
 
 describe("Settings > Appearance (D133, D134)", () => {
 	const text = (h: string) => h.replace(/<[^>]+>/g, " ").replace(/&#x27;|&apos;/g, "'").replace(/\s+/g, " ").trim();
-	it("a Theme select with the four presets and a Highlight colour row with six swatches", () => {
+	it("a Theme menu showing the current preset and a Highlight colour row with six swatches", () => {
 		const html = renderToStaticMarkup(<AppearanceSection appearance={{ theme: "forest", highlight: "#3b6fd8" }} onSectionChange={() => {}} />);
-		const sel = /<select[^>]*aria-label="theme"[^>]*>([\s\S]*?)<\/select>/.exec(html)!;
-		assert.equal(text(sel[1]!), "Kvasir Sepia Forest E-ink");
-		assert.match(sel[1]!, /value="forest" selected/);
+		// Theme is the settings menu (P7-5): the closed trigger shows the
+		// choice; tests/menu-select.test.tsx opens it and picks.
+		const sel = /<button[^>]*aria-label="theme"[^>]*>([\s\S]*?)<\/button>/.exec(html)!;
+		assert.equal(text(sel[1]!), "Forest ▾");
 		assert.match(text(html), /Highlight colour Empty = the theme's own/);
 		assert.equal((html.match(/data-testid="swatch-/g) ?? []).length, 6);
 		assert.match(html, /aria-label="#3b6fd8" aria-pressed="true"/);

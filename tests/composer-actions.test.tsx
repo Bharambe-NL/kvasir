@@ -20,13 +20,15 @@ describe("composer action row", () => {
 		assert.equal(renderToStaticMarkup(<ComposerActions picker={false} setup={false} />), "");
 	});
 
-	for (const [label, setup] of [["provider key", keySetup], ["models", modelSetup]] as const) {
+	// The provider key prompt is a notice line holding its link (P7-5); the
+	// models CTA stays a button. Either sits directly in the row.
+	for (const [label, setup, tag] of [["provider key", keySetup, "P"], ["models", modelSetup, "BUTTON"]] as const) {
 		it(`${label}: setup-only stays centered`, () => {
 			const document = documentFor(<ComposerActions setup={setup} />);
 			const row = document.querySelector('[data-testid="composer-actions"]')!;
 			assert.ok(row.classList.contains("justify-center"));
 			assert.equal(row.children.length, 1);
-			assert.equal(row.firstElementChild!.tagName, "BUTTON", "setup must not reserve a nested full-width row");
+			assert.equal(row.firstElementChild!.tagName, tag, "setup must not reserve a nested full-width row");
 		});
 
 		it(`${label}: picker leads in one left-aligned wrapping row`, () => {
@@ -38,7 +40,7 @@ describe("composer action row", () => {
 			assert.ok(row.classList.contains("pointer-events-auto"));
 			assert.equal(row.children.length, 2);
 			assert.equal(chip.parentElement, row.firstElementChild);
-			assert.equal(row.lastElementChild!.tagName, "BUTTON");
+			assert.equal(row.lastElementChild!.tagName, tag);
 			assert.equal(chip.textContent, "Pick nodes");
 			assert.equal(document.querySelector('[data-testid="practice-props-clear"]'), null);
 		});
@@ -49,7 +51,7 @@ describe("composer action row", () => {
 			assert.equal(rows.length, 1);
 			assert.ok(rows[0]!.classList.contains("justify-start"));
 			assert.ok(rows[0]!.firstElementChild!.querySelector('[data-testid="practice-props-chip"]'));
-			assert.equal(rows[0]!.lastElementChild!.tagName, "BUTTON");
+			assert.equal(rows[0]!.lastElementChild!.tagName, tag);
 		});
 	}
 

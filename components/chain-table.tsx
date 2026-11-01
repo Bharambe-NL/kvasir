@@ -69,6 +69,7 @@ import {
 } from "lucide-react";
 import { chainsForSelection, formatChainLine, fuzzyScore } from "@/src/core";
 import type { GraphChain, GraphNode } from "@/src/core";
+import { ViewSwitch } from "@/components/view-switch";
 import { TopBar } from "@/components/top-bar";
 import { DeleteNodeDialog } from "@/components/delete-node-dialog";
 import { LatexGlyph } from "@/components/latex-glyph";
@@ -116,6 +117,7 @@ export function ChainTableBody({
 	onClear,
 	onDelete,
 	onClose,
+	viewSwitch,
 	selectMode,
 	onSelect,
 	reviewExcluded,
@@ -144,6 +146,9 @@ export function ChainTableBody({
 	/** Opens the full-death confirm dialog (owner, 2026-09-29 night). */
 	onDelete: () => void;
 	onClose: () => void;
+	/** Opened from the graph (Kvasir P7-5): the header shows the Graph and
+	 *  Chains switch in place of the close button. */
+	viewSwitch?: boolean;
 	/** PRACTICE SELECT (2026-10-04): the floating bar's confirm becomes
 	 *  "Practice these" — no delete fence; the caller owns what the
 	 *  selection becomes. */
@@ -276,6 +281,9 @@ export function ChainTableBody({
 						className="lh-no-drag h-8 w-56 rounded-lg border bg-background pl-8 pr-3 text-xs outline-none placeholder:text-muted-foreground focus:border-ring"
 					/>
 				</div>
+			{viewSwitch && !selectMode ? (
+				<ViewSwitch value="chains" onGraph={onClose} onChains={() => {}} />
+			) : (
 			<button
 					type="button"
 					data-testid="chain-table-close"
@@ -285,6 +293,7 @@ export function ChainTableBody({
 				>
 					<XIcon className="size-4" />
 				</button>
+			)}
 			</TopBar>
 
 			{/* The list: NO per-row lines (owner ruling) — the ONLY horizontal
@@ -642,6 +651,7 @@ export function ChainTableOverlay({
 	sessions,
 	fileSources,
 	onClose,
+	viewSwitch,
 	/** PRACTICE SELECT (owner vision, 2026-10-04): the selection is
 	 *  PERSISTENT and caller-owned — when these props are present the
 	 *  table is CONTROLLED (every check/clear/delete-prune reports up
@@ -663,6 +673,7 @@ export function ChainTableOverlay({
 	sessions: Record<string, string>;
 	fileSources: Record<string, string>;
 	onClose: () => void;
+	viewSwitch?: boolean;
 	selectMode?: boolean;
 	controlledSelection?: ReadonlySet<string>;
 	onSelectionChange?: (next: ReadonlySet<string>) => void;
@@ -765,6 +776,7 @@ export function ChainTableOverlay({
 					outdated={outdated}
 					onOpenCitation={onOpenCitation}
 					onClose={onClose}
+					viewSwitch={viewSwitch}
 					selectMode={selectMode}
 					onSelect={onClose}
 				/>
