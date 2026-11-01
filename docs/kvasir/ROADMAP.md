@@ -37,4 +37,4 @@ Then tag the release on `main` and close the phase milestone.
 | P4 | Not started | |
 | P5 | Not started | |
 | P6 | In progress | |
-| P7 | In progress | |
+| P7 | Done | 2026-11-01 |
