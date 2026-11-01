@@ -34,6 +34,7 @@ import {
   type PluginConfig,
 } from "streamdown";
 import { mdComponents } from "@/components/md-blocks";
+import { lessonRehypePlugins } from "@/components/source-link";
 import { repairMathForDisplay, transformMathDelimiters } from "@/src/core";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {
@@ -381,6 +382,7 @@ export const MessageResponse = memo(
         )}
         components={mdComponents}
         plugins={streamdownPlugins}
+        rehypePlugins={lessonRehypePlugins}
         remend={streamdownRemend}
         {...props}
       >

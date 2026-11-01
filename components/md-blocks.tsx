@@ -42,6 +42,7 @@ import { MermaidError } from "@/components/mermaid-error";
 import { blurAfterPointerClick } from "@/components/focus-hygiene";
 import { chartSize, useSessionMermaid } from "@/components/session-overlay";
 import { Hint } from "@/components/ui/hint";
+import { SourceCite } from "@/components/source-link";
 
 // ─── The one affordance: the hover-reveal corner copy ────────────────────────
 
@@ -469,4 +470,6 @@ export const mdComponents = {
 	span: MathDisplay,
 	strong: MarkdownStrong,
 	blockquote: MarkdownBlockquote,
+	// Kvasir P2-6: a lesson's citation link (components/source-link.tsx).
+	"kv-source-cite": SourceCite,
 };
