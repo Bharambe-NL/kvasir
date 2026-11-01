@@ -34,7 +34,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { LEDGER_FILES, POSITIONS_FILE, SOURCES_FILE } from "../../config.ts";
+import { DOCUMENT_UNITS_DIR, LEDGER_FILES, POSITIONS_FILE, SOURCES_FILE } from "../../config.ts";
 import { assertGraphFormat, ensureGraphFormat } from "./graph-format.ts";
 import type {
 	GraphChain,
@@ -47,6 +47,7 @@ import type {
 	SessionCheckpoint,
 	Citation,
 	DocumentVersion,
+	SourceUnit,
 } from "../core/contracts.ts";
 import { isCitation, isDocumentVersion } from "../core/contracts.ts";
 import type { GraphStore } from "../core/ports.ts";
@@ -129,6 +130,21 @@ const isCheckpoint = (v: unknown): v is SessionCheckpoint =>
 const isCoverageEntry = (v: unknown): v is CoverageEntry =>
 	isRecord(v) && isString(v.chatId) && isString(v.fp) && typeof v.tokens === "number" && isString(v.foldedAt);
 
+/** A version id is "ver_" + 12 hex; anything else never becomes a path. */
+function documentUnitsFile(versionId: string): string {
+	if (!/^ver_[0-9a-f]{12}$/.test(versionId)) throw new Error(`invalid version id: ${versionId}`);
+	return path.join(DOCUMENT_UNITS_DIR, `${versionId}.json`);
+}
+
+const isSourceUnit = (v: unknown): v is SourceUnit =>
+	isRecord(v) &&
+	Array.isArray(v.path) &&
+	v.path.length > 0 &&
+	v.path.every(isString) &&
+	isString(v.text) &&
+	(v.heading === undefined || isString(v.heading)) &&
+	(v.page === undefined || typeof v.page === "number");
+
 // ─── the port implementation ────────────────────────────────────────────────
 
 export const graphStore: GraphStore = {
@@ -176,6 +192,30 @@ export const graphStore: GraphStore = {
 	},
 	readCitations(): Citation[] {
 		return readValid(LEDGER_FILES.citations, isCitation);
+	},
+	writeDocumentUnits(versionId: string, units: SourceUnit[]): void {
+		const file = documentUnitsFile(versionId);
+		if (fs.existsSync(file)) return; // written once, never changed (D076)
+		fs.mkdirSync(DOCUMENT_UNITS_DIR, { recursive: true });
+		ensureGraphFormat();
+		const tmp = `${file}.tmp-${process.pid}-${Date.now()}`;
+		fs.writeFileSync(tmp, JSON.stringify({ versionId, units }), "utf-8");
+		fs.renameSync(tmp, file);
+	},
+	readDocumentUnits(versionId: string): SourceUnit[] | null {
+		assertGraphFormat();
+		let raw: string;
+		try {
+			raw = fs.readFileSync(documentUnitsFile(versionId), "utf-8");
+		} catch {
+			return null;
+		}
+		try {
+			const parsed = JSON.parse(raw) as { units?: unknown };
+			return Array.isArray(parsed.units) ? parsed.units.filter(isSourceUnit) : null;
+		} catch {
+			return null;
+		}
 	},
 
 	// ── imported-notes bookkeeping (config.SOURCES_FILE — a JSON map) ──

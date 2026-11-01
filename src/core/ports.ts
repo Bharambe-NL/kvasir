@@ -22,6 +22,7 @@ import type {
 	Citation,
 	DocumentVersion,
 	LoadedSource,
+	SourceUnit,
 	ReviewEntry,
 	ReviewExclusion,
 	ReviewQuestion,
@@ -108,6 +109,11 @@ export interface GraphStore {
 	 *  unit, append-only. Written only by the merger. */
 	appendCitation(citation: Citation): void;
 	readCitations(): Citation[];
+	/** Kvasir P2-4 (D076): every parsed unit of one source version, written
+	 *  once at import (an existing file is never rewritten). */
+	writeDocumentUnits(versionId: string, units: SourceUnit[]): void;
+	/** The version's units, or null when none were stored. */
+	readDocumentUnits(versionId: string): SourceUnit[] | null;
 
 	/** Append one cluster-naming run's usage (graph-global money channel) —
 	 *  idempotent per startedAt. */

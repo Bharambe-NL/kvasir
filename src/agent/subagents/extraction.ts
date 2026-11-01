@@ -1570,6 +1570,9 @@ export function createExtractionPipeline(deps: ExtractionPipelineDeps): Extracti
 			// The document's cluster label and usage log ride the notes
 			// source record (sources.json): doc id → title.
 			graphStore.upsertSource({ id, filePath: parsed.title, importedAt: version.importedAt });
+			// Every unit of this version, for the citation panel and the
+			// version diff (D076). Written once; a retry finds it in place.
+			graphStore.writeDocumentUnits(version.versionId, parsed.units);
 			const chunkTokens = deps.getChunkTokens?.() ?? FACTORY_SETTINGS.graph.extractionChunkTokens;
 			const chunks = chunkUnits(labelUnits(parsed.units), chunkTokens);
 			console.info(`[extraction ${id}] sources pipeline start (${parsed.title}, ${label}) — ${chunks.length} chunk(s) of ≤${chunkTokens} tok`);

@@ -117,6 +117,10 @@ export const RENDER_SETTINGS_FILE = path.join(PATHS.graph, "render-settings.json
  *  along unversioned by design (owner ruling). */
 export const GRAPH_FORMAT_FILE = path.join(PATHS.graph, "format.json");
 
+/** Every parsed unit of each imported source version (Kvasir P2-4, D076):
+ *  one JSON file per version, written once at import and never changed. */
+export const DOCUMENT_UNITS_DIR = path.join(PATHS.graph, "document-units");
+
 /**
  * THE USER SETTINGS RECORD (settings-storage wave, 2026-09-19): one
  * versioned, DELTA-shaped JSON blob at the data-dir seam holding every

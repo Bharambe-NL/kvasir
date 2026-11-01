@@ -129,6 +129,8 @@ function memoryLedgers() {
 		readDocumentVersions: () => [],
 		appendCitation: () => {},
 		readCitations: () => [],
+		writeDocumentUnits: () => {},
+		readDocumentUnits: () => null,
 	} satisfies GraphStore;
 }
 
