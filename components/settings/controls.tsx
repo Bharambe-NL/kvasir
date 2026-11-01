@@ -96,7 +96,7 @@ export function SettingsMenuTrigger({
 		{...props}
 		disabled={disabled}
 		className={cn(
-			"flex h-8 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-control text-foreground transition-colors",
+			"flex h-8 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-left text-control text-foreground transition-colors",
 			disabled || unavailable ? "cursor-not-allowed" : "hover:border-muted-foreground/50",
 			className,
 		)}
