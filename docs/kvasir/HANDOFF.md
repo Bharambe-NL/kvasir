@@ -10,12 +10,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Task: P6-2 merged via #55. Its Claude Desktop check ("Done when") is still Sagar's to do. Next: another P6 task, or the P1 gate.
-- Branch: `main`
-- PR: none open
+- Task: P6-4 Teaching evals (#50) is in progress; plan approved on #50. P6-2's Claude Desktop check is still Sagar's to do.
+- Branch: `p6/teaching-evals`
+- PR: P6-4 draft, linked to #50
 
 ## Done
 
+- P6-4 started: D094 (simulated learner), D095 (rubric judge plus hard checks), D096 (three scenarios), D097 (results committed under `evals/results/<commit>/`), D098 (models and a 12-reply cap). Plan approved on #50.
 - P6-2 merged via #55 (tools and descriptions approved by Sagar; Claude Desktop check pending): `src/mcp/tools.ts` and `src/mcp/server.ts` (six read-only tools), `scripts/mcp-server.ts` (stdio), `scripts/mcp-config.ts` (`npm run mcp:config`), `docs/mcp.md`, the `src/mcp` lint zone, `readSource` moved to `src/core/source-read.ts`. Decisions D090 (six read-only tools), D091 (stdio command reading the data folder), D092 (learner state shared read-only), D093 (config snippet via `npm run mcp:config`). Plan approved on #48.
 - P6 opened via #54 (D089 self-merge allowed).
 - P2 gate passed via #45 (approved by Sagar in #37): all three checks live with his models on a temp data copy. Released as `v0.2.0` (notes only, D027; the tag's release workflow run was cancelled before building). D088: P2 is `v0.2.0` and P1 gets no separate tag.

@@ -99,3 +99,8 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D091 | 2026-11-01 | Claude Desktop runs the MCP server as a command over stdio; it reads the Kvasir data folder directly and works whether or not the app is open | Sagar | |
 | D092 | 2026-11-01 | The MCP server shares learner state read-only: recall and next due date per proposition, due counts, weak propositions and measured retention | Sagar | |
 | D093 | 2026-11-01 | The MCP server is installed with a documented `claude_desktop_config.json` entry (printed by `npm run mcp:config`); `npm run mcp` runs it directly | Sagar | |
+| D094 | 2026-11-01 | In teaching evals a simulated learner (a model playing a scripted persona: knowledge, misconceptions, style) answers the prober and teacher | Sagar | |
+| D095 | 2026-11-01 | Eval transcripts are scored by a rubric judge (each item 0 to 2 with a quoted reason) plus deterministic checks read from the transcript | Sagar | |
+| D096 | 2026-11-01 | The first eval scenarios: DORA Article 28 with a misconception (uses the imported source), a conceptual topic without a source (Bayes' rule, confusing P(A|B) with P(B|A)), and a fast learner who already knows most of it | Sagar | |
+| D097 | 2026-11-01 | Eval results are committed in the repo under `evals/results/<short commit>/`: one JSON per scenario and a `summary.md` | Sagar | |
+| D098 | 2026-11-01 | An eval run uses the session model (strong slot) for the prober and teacher, the cheap slot for the simulated learner, the strong slot for the judge, at most 12 learner replies per scenario, and prints tokens and cost | Sagar | |
