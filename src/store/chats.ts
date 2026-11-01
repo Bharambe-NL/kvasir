@@ -16,6 +16,7 @@ import { activeProblemOf, danglingQuestionOf } from "../core/native-messages.ts"
 import { phaseAt3Lh } from "../core/phases.ts";
 import type { StoreBackend } from "./backend.ts";
 import { fileBackend } from "./file-backend.ts";
+import { DataLockedError } from "./data-key.ts";
 import { encryptionLayer } from "./encrypted-backend.ts";
 
 /** Kvasir P6-1: the logic runs over a StoreBackend (backend.ts), so the same
@@ -107,7 +108,8 @@ export function createChatStore(backend: StoreBackend): ChatStore {
 				})
 				.filter((s): s is ChatSummary => s !== null)
 				.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-		} catch {
+		} catch (err) {
+			if (err instanceof DataLockedError) throw err; // locked is not "none" (P6-6)
 			return [];
 		}
 	}

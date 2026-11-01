@@ -23,6 +23,7 @@ import { DB_FILE } from "./active.ts";
 import { fileBackend, LEDGER_PATHS, RECORD_DIRS, SINGLE_PATHS } from "./file-backend.ts";
 import { sqliteBackend } from "./sqlite/backend.ts";
 import { openDatabase } from "./sqlite/db.ts";
+import { ENCRYPTION_FILE } from "./data-key.ts";
 
 export interface MigrationReport {
 	direction: "sqlite" | "files";
@@ -39,6 +40,12 @@ export interface MigrationReport {
 const pad = (n: number) => String(n).padStart(2, "0");
 export function migrationStamp(now: Date): string {
 	return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+}
+
+/** The migration copies raw values; an encrypted folder (P6-6) must be
+ *  turned off in the app first. */
+function refuseEncrypted(): void {
+	if (fs.existsSync(ENCRYPTION_FILE)) throw new Error("This data folder is encrypted. Turn encryption off in Kvasir's Settings, then migrate.");
 }
 
 /** Every path the file backend owns, which the migration moves as a set. */
@@ -108,6 +115,7 @@ function moveAside(paths: readonly string[], dir: string): void {
 }
 
 export function migrateToSqlite(now: Date = new Date()): MigrationReport {
+	refuseEncrypted();
 	if (fs.existsSync(DB_FILE)) throw new Error(`${DB_FILE} already exists: this data folder is already on SQLite.`);
 	const partial = `${DB_FILE}.partial`;
 	for (const f of [partial, `${partial}-wal`, `${partial}-shm`]) fs.rmSync(f, { force: true }); // a crashed earlier attempt
@@ -140,6 +148,7 @@ export function migrateToSqlite(now: Date = new Date()): MigrationReport {
 }
 
 export function migrateToFiles(now: Date = new Date()): MigrationReport {
+	refuseEncrypted();
 	if (!fs.existsSync(DB_FILE)) throw new Error(`${DB_FILE} does not exist: this data folder is already on files.`);
 	const present = filePaths().filter((p) => fs.existsSync(p));
 	if (present.length > 0) throw new Error(`Files already exist where the migration would write them: ${present.map((p) => path.relative(PATHS.data, p)).join(", ")}. Move them away first.`);

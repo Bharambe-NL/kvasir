@@ -54,6 +54,7 @@ export function convertData(raw: StoreBackend, direction: "seal" | "unseal", key
 		raw.writeSingle(name, o.value);
 		counts.singles++;
 	}
+	raw.compact?.();
 	const auth = readAuthRaw();
 	if (auth !== null) {
 		const o = to(AUTH_AAD, auth);

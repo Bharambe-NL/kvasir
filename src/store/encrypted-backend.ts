@@ -71,5 +71,8 @@ export function encryptionLayer(inner: StoreBackend): StoreBackend {
 		writeSingle(name, value) {
 			inner.writeSingle(name, seal(mode(), singleAad(name), value));
 		},
+		compact() {
+			inner.compact?.();
+		},
 	};
 }

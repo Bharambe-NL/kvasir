@@ -50,11 +50,13 @@ export class WrongKeyError extends Error {
 
 interface Slot {
 	key: Buffer | null;
+	/** Why it is locked: still waiting for main, or the keychain failed. */
+	lockReason: "waiting" | "keychain";
 	/** undefined until first read. */
 	file: EncryptionFile | null | undefined;
 }
 const slotKey = Symbol.for("kvasir.dataKey");
-const slot = (): Slot => ((globalThis as Record<symbol, Slot>)[slotKey] ??= { key: null, file: undefined });
+const slot = (): Slot => ((globalThis as Record<symbol, Slot>)[slotKey] ??= { key: null, lockReason: "waiting", file: undefined });
 
 /** The cached encryption.json (null when the folder is plain). */
 export function encryptionFile(): EncryptionFile | null {
@@ -88,10 +90,31 @@ export function readEncryptionFile(): EncryptionFile | null {
 
 export type EncryptionState = "plain" | "locked" | "unlocked";
 
-export function encryptionStatus(): { state: EncryptionState; converting: boolean } {
+export interface EncryptionStatus {
+	state: EncryptionState;
+	converting: boolean;
+	/** While locked: "waiting" for the key from main, or "keychain" when
+	 *  main could not unseal it (the Locked screen, D116). */
+	lockReason?: "waiting" | "keychain";
+}
+
+export function encryptionStatus(): EncryptionStatus {
 	const file = encryptionFile();
 	if (!file) return { state: "plain", converting: false };
-	return { state: slot().key ? "unlocked" : "locked", converting: file.state !== "on" };
+	if (slot().key) return { state: "unlocked", converting: file.state !== "on" };
+	return { state: "locked", converting: file.state !== "on", lockReason: slot().lockReason };
+}
+
+/** Main could not unseal the key with the keychain. */
+export function markKeychainFailed(): void {
+	slot().lockReason = "keychain";
+}
+
+/** For proxy.ts, which must not read files: true only when the folder is
+ *  known to be encrypted and no key is held. */
+export function knownLocked(): boolean {
+	const s = slot();
+	return !!s.file && !s.key;
 }
 
 /** Accept the key from main after checking it against the file. */
@@ -104,6 +127,12 @@ export function setDataKey(key: Buffer): void {
 export function clearDataKey(): void {
 	slot().key?.fill(0);
 	slot().key = null;
+}
+
+/** Throws DataLockedError when encrypted and locked; for writes that touch
+ *  a plain file before the store (the graph format stamp). */
+export function assertUnlocked(): void {
+	if (encryptionFile() && !slot().key) throw new DataLockedError();
 }
 
 /** The key for sealing and opening; throws while locked. */

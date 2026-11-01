@@ -48,6 +48,9 @@ export function openDatabase(file: string, opts: { readOnly?: boolean } = {}): D
 	const db = new DatabaseSync(file, { readOnly: opts.readOnly ?? false });
 	db.exec("PRAGMA busy_timeout = 5000;");
 	if (opts.readOnly) return db;
+	// Deleted and overwritten content is zeroed, not left in free pages
+	// (P6-6: sealing in place must not leave the plain values behind).
+	db.exec("PRAGMA secure_delete = ON;");
 	db.exec("PRAGMA journal_mode = WAL;");
 	const version = (db.prepare("PRAGMA user_version").get() as { user_version: number }).user_version;
 	if (version > SCHEMA_VERSION) {

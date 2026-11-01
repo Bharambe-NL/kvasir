@@ -20,7 +20,9 @@ import { syncCustomProvider } from "./custom-provider.ts";
 // objects as before P6-1); on SQLite, new stores over the database.
 // Both are wrapped in the encrypting layer (P6-6), which passes through
 // on a plain folder.
-const backend = encryptionLayer(activeBackend());
+/** The storage below the encrypting layer, for the encryption conversion. */
+export const storageBackend = activeBackend();
+const backend = encryptionLayer(storageBackend);
 const onFiles = backend.kind === "files";
 if (!onFiles) console.info("[stores] using data/kvasir.db");
 const chatStore = onFiles ? fileChatStore : createChatStore(backend);
@@ -60,6 +62,10 @@ export type Stores = typeof stores;
 export function effectiveSettings(): EffectiveSettings {
 	return resolveSettings(settingsStore.readSettings());
 }
+
+// Boot: ask the Electron main process for the data key (P6-6). Loaded
+// lazily so stores.ts and encryption.ts can import each other.
+void import("./encryption.ts").then((m) => m.installEncryptionBridge());
 
 // Boot: register the custom endpoint (when configured) into piModels(); the
 // POST /api/custom-provider route re-syncs after every connect.

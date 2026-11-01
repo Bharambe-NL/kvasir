@@ -38,6 +38,10 @@ export interface StoreBackend {
 	recordIds(kind: RecordKind): string[];
 	readSingle(name: SingleName): unknown | null;
 	writeSingle(name: SingleName, value: unknown): void;
+	/** Leave no old content behind after a rewrite of everything (the
+	 *  encryption conversion, P6-6): SQLite checkpoints its WAL and
+	 *  vacuums. Files need nothing: each rewrite replaces the file. */
+	compact?(): void;
 }
 
 /** Ids become file names in the file backend, so both backends accept the

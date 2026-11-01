@@ -1,7 +1,7 @@
 /**
- * The two adapters every store contract suite runs against (Kvasir P6-1,
- * D111): the file backend over a temp KV_DATA_DIR, and SQLite over a fresh
- * temp database per test. `fresh()` empties the data folder and returns new
+ * The adapters every store contract suite runs against (Kvasir P6-1, D111;
+ * P6-6): the file backend over a temp KV_DATA_DIR, SQLite over a fresh
+ * temp database per test, and the file backend with encryption on. `fresh()` empties the data folder and returns new
  * store instances, so no test sees another's records.
  *
  * Import this module before any app module: it sets KV_DATA_DIR.
@@ -26,10 +26,13 @@ const { createGraphStore } = await import("../../src/store/graph.ts");
 const { createChatStore } = await import("../../src/store/chats.ts");
 const { createJobStore } = await import("../../src/store/jobs.ts");
 const { createLearnerStore } = await import("../../src/store/learner.ts");
+const { encryptionLayer } = await import("../../src/store/encrypted-backend.ts");
+const { refreshEncryptionFile, setDataKey, ENCRYPTION_FILE } = await import("../../src/store/data-key.ts");
+const { checkValue, newDataKey, newRecoveryKey, sealWithRecovery } = await import("../../src/store/crypto.ts");
 type StoreBackend = import("../../src/store/backend.ts").StoreBackend;
 
 export interface Adapter {
-	name: "files" | "sqlite";
+	name: "files" | "sqlite" | "files, encrypted";
 	fresh(): {
 		backend: StoreBackend;
 		graph: ReturnType<typeof createGraphStore>;
@@ -39,9 +42,17 @@ export interface Adapter {
 	};
 }
 
-/** Empty the data folder (both adapters keep graph/format.json there). */
+/** Empty the data folder (every adapter keeps graph/format.json there),
+ *  which also makes it plain again. */
 function clearData(): void {
 	for (const entry of fs.readdirSync(DATA)) fs.rmSync(path.join(DATA, entry), { recursive: true, force: true });
+	refreshEncryptionFile();
+}
+
+/** What electron/encryption.cjs writes when encryption is on (P6-6). */
+export function writeEncryptionFile(key: Buffer, state: "on" | "sealing" | "unsealing" = "on"): void {
+	fs.writeFileSync(ENCRYPTION_FILE, JSON.stringify({ version: 1, state, check: checkValue(key), sealedByKeychain: "fake-keychain-seal", sealedByRecovery: sealWithRecovery(key, newRecoveryKey()) }));
+	refreshEncryptionFile();
 }
 
 const stores = (backend: StoreBackend) => ({
@@ -66,6 +77,16 @@ export const ADAPTERS: Adapter[] = [
 		fresh() {
 			clearData();
 			return stores(sqliteBackend(openDatabase(path.join(DBS, `t${++n}.db`))));
+		},
+	},
+	{
+		name: "files, encrypted",
+		fresh() {
+			clearData();
+			const key = newDataKey();
+			writeEncryptionFile(key);
+			setDataKey(key);
+			return stores(encryptionLayer(fileBackend));
 		},
 	},
 ];
