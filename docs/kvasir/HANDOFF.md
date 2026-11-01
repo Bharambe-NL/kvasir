@@ -8,9 +8,10 @@ Updated by Claude Code at the end of each session. Read this first.
   - P0 Bootstrap and rename: done, `v0.0.1`.
   - P1 Retention and the learner layer: every task merged; the gate waits for two weeks of real use. No separate tag: its work ships in `v0.2.0` (D088). Milestone 2, tracking issue #13.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
-- What can start now: P6 Platform hardening tasks (they depend only on P0). P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Branch: `main`
-- PR: none open
+  - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
+- P3 and P4 need the P1 gate; P5 needs P1 and P2.
+- Branch: `p6/open-phase` (roadmap PR)
+- PR: the P6 roadmap PR
 
 ## Done
 
@@ -39,7 +40,7 @@ Updated by Claude Code at the end of each session. Read this first.
 ## Next
 
 1. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
-2. In the meantime, P6 tasks can start (`/kv-phase P6`, then a task), for example P6-2 (read-only MCP server) or P6-3 (Obsidian and Anki exports).
+2. In the meantime, a P6 task: run `/kv-task P6-<n>`. Each asks its own questions; P6-2 confirms the tool list, P6-6 the key recovery method.
 3. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
 
 ## Waiting for Sagar
