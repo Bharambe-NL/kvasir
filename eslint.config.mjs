@@ -72,6 +72,12 @@ export default defineConfig([
 								"The agent layer receives its dependencies (storage ports via factories/closures) — it never imports the server layer or store adapters (architecture: docs/architecture.md).",
 						},
 						{
+							target: "./src/evals",
+							from: ["./src/server", "./src/store"],
+							message:
+								"The teaching-eval harness (Kvasir P6-4) drives a session through an injected SessionPort; only scripts/eval.ts wires the server and the stores.",
+						},
+						{
 							target: "./src/mcp",
 							from: ["./src/agent", "./src/server", "./src/store"],
 							message:
