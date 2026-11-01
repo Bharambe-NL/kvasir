@@ -8,15 +8,18 @@ Updated by Claude Code at the end of each session. Read this first.
   - P0 Bootstrap and rename: done, `v0.0.1`.
   - P1 Retention and the learner layer: every task merged; the gate waits for two weeks of real use. No separate tag: its work ships in `v0.2.0` (D088). Milestone 2, tracking issue #13.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
-  - P7 Look and feel: opened 2026-11-01, before P3 (D121). Milestone 5, tracking issue #69, task issues #64 to #68 (P7-1 to P7-5). Self-merge allowed for PRs that need no review (D122).
+  - P7 Look and feel: done 2026-11-01, released as `v0.7.0` (notes only; installers wait for Apple signing). Milestone 5 closed, tracking issue #69 closed.
+  - P3 Voice tutor and drive mode: opened 2026-11-01. Milestone 6, tracking issue #88, task issues #82 to #87 (P3-1 to P3-6). Release tags now count up (D147): P3's gate takes the next minor after the latest release. Self-merge allowed for PRs that need no review (D148).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: none in progress. All five P7 tasks are merged; next is the P7 gate, then P3.
+- Task: none in progress. Next is P3-1 voice prompt profile (`/kv-task P3-1`).
 - Branch: none
 - PR: none open
 
 ## Done
 
+- P3 opened: milestone 6, tracking issue #88, task issues #82 to #87. D147: release tags count up in release order. D148: P3 self-merge.
+- P7 gate passed via #81 (approved by Sagar): all five checks pass; version 0.7.0; tagged `v0.7.0` and published with notes only (the Mac package stopped on missing Apple signing secrets, and Sagar chose no installers, as for `v0.2.0`). Milestone 5 and #69 closed.
 - P7-5 merged via #79 (all four areas approved by Sagar): D141 (four areas: chat, review, home and sidebar, settings and dialogs), D142 (72-character chat column), D143 (type roles), D144 (subtle motion), D145 (approval per area from screenshots). Plan approved on #68. Built: type roles and motion tokens; chat column and calmer title; review card with place and progress, two empty states; Graph and Chains switch, "…" menu, cost label, notice line, empty graph buttons; one menu select in settings and dialogs. D146: the notice reads "No provider key yet. Add one to start."
 - P7-4 merged via #77 (symbol approved by Sagar): D139 (the symbol: a chevron and a gold dot on black, checked against other marks), D140 (in the app the chevron takes the theme ink, the dot stays gold). Chosen after four rounds of drawings. Plan approved on #67. Built: `src/core/kvasir-mark.ts` is the one source; `npm run icons` writes the `.ico`, `.png`, `.icns`, Icon Composer layers and favicon; the sidebar mark follows the theme; `tests/app-icon.test.tsx` keeps every file equal to the source; `docs/brand.md` explains it. The bridge test `binds 127.0.0.1` times out on this Mac's network (it connects to the LAN address); CI is green and this branch touches no bridge code.
 - P7-3 merged via #75 (themes approved by Sagar): theme blocks, `--highlight`, region tokens, E-ink rules and canvas rings, Theme and Highlight colour rows, contrast tests per theme and mode. It also fixes a P7-2 bug: the settings PUT validator refused mode `system` and dropped `lightBackground`, so neither saved; `tests/appearance-settings-route.test.ts` now covers the route. Known: Kvasir dark's red on cards is 4.46:1 (today's palette, kept). D132 (theme on top of Mode), D133 (Kvasir, Sepia, Forest, E-ink), D134 (one custom highlight), D135 (`--highlight`), D136 (E-ink greys plus shape), D137 (`theme` and `highlight` settings), D138 (region tokens). Plan approved on #66.
@@ -60,7 +63,7 @@ Updated by Claude Code at the end of each session. Read this first.
 4. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 5. Optional for Sagar: move his app data to SQLite with the app closed (`docs/sqlite.md`).
 6. Optional for Sagar: turn on encryption in his own app (Settings > Security; `docs/encryption.md`). Save the recovery key.
-7. P7 gate (`/kv-gate P7`): every task is merged, so the gate records the checks and tags the release. Then P3, P4 and P5 (D119: gates block nothing).
+7. P3, from P3-1 (`/kv-task P3-1`). Then P4 (after P3) and P5 (D119: gates block nothing).
    - Open for Sagar from P7-3: Kvasir dark's red error text on cards is 4.46:1 (just under 4.5:1); fixing it means a slightly lighter red in Kvasir dark. Listed as a known exception in `tests/color-themes.test.tsx`.
 8. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
 9. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.

@@ -7,10 +7,10 @@ Eight phases. Each phase has its own brief in `phases/`. A phase may start once 
 | P0 | Bootstrap and rename | none | `v0.0.1` |
 | P1 | Retention and the learner layer | P0 | none: included in `v0.2.0` (D088) |
 | P2 | Regulation grounding | P0 (can run in parallel with P1) | `v0.2.0` |
-| P3 | Voice tutor and drive mode | P1 (built; gate not required, D119) | `v0.3.0` |
-| P4 | Mobile companion | P1, P3 (P3 built first) | `v0.4.0` |
-| P5 | Team sharing and training evidence | P1, P2 (built; gates not required, D119) | `v0.5.0` |
-| P6 | Platform hardening | P0 (tasks can land at any time after P0) | `v0.6.0` |
+| P3 | Voice tutor and drive mode | P1 (built; gate not required, D119) | the next minor at its gate (D147) |
+| P4 | Mobile companion | P1, P3 (P3 built first) | the next minor at its gate (D147) |
+| P5 | Team sharing and training evidence | P1, P2 (built; gates not required, D119) | the next minor at its gate (D147) |
+| P6 | Platform hardening | P0 (tasks can land at any time after P0) | the next minor at its gate (D147) |
 | P7 | Look and feel | P0 (opened before P3, D121) | `v0.7.0` |
 
 ## Phase gates
@@ -33,7 +33,7 @@ Then tag the release on `main` and close the phase milestone.
 | P0 | Done | 2026-10-31 |
 | P1 | Built; the real-use check is recorded later (D120) | |
 | P2 | Done | 2026-11-01 |
-| P3 | Not started | |
+| P3 | In progress | |
 | P4 | Not started | |
 | P5 | Not started | |
 | P6 | In progress | |

@@ -152,3 +152,5 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D144 | 2026-11-01 | Motion is subtle and quick: fades and short slides of 150 to 200 ms on dialogs, menus, the review card and new messages; off for reduced motion and in E-ink | Sagar | |
 | D145 | 2026-11-01 | Each polish area is done when Sagar approves before and after screenshots in Kvasir dark and light, plus one sheet across the four themes; each area is its own commit | Sagar | |
 | D146 | 2026-11-01 | The zero-keys notice reads "No provider key yet. Add one to start." ("Add one" is the link), true whenever it shows; replaces the plan's "No model yet." | Sagar | |
+| D147 | 2026-11-01 | Release tags count up in release order: each phase gate takes the next minor after the latest release (`v0.7.0` shipped first, so the next gate is `v0.8.0`), so the auto-updater always sees a newer version | Sagar | ROADMAP's per-phase tags for P3 to P6 |
+| D148 | 2026-11-01 | Self-merge is allowed in P3 for PRs that need no review from Sagar (no contract, prompt, store format or user-facing change), once CI is green, as in P7 (D122). Recorded in tracking issue #88 | Sagar | |
