@@ -275,7 +275,13 @@ export interface GraphContextPick {
  *  to a user message by toLlmMessages like every marker); `details`
  *  feeds the transcript's collapsible GraphContextCard. No more seed
  *  text glued into the first prompt. */
-export function newGraphContextMessage(picks: readonly GraphContextPick[], chains: readonly string[]): LhMarkerMessage {
+export function newGraphContextMessage(
+	picks: readonly GraphContextPick[],
+	chains: readonly string[],
+	/** Kvasir P2-6 (D085): a cited pick's source lines (citation link and
+	 *  quote), shown indented under it. Uncited picks read exactly as before. */
+	sources?: ReadonlyMap<string, readonly string[]>,
+): LhMarkerMessage {
 	// IDS FIRST (owner round 9, 2026-10-05 — the mastery-trace contract):
 	// each proposition is introduced ONCE with its id, name, and statement;
 	// the problem tool's `target` field takes these ids (names normalize to
@@ -290,7 +296,7 @@ export function newGraphContextMessage(picks: readonly GraphContextPick[], chain
 		"[Session context] — picked from the learner's knowledge map when starting this session:",
 		"",
 		"Propositions (id — name: statement; the problem tool's target field uses these ids):",
-		...picks.map((p) => `- [${p.id}] ${p.name}: ${p.statement}`),
+		...picks.flatMap((p) => [`- [${p.id}] ${p.name}: ${p.statement}`, ...(sources?.get(p.id) ?? []).map((line) => `  ${line}`)]),
 	];
 	if (chains.length > 0) {
 		lines.push("", "Reasoning chains among them (premises → conclusion):", ...chains.map((c) => `- ${c}`));
