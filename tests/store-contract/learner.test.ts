@@ -3,7 +3,7 @@ import { ADAPTERS } from "./harness.ts";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-const review = (id: string, nodeId: string, rating = 3) => ({ id, nodeId, rating, reviewedAt: "2026-11-01T09:00:00.000Z" }) as const;
+const review = (id: string, nodeId: string, rating: 1 | 2 | 3 | 4 = 3) => ({ id, nodeId, rating, reviewedAt: "2026-11-01T09:00:00.000Z" });
 const question = { id: "rq_1", nodeId: "n_a", cycle: 0, format: "cue", prompt: "What is A?", answer: "A is B.", generatedAt: "2026-11-01T09:00:00.000Z", model: "faux" } as const;
 
 for (const adapter of ADAPTERS) {
