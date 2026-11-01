@@ -1,0 +1,453 @@
+{
+	"commit": "cf3df1d",
+	"model": "anthropic:claude-opus-5-5",
+	"at": "2026-11-01T19:20:16.699Z",
+	"passed": 13,
+	"total": 13,
+	"rejectedCalls": 2,
+	"dollars": 0.36,
+	"replies": [
+		{
+			"phase": "probe",
+			"learner": "I'd like to learn about DORA.",
+			"reply": "Before we start, what do you do for work?",
+			"words": 9,
+			"rejected": 1,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I work in EU payments. I'm on the European Payments Initiative, on Wero.",
+			"reply": "By the end, what do you want to be able to do or understand about the Digital Operational Resilience Act, DORA?",
+			"words": 21,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I want to understand what Article 28 of DORA asks of a payment firm that relies on cloud providers.",
+			"reply": "How many minutes do you have right now?",
+			"words": 8,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "About twenty minutes.",
+			"reply": "When you get stuck on a question, how do you like to be helped?",
+			"words": 14,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "Give me a nudge in the right direction, not the answer.",
+			"reply": "Suppose your cloud provider has an outage that stops Wero payments; under DORA, who carries the regulatory responsibility for that?",
+			"words": 20,
+			"rejected": 1,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I know DORA is about operational resilience and that it applies to us from January 2025.",
+			"reply": "So when the cloud outage stops payments, does the regulator look to the cloud provider or to your firm?",
+			"words": 19,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "Not really. I think it says something about contracts with providers, but I couldn't tell you what.",
+			"reply": "Why might a regulator be worried if many payment firms across Europe all run on the same single cloud provider?",
+			"words": 20,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I think the firm stays responsible for the service even when a cloud provider runs it.",
+			"reply": "If most European payment firms all ran on one single cloud provider, what would worry a regulator about that?",
+			"words": 19,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "And the register only has to list the critical providers, right?",
+			"reply": "In your own words, what would make a function at Wero count as critical or important under DORA?",
+			"words": 18,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I don't know.",
+			"reply": "With that in mind, which kind of function at Wero would you guess counts as critical or important?",
+			"words": 18,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "No idea, sorry.",
+			"reply": "If Wero needed to leave its cloud provider quickly, what would you want to have prepared in advance?",
+			"words": 18,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "So we need a plan to leave the provider without breaking the payment service.",
+			"reply": "I'm done measuring. You already have two pieces of Article 28. First, your firm stays responsible even when a cloud provider runs the system. Second, you need a plan for leaving a provider without breaking the payment service.\n\nThe big missing piece is what makes a function \"critical or important\", which decides most of the stricter rules. The lesson starts there.",
+			"words": 61,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "teach",
+			"learner": "OK, let's move on.",
+			"reply": "Wero's real-time payment authorisation runs on a cloud provider; using that three-part test, what do you conclude about it?",
+			"words": 19,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		}
+	]
+}

@@ -4,6 +4,9 @@ import { invalidInputResult, questionResult, serverExecute } from "./tool-execut
 import {
 	askInputSchema,
 	askOptionProblems,
+	askSpokenInputBase,
+	askSpokenInputObject,
+	askSpokenProblems,
 	explainInputBase,
 	explainInputObject,
 	explainInputProblems,
@@ -262,6 +265,49 @@ export const probeExplainTool: AgentTool<typeof explainInputBase> = {
 	},
 };
 
+// ─── ask_spoken (Kvasir P3-3, D159 to D163) ─────────────────────────────────
+
+const ASK_SPOKEN_DESCRIPTION =
+	"Ask ONE question aloud in a voice session; the turn ends on it, and his spoken answer arrives as the result. " +
+	"This is the only way to ask a question here: never ask one in your other text. Give a correctAnswer (committed " +
+	"before he hears the question) when the question has a right answer, and grade his words against it in your next " +
+	"reply. Leave it out for an open question with no right answer. One call per turn.";
+
+/** The spoken question tool for one turn (D160). Agents are rebuilt every
+ *  turn, so each instance counts the questions accepted in its own turn:
+ *  a second one is rejected (one question per turn, D163). A rejected call
+ *  does not count, so the model can fix it and ask again. */
+export function askSpokenToolFor(ctx?: Pick<PlanToolContext, "chatId" | "chatStore">): AgentTool<typeof askSpokenInputObject> {
+	let accepted = 0;
+	const teach = ctx !== undefined;
+	return {
+		name: "ask_spoken",
+		label: "ask_spoken",
+		description: ASK_SPOKEN_DESCRIPTION,
+		parameters: teach ? askSpokenInputObject : (askSpokenInputBase as typeof askSpokenInputObject),
+		executionMode: "sequential",
+		execute: async (_toolCallId, input) => {
+			const problems = askSpokenProblems(input, { teach });
+			if (accepted > 0) problems.unshift("One question per turn: a question was already asked in this turn. Wait for his answer.");
+			if (teach && input.correctAnswer?.trim() && input.nodeId) {
+				const nodeIdProblemText = nodeIdProblem(ctx, input.nodeId);
+				if (nodeIdProblemText) problems.push(nodeIdProblemText);
+			}
+			if (problems.length > 0) return invalidInputResult("ask_spoken", problems);
+			accepted++;
+			return questionResult();
+		},
+	};
+}
+
+/** In a voice session ask_spoken replaces every question tool (D160). */
+const WRITTEN_QUESTION_TOOLS = ["quiz", "probe", "explain", "recall", "ask_user_question"];
+function voiceQuestions(tools: Record<string, AgentTool<any>>, spoken: AgentTool<any>): Record<string, AgentTool<any>> {
+	const out: Record<string, AgentTool<any>> = { ask_spoken: spoken };
+	for (const [name, tool] of Object.entries(tools)) if (!WRITTEN_QUESTION_TOOLS.includes(name)) out[name] = tool;
+	return out;
+}
+
 /** The prober's registry context: the probe's own needs (probe_done —
  *  ProbeDoneContext) PLUS the job-dispatch wiring, since the owner ruling
  *  (2026-09-20) puts research + pdf in the probe phase's registry too. */
@@ -290,6 +336,15 @@ export interface ProberToolContext extends ProbeDoneContext {
  *  from the registry. probe_done stays always-on regardless — it is how
  *  the phase ENDS; a prober that can never conclude is a lockout. */
 export function createProberTools(
+	ctx: ProberToolContext,
+	enabled?: EnabledTools,
+	opts: { voice?: boolean } = {},
+): Record<string, AgentTool<any>> {
+	const tools = createWrittenProberTools(ctx, enabled);
+	return opts.voice ? voiceQuestions(tools, healToolRecord({ ask_spoken: askSpokenToolFor() }).ask_spoken!) : tools;
+}
+
+function createWrittenProberTools(
 	ctx: ProberToolContext,
 	enabled?: EnabledTools,
 ): Record<string, AgentTool<any>> {
@@ -446,6 +501,15 @@ function withoutMechanics(enabled?: EnabledTools): EnabledTools | undefined {
 }
 
 export function createTeacherTools(
+	ctx: TeacherToolContext,
+	enabled?: EnabledTools,
+	opts: { voice?: boolean } = {},
+): Record<string, AgentTool<any>> {
+	const tools = createWrittenTeacherTools(ctx, enabled);
+	return opts.voice ? voiceQuestions(tools, healToolRecord({ ask_spoken: askSpokenToolFor(ctx) }).ask_spoken!) : tools;
+}
+
+function createWrittenTeacherTools(
 	ctx: TeacherToolContext,
 	enabled?: EnabledTools,
 ): Record<string, AgentTool<any>> {

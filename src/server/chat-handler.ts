@@ -286,7 +286,7 @@ export async function handleChatInput(
 				effective.compaction?.thresholdTokens,
 				catalogContextLimits().get(modelIdForCompaction),
 			),
-			systemPromptTokens: Math.ceil(composeInstructions(record.kind === "practice" ? "practice" : "teacher").length / 4),
+			systemPromptTokens: Math.ceil(composeInstructions(record.kind === "practice" ? "practice" : "teacher", undefined, record.voice ? "voice" : undefined).length / 4),
 		},
 		chatId,
 	);
@@ -452,6 +452,9 @@ export async function handleChatInput(
 		// point as the tool delta — the agent layer composes the system
 		// prompt fresh per turn, swapping in any enabled override segments.
 		promptSwitches: effective.agent.prompts,
+		// A voice session (Kvasir P3-3, D161): the voice prompt profile and
+		// ask_spoken as the only question tool, for the prober and teacher.
+		...(record.voice ? { promptProfile: "voice" as const } : {}),
 	};
 	// PRACTICE BRANCH (owner design, 2026-10-04): a kind:"practice"
 	// session builds the practitioner from turn 1 — no prober→teacher

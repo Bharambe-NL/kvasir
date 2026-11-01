@@ -42,9 +42,11 @@ const PROMPTS_DIR = path.join(PATHS.root, "src", "agent", "prompts");
  *  (practice has no such tools). */
 const PRACTICE_SHARED_FRAGMENTS = ["10-voice.md", "15-accuracy.md", "16-mental-model.md", "40-formatting.md"];
 
-/** The shared fragment a voice session drops: written Markdown and LaTeX
- *  have no place in speech; the voice speaking guide replaces it (D149). */
-const VOICE_DROPS = ["40-formatting.md"];
+/** The shared fragments a voice session drops: written Markdown and LaTeX
+ *  have no place in speech; the voice speaking guide replaces the
+ *  formatting guide (D149), and the spoken question guide replaces the
+ *  written question tools' guide (Kvasir P3-3, D160). */
+const VOICE_DROPS = ["20-question-tools.md", "40-formatting.md"];
 
 /** Every numeric-prefix fragment in one directory, sorted by filename. */
 function fragmentsIn(dir: string): string[] {

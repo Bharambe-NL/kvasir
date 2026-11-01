@@ -291,7 +291,7 @@ function baseAgentOptions(kind: AgentKind, opts: AgentBuildOptions, tools: Agent
 export function createProberAgent(ctx: ProberToolContext, opts: AgentBuildOptions = {}) {
 	// An explicit registry is the caller's, as for the teacher (the voice
 	// check holds the question tools back, Kvasir P3-1).
-	return baseAgentOptions("prober", opts, Object.values(opts.tools ?? createProberTools(ctx, opts.toolToggles)));
+	return baseAgentOptions("prober", opts, Object.values(opts.tools ?? createProberTools(ctx, opts.toolToggles, { voice: opts.promptProfile === "voice" })));
 }
 
 /**
@@ -307,7 +307,7 @@ export function createTeacherAgent(
 	ctx?: TeacherToolContext,
 	opts: AgentBuildOptions = {},
 ) {
-	const tools = opts.tools ?? (ctx ? createTeacherTools(ctx, opts.toolToggles) : bareQuestionTools());
+	const tools = opts.tools ?? (ctx ? createTeacherTools(ctx, opts.toolToggles, { voice: opts.promptProfile === "voice" }) : bareQuestionTools());
 	return baseAgentOptions("teacher", opts, Object.values(tools));
 }
 

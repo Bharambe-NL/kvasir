@@ -32,7 +32,7 @@ export function createChatStore(backend: StoreBackend): ChatStore {
 	 *  phase, busy, pendingQuestion) is already announced by turn-started /
 	 *  turn-settled, which the sidebar refetches on. Silence here is law,
 	 *  not oversight. */
-	function createChat(title: string, kind?: "practice"): ChatRecord {
+	function createChat(title: string, kind?: "practice", opts?: { voice?: boolean }): ChatRecord {
 		const now = new Date().toISOString();
 		const record: ChatRecord = {
 			id: `chat_${Date.now().toString(36)}_${crypto.randomUUID().slice(0, 8)}`,
@@ -43,6 +43,8 @@ export function createChatStore(backend: StoreBackend): ChatStore {
 			// Practice sessions carry the marker; teach stays ABSENT (absence
 			// reads as teach — pre-practice records never migrate).
 			...(kind === "practice" ? { kind: "practice" as const } : {}),
+			// Voice (Kvasir P3-3, D161): teaching only, fixed from birth.
+			...(opts?.voice && kind !== "practice" ? { voice: true as const } : {}),
 		};
 		writeChat(record);
 		emit("chats-changed", {});

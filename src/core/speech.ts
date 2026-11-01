@@ -113,16 +113,49 @@ export function replyTextOf(message: unknown): string {
 	return (m.content as StreamPart[]).filter((p) => p?.type === "text" && typeof p.text === "string").map((p) => p.text).join("");
 }
 
+/** An open spoken question (Kvasir P3-3): what the next utterance answers. */
+export interface SpokenQuestion {
+	toolCallId: string;
+	question: string;
+	/** Present when the question is graded (D159). */
+	correctAnswer?: string;
+}
+
+function spokenQuestionOf(toolCallId: string, args: unknown): SpokenQuestion | null {
+	const a = args as { question?: unknown; correctAnswer?: unknown } | null;
+	if (!a || typeof a.question !== "string" || !a.question.trim()) return null;
+	return { toolCallId, question: a.question.trim(), ...(typeof a.correctAnswer === "string" ? { correctAnswer: a.correctAnswer } : {}) };
+}
+
 /** Turns the chat stream's events (src/server/pi/ui-stream.ts: each
  *  message_update carries the FULL message so far) into new text. A turn
- *  can hold several assistant messages; a new one starts on a paragraph. */
+ *  can hold several assistant messages; a new one starts on a paragraph.
+ *  An ask_spoken question is spoken once the validator accepted it
+ *  (tool_execution_end without an error, Kvasir P3-3), so a rejected
+ *  question is never heard; it then stands as `question`. */
 export class ReplyTextTracker {
 	private current: number | undefined;
 	private seen = "";
 	private started = false;
+	private calls = new Map<string, unknown>();
+	/** The last spoken question accepted in this stream, if any. */
+	question: SpokenQuestion | null = null;
 
 	/** The new reply text this event adds, or "" when none. */
 	feed(event: unknown): string {
+		const t = event as { type?: string; toolName?: string; toolCallId?: string; args?: unknown; isError?: boolean } | null;
+		if (t?.toolName === "ask_spoken" && typeof t.toolCallId === "string") {
+			if (t.type === "tool_execution_start") this.calls.set(t.toolCallId, t.args);
+			if (t.type !== "tool_execution_end" || t.isError) return "";
+			const q = spokenQuestionOf(t.toolCallId, this.calls.get(t.toolCallId));
+			if (!q) return "";
+			this.question = q;
+			this.current = undefined;
+			this.seen = "";
+			const lead = this.started ? "\n\n" : "";
+			this.started = true;
+			return lead + q.question;
+		}
 		const e = event as { type?: string; message?: StreamMessage } | null;
 		if (!e || (e.type !== "message_update" && e.type !== "message_end") || e.message?.role !== "assistant") return "";
 		const text = replyTextOf(e.message);
@@ -227,7 +260,7 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 /** The chat turn's SSE body (src/server/pi/ui-stream.ts) → the reply's new
  *  text. Shared by the window's turn sender and the tests, so both read
  *  the stream the same way. Ends at [DONE] or the stream's end. */
-export async function* replyTextFromSse(body: ReadableStream<Uint8Array>, signal?: AbortSignal): AsyncIterable<string> {
+export async function* replyTextFromSse(body: ReadableStream<Uint8Array>, signal?: AbortSignal, onQuestion?: (q: SpokenQuestion) => void): AsyncIterable<string> {
 	const reader = body.getReader();
 	const decoder = new TextDecoder();
 	const tracker = new ReplyTextTracker();
@@ -251,7 +284,9 @@ export async function* replyTextFromSse(body: ReadableStream<Uint8Array>, signal
 					} catch {
 						continue;
 					}
+					const before = tracker.question;
 					const text = tracker.feed(event);
+					if (tracker.question && tracker.question !== before) onQuestion?.(tracker.question);
 					if (text) yield text;
 				}
 			}
@@ -261,17 +296,35 @@ export async function* replyTextFromSse(body: ReadableStream<Uint8Array>, signal
 	}
 }
 
-/** The reply to the last user message in a chat record: the assistant
- *  messages after it, as spoken text. The turn sender's fallback when the
- *  turn settled before its stream was attached. */
-export function replyAfterLastUser(messages: readonly unknown[]): string {
+/** The reply to the learner's last input in a chat record (a message or a
+ *  question's answer): the assistant messages after it, as spoken text,
+ *  then the open spoken question if the turn ended on one. The turn
+ *  sender's fallback when the turn settled before its stream was attached. */
+export function replyAfterLastInput(messages: readonly unknown[]): { text: string; question: SpokenQuestion | null } {
 	let last = -1;
 	messages.forEach((m, i) => {
-		if ((m as { role?: string })?.role === "user") last = i;
+		const role = (m as { role?: string })?.role;
+		if (role === "user" || role === "toolResult") last = i;
 	});
-	return messages
-		.slice(last + 1)
-		.map(replyTextOf)
-		.filter(Boolean)
-		.join("\n\n");
+	const after = messages.slice(last + 1);
+	const question = openSpokenQuestion(messages);
+	const parts = after.map(replyTextOf).filter(Boolean);
+	if (question) parts.push(question.question);
+	return { text: parts.join("\n\n"), question };
+}
+
+/** The spoken question still waiting for an answer: the last ask_spoken
+ *  call with no result after it. */
+export function openSpokenQuestion(messages: readonly unknown[]): SpokenQuestion | null {
+	const answered = new Set<string>();
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const m = messages[i] as { role?: string; toolCallId?: string; content?: unknown };
+		if (m?.role === "toolResult" && typeof m.toolCallId === "string") answered.add(m.toolCallId);
+		if (m?.role !== "assistant" || !Array.isArray(m.content)) continue;
+		for (const part of [...(m.content as { type?: string; name?: string; id?: string; arguments?: unknown }[])].reverse()) {
+			if (part?.type !== "toolCall" || part.name !== "ask_spoken" || typeof part.id !== "string") continue;
+			return answered.has(part.id) ? null : spokenQuestionOf(part.id, part.arguments);
+		}
+	}
+	return null;
 }

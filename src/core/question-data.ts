@@ -13,6 +13,7 @@ import {
 	resolveCorrect,
 	seededRandom,
 	shuffleOptions,
+	type AskSpokenToolInput,
 	type AskToolInput,
 	type ExplainToolInput,
 	type QuestionData,
@@ -23,13 +24,14 @@ import {
 export function questionDataFor(
 	toolName: string,
 	toolCallId: string,
-	input: QuizToolInput | AskToolInput | ExplainToolInput,
+	input: QuizToolInput | AskToolInput | ExplainToolInput | AskSpokenToolInput,
 	createdAt: string = new Date().toISOString(),
 ): QuestionData {
 	const kind = toolQuestionKind(toolName);
 	const quizInput = kind === "quiz" ? (input as QuizToolInput) : null;
 	const askInput = kind === "ask" ? (input as AskToolInput) : null;
 	const explainInput = kind === "explain" ? (input as ExplainToolInput) : null;
+	const spokenInput = kind === "spoken" ? (input as AskSpokenToolInput) : null;
 	const multi = input instanceof Object && "multiSelect" in input ? input.multiSelect === true : false;
 	const mode: QuestionMode =
 		kind === "quiz" ? (multi ? "multi-select" : "single-select") : askInput?.options?.length ? (multi ? "multi-select" : "single-select") : "text";
@@ -42,7 +44,7 @@ export function questionDataFor(
 		// view (never collapsed) and the answered card tucks the explanation.
 		questionType: kind === "quiz" ? normalizeQuizType((input as { type?: unknown }).type) : undefined,
 		question: input.question,
-		context: input.details,
+		context: "details" in input ? input.details : undefined,
 		mode,
 		options: ordered,
 		createdAt,
@@ -58,6 +60,10 @@ export function questionDataFor(
 		// before answering) and snapshots into the answer at submit. One
 		// field, reasoning included (owner ruling 2026-09-27).
 		q.committedAnswer = explainInput.correctAnswer;
+	}
+	if (spokenInput?.correctAnswer !== undefined) {
+		// A graded spoken question (Kvasir P3-3, D159): the same commitment.
+		q.committedAnswer = spokenInput.correctAnswer;
 	}
 	return q;
 }

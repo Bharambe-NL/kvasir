@@ -18,6 +18,7 @@ import {
 	toolQuestionKind,
 	questionDataFor,
 	parseAskInput,
+	parseAskSpokenInput,
 	parseQuizInput,
 	parseExplainInput,
 	toggleOption,
@@ -56,7 +57,7 @@ import { CONFIDENCE_COLORS, confidenceRailStyle } from "@/components/confidence-
  */
 
 export interface QuestionDockProps {
-	toolName: "quiz" | "probe" | "ask_user_question" | "explain" | "recall";
+	toolName: "quiz" | "probe" | "ask_user_question" | "explain" | "recall" | "ask_spoken";
 	toolCallId: string;
 	input: QuizToolInput | AskToolInput | ExplainToolInput;
 	/** Collapse state, owned by the DockOverlay (it drives the shell's height morph). */
@@ -126,7 +127,7 @@ export function QuestionDock({
 	// anything that slips through renders the quiet fallback, never a
 	// crash on `.map` over model-authored bytes.
 	const parsed =
-		canonical === "quiz" ? parseQuizInput(input) : canonical === "explain" ? parseExplainInput(input) : parseAskInput(input);
+		canonical === "quiz" ? parseQuizInput(input) : canonical === "explain" ? parseExplainInput(input) : canonical === "ask_spoken" ? parseAskSpokenInput(input) : parseAskInput(input);
 	if (!parsed) {
 		return (
 			<div data-testid="malformed-question" className="rounded-xl border border-dashed bg-card/60 p-3 text-sm text-muted-foreground">
@@ -195,7 +196,7 @@ export function QuestionDockBar({
 	label,
 	toolLabel,
 }: {
-	toolName: "quiz" | "ask_user_question" | "explain";
+	toolName: "quiz" | "ask_user_question" | "explain" | "ask_spoken";
 	question: string;
 	onExpand: () => void;
 	variant?: "collapsed" | "reveal";

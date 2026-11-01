@@ -35,6 +35,11 @@ export interface ChatRecord {
 	messages: LhMessage[];
 	/** The session's kind — absent = teach (pre-practice records). */
 	kind?: ChatKind;
+	/** A voice session (Kvasir P3-3, D161): set at creation, never changed.
+	 *  Its prober and teacher run on the voice prompt profile with
+	 *  `ask_spoken` as their only question tool. Absent = a written session
+	 *  (every record before P3). Teaching only: practice has no voice. */
+	voice?: true;
 	/** The session's plan tree (vision §2) — written by plan tools via saveTree. */
 	tree?: PlanTree;
 	/** Append-only usage log (observability, 2026-09): one entry per model

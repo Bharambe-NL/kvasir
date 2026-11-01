@@ -9,7 +9,8 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createFauxCore, fauxAssistantMessage, fauxText, type FauxResponseStep } from "@earendil-works/pi-ai";
+import { createFauxCore, fauxAssistantMessage, fauxText, fauxToolCall, type FauxResponseStep } from "@earendil-works/pi-ai";
+import { askSpokenToolFor } from "../src/agent/tools.ts";
 import { composeInstructions, createTeacherAgent } from "../src/agent/teacher-agent.ts";
 import { handleChatRequest } from "../src/server/chat-handler.ts";
 import { chatStore } from "../src/store/chats.ts";
@@ -195,7 +196,7 @@ describe("the chat turn sender", () => {
 		const out: string[] = [];
 		for await (const t of createChatTurnSender("chat_x", fetchFn)("Hi", new AbortController().signal)) out.push(t);
 		assert.deepEqual(out, ["Hello there."]);
-		assert.deepEqual(calls, ["/api/chat", "/api/chats/chat_x/stream", "/api/chats/chat_x"]);
+		assert.deepEqual(calls, ["/api/chats/chat_x", "/api/chat", "/api/chats/chat_x/stream", "/api/chats/chat_x"], "the record is read once at the start (an open question), then as the fallback");
 	});
 
 	it("a refused turn is an error the loop reports", async () => {
@@ -203,5 +204,99 @@ describe("the chat turn sender", () => {
 		await assert.rejects(async () => {
 			for await (const _ of createChatTurnSender("chat_x", fetchFn)("Hi", new AbortController().signal)) void _;
 		}, /No model configured/);
+	});
+});
+
+describe("spoken questions in the voice loop (P3-3, D160, D162, D163)", () => {
+	const QUESTION = "Who does the regulator hold responsible when Wero stops?";
+	const COMMITTED = "The firm: it stays fully responsible for services it outsources.";
+
+	/** A voice chat whose faux model asks with ask_spoken. */
+	function voiceSession(steps: FauxResponseStep[]) {
+		const seen: unknown[][] = [];
+		const faux = createFauxCore({});
+		faux.setResponses(steps.map((step): FauxResponseStep => (context, ...rest) => {
+			seen.push(context.messages as unknown[]);
+			return typeof step === "function" ? step(context, ...rest) : step;
+		}));
+		const engine: PiEngine = { model: faux.getModel(), streamFn: faux.streamSimple };
+		const factory: Parameters<typeof handleChatRequest>[1] = (opts) =>
+			createTeacherAgent(undefined, { engine, messages: opts.messages, promptProfile: opts.promptProfile, tools: { ask_spoken: askSpokenToolFor() } });
+		const fetchFn = (async (input: string, init?: RequestInit) => {
+			const req = new Request(`http://kvasir.test${input}`, init);
+			if (input === "/api/chat") return handleChatRequest(req, factory);
+			const m = /^\/api\/chats\/([^/]+)(\/stream)?$/.exec(input)!;
+			const ctx = { params: Promise.resolve({ id: decodeURIComponent(m[1]!) }) };
+			return m[2] ? streamRoute.GET(req, ctx) : recordRoute.GET(req, ctx);
+		}) as typeof fetch;
+		const chat = chatStore.createChat("Voice questions", undefined, { voice: true });
+		chatStore.saveSettings(chat.id, { model: { provider: "openrouter", id: "z-ai/glm-5.3-flash" } });
+		return { chat, fetchFn, seen };
+	}
+
+	it("the question is spoken last, the next utterance is its answer, and the tutor grades it", async () => {
+		const { chat, fetchFn, seen } = voiceSession([
+			fauxAssistantMessage([fauxText("Here is the core rule. The firm stays responsible."), fauxToolCall("ask_spoken", { question: QUESTION, correctAnswer: COMMITTED }, { id: "q1" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage([fauxText("Right, the firm. That is the whole of paragraph one.")]),
+		]);
+		assert.equal(chatStore.getChat(chat.id)!.voice, true, "the voice flag is on the record");
+		const speechIn = new FauxSpeechIn();
+		const speechOut = new FauxSpeechOut();
+		const states: VoiceState[] = [];
+		const loop = await runVoiceLoop({ speechIn, speechOut, sendTurn: createChatTurnSender(chat.id, fetchFn), onState: (s) => states.push(s) });
+
+		speechIn.say("Teach me Article 28.");
+		await until(() => states.at(-1) === "listening" && speechOut.spoken.length === 3, "the question");
+		assert.deepEqual(speechOut.spoken, ["Here is the core rule.", "The firm stays responsible.", QUESTION], "the question comes last");
+
+		speechIn.say("The firm, I think.");
+		await until(() => speechOut.spoken.length === 5 && states.at(-1) === "listening", "the grading reply");
+		await loop.stop();
+		assert.deepEqual(speechOut.spoken.slice(3), ["Right, the firm.", "That is the whole of paragraph one."]);
+
+		const answerSeen = seen[1]!.at(-1) as { role: string; toolCallId: string; content: { text: string }[] };
+		assert.equal(answerSeen.role, "toolResult", "the utterance reached the model as the question's answer (D162)");
+		assert.equal(answerSeen.toolCallId, "q1");
+		assert.match(answerSeen.content[0]!.text, /The firm, I think\./);
+		const record = chatStore.getChat(chat.id)!;
+		const result = record.messages.find((m) => m.role === "toolResult") as { details?: { kind?: string; committed?: string } };
+		assert.equal(result.details?.kind, "spoken");
+		assert.equal(result.details?.committed, COMMITTED, "the commitment rides the answer (D159)");
+		assert.equal(record.messages.filter((m) => m.role === "user").length, 1, "only the first utterance was a text input");
+	});
+
+	it("a rejected question is never spoken; the corrected one is (D163)", async () => {
+		const { chat, fetchFn } = voiceSession([
+			fauxAssistantMessage([fauxText("One quick check."), fauxToolCall("ask_spoken", { question: "Who is responsible? And why?" }, { id: "bad" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage([fauxToolCall("ask_spoken", { question: QUESTION }, { id: "good" })], { stopReason: "toolUse" }),
+		]);
+		const speechIn = new FauxSpeechIn();
+		const speechOut = new FauxSpeechOut();
+		const states: VoiceState[] = [];
+		const loop = await runVoiceLoop({ speechIn, speechOut, sendTurn: createChatTurnSender(chat.id, fetchFn), onState: (s) => states.push(s) });
+		speechIn.say("Go on.");
+		await until(() => states.at(-1) === "listening" && speechOut.spoken.length === 2, "the corrected question");
+		await loop.stop();
+		assert.deepEqual(speechOut.spoken, ["One quick check.", QUESTION]);
+	});
+
+	it("a resumed session answers the question still open in the record", async () => {
+		const { chat, fetchFn, seen } = voiceSession([
+			fauxAssistantMessage([fauxToolCall("ask_spoken", { question: QUESTION }, { id: "q-open" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage([fauxText("Noted.")]),
+		]);
+		// Turn one through a first sender, which then goes away.
+		const send = createChatTurnSender(chat.id, fetchFn);
+		for await (const _ of send("Start.", new AbortController().signal)) void _;
+		// A new loop (a fresh sender) finds the open question in the record.
+		const speechIn = new FauxSpeechIn();
+		const speechOut = new FauxSpeechOut();
+		const states: VoiceState[] = [];
+		const loop = await runVoiceLoop({ speechIn, speechOut, sendTurn: createChatTurnSender(chat.id, fetchFn), onState: (s) => states.push(s) });
+		speechIn.say("Payments, at EPI.");
+		await until(() => speechOut.spoken.includes("Noted.") && states.at(-1) === "listening", "the reply to the answer");
+		await loop.stop();
+		const last = seen[1]!.at(-1) as { role: string; toolCallId: string };
+		assert.deepEqual([last.role, last.toolCallId], ["toolResult", "q-open"]);
 	});
 });

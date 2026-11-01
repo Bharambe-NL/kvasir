@@ -1,0 +1,494 @@
+{
+	"commit": "9e17eea",
+	"model": "anthropic:claude-opus-5-5",
+	"at": "2026-11-01T19:12:32.456Z",
+	"passed": 14,
+	"total": 14,
+	"rejectedCalls": 0,
+	"dollars": 0.24,
+	"tokens": {
+		"inputTokens": 56,
+		"outputTokens": 6001,
+		"cacheReadTokens": 134894,
+		"cacheWriteTokens": 18489,
+		"cacheWrite1hTokens": 0
+	},
+	"replies": [
+		{
+			"agent": "prober",
+			"learner": "I'd like to learn about DORA.",
+			"reply": "Let's start with you.\n\nWhat do you do for work, and what kinds of systems, rules or tools do you deal with day to day?",
+			"words": 25,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "I work in EU payments. I'm on the European Payments Initiative, on Wero.",
+			"reply": "That makes it the Digital Operational Resilience Act, the EU regulation, not the DevOps metrics.\n\nBy the end, what do you want to be able to do or understand about DORA, ideally tied to something concrete in your work on Wero?",
+			"words": 41,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "I want to understand what Article 28 of DORA asks of a payment firm that relies on cloud providers.",
+			"reply": "That's concrete enough to work with.\n\nHow many minutes do you have right now?",
+			"words": 14,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "About twenty minutes.",
+			"reply": "When you get stuck on a question, how do you like to be helped?",
+			"words": 14,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "Give me a nudge in the right direction, not the answer.",
+			"reply": "Now some questions to see what you already know. Start near the top: Wero runs partly on a big cloud provider, and that provider has a serious outage that breaks payments.\n\nUnder DORA, who is responsible for that failure toward the regulator, and why?",
+			"words": 44,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "I know DORA is about operational resilience and that it applies to us from January 2025.",
+			"reply": "So when the cloud provider's outage breaks Wero payments, who does the regulator hold responsible, and why?",
+			"words": 17,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "prober",
+			"learner": "Not really. I think it says something about contracts with providers, but I couldn't tell you what.",
+			"reply": "From your own experience, when a payment firm outsources something important to a vendor, does the firm's responsibility to its supervisor move to the vendor, or stay with the firm?",
+			"words": 30,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "(The spoken probe is finished. Setup answers: background, EU payments, working on the European Payments Initiative and Wero. Goal: understand what DORA Article 28 asks of a payment firm that relies on cloud providers. Session length: twenty minutes. Hint style: a nudge in the right direction, not the answer. Probe result: he knows DORA is about operational resilience and when it applies; he does not know what Article 28 contains: the firm's full responsibility, the ICT third-party risk strategy, the register of information, or exit strategies.) Please start teaching.",
+			"reply": "Article twenty-eight of DORA, the Digital Operational Resilience Act, sets the rules for a payment firm that uses outside technology providers such as cloud hosts. We'll go through it in four parts: who stays responsible, the firm's strategy for these risks, the register of contracts, and the plan for leaving a provider.\n\nFirst, imagine Wero's payment processing runs on a large cloud provider. One morning the provider has an outage, and instant payments stop for two hours.\n\nWhen the supervisor looks into that outage, whose responsibility do you think DORA says it is: the cloud provider's, the",
+			"words": 97,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "I think the firm stays responsible for the service even when a cloud provider runs it.",
+			"reply": "We'll go through what DORA Article twenty-eight asks of a payment firm that uses cloud providers. There are four parts: full responsibility, a strategy for third-party risk, a register of every provider, and a plan for leaving a provider.\n\nYour starting point is right, and it's the base for the rest. The article says the firm stays fully responsible at all times for meeting its obligations, even when a provider runs the service. You can hand the work to a provider, but you can't hand over the accountability.\n\nLet's test that on a real case.\n\nSuppose Wero's payment processing runs on a big cloud provider, that provider has a four-hour outage, and payments fail, so who does the supervisor hold to account, and why?",
+			"words": 124,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "And the register only has to list the critical providers, right?",
+			"reply": "Suppose Wero's marketing team signs up for a small online analytics tool that has nothing to do with processing payments, so does it go in the register, and how is it treated there?",
+			"words": 33,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "I don't know.",
+			"reply": "With that in mind, does the marketing team's small analytics tool belong in the register, and if so, how would it be marked?",
+			"words": 23,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "No idea, sorry.",
+			"reply": "So for that marketing analytics tool, is it in the register or left out, and which of those two labels would it get?",
+			"words": 23,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "So we need a plan to leave the provider without breaking the payment service.",
+			"reply": "Given that rule, does the marketing analytics tool need an exit strategy under Article twenty-eight, and what about the cloud provider running Wero's payment processing?",
+			"words": 25,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"agent": "teacher",
+			"learner": "OK, let's move on.",
+			"reply": "Before Wero signs with a new cloud provider for payment processing, what do you think the firm should check about that provider and the deal?",
+			"words": 25,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		}
+	]
+}

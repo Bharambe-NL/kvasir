@@ -1,16 +1,19 @@
 /**
- * npm run voice:check (Kvasir P3-1, D153): the voice prompt profile, live.
- * Runs the real prober and teacher with promptProfile "voice" against fixed
- * learner replies and checks every reply with src/evals/voice-checks.ts:
- * one question, no formulas, no options, no Markdown, short. Writes
+ * npm run voice:check (Kvasir P3-1 D153, reworked in P3-3): a voice session
+ * live, through the app's own path. A voice chat (D161) runs on the real
+ * chat handler with the configured models; fixed learner replies go in
+ * through the window's turn sender (components/speech/chat-turn-sender.ts),
+ * so an answer to an ask_spoken question arrives as that question's result,
+ * exactly as in the app (D162). Each turn's spoken text (what the voice loop
+ * would say) is checked with src/core/voice-checks.ts: one question, no
+ * formulas, no options, no Markdown, short. Writes
  * evals/voice/<commit>.json and exits non-zero if any reply fails.
  *
- * The question tools are held back (an empty tool registry), as P3-3's
- * ask_spoken will replace them, so questions arrive as spoken text. Models
- * come from the Kvasir app's own settings (KV_EVAL_SETTINGS, default the
- * desktop app's settings.json), strong slot. Keys come from the app's key
- * file, read in place (KV_AUTH_FILE), never copied. Nothing is written to
- * the app's data: KV_DATA_DIR points at an empty temp folder.
+ * Models come from the Kvasir app's own settings (KV_EVAL_SETTINGS, default
+ * the desktop app's settings.json), strong slot. Keys come from the app's
+ * key file, read in place (KV_AUTH_FILE), never copied. The session runs in
+ * an empty temp folder with graph extraction and the background job tools
+ * off, so nothing else spends and the app's data is not touched.
  */
 
 import { execFileSync } from "node:child_process";
@@ -29,7 +32,14 @@ if (!strong?.model) {
 	console.error(`No strong model slot in ${settingsFile}. Set it in the Kvasir app first.`);
 	process.exit(1);
 }
-process.env.KV_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "kv-voice-"));
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), "kv-voice-"));
+fs.writeFileSync(path.join(TMP, "settings.json"), JSON.stringify({
+	version: 1,
+	models: appSettings.models,
+	graph: { enabled: false, rendering: false },
+	agent: { tools: { research: false, demo: false, visual: false, pdf: false } },
+}, null, "\t"));
+process.env.KV_DATA_DIR = TMP;
 process.env.KV_AUTH_FILE ||= path.join(path.dirname(appData), "auth.json");
 
 const git = (...args: string[]) => execFileSync("git", args, { cwd: REPO, encoding: "utf8" }).trim();
@@ -37,17 +47,21 @@ const dirty = git("status", "--porcelain", "--", ".", ":!evals/voice", ":!next-e
 const commit = `${git("rev-parse", "--short", "HEAD")}${dirty ? "-dirty" : ""}`;
 
 await import("../src/server/keys.ts"); // reflects the key file into the environment
-const { piEngineForSpec } = await import("../src/agent/models.ts");
-const { createProberAgent, createTeacherAgent } = await import("../src/agent/teacher-agent.ts");
-const { callCost } = await import("../src/server/pricing.ts");
-const { checkVoiceReply, wordCount } = await import("../src/evals/voice-checks.ts");
-type Usage = import("@earendil-works/pi-ai").Usage;
+const { handleChatRequest, createChat } = await import("../src/server/index.ts");
+const { chatStore } = await import("../src/store/chats.ts");
+const streamRoute = await import("../app/api/chats/[id]/stream/route.ts");
+const recordRoute = await import("../app/api/chats/[id]/route.ts");
+const { createChatTurnSender } = await import("../components/speech/chat-turn-sender.ts");
+const { checkVoiceReply, wordCount } = await import("../src/core/voice-checks.ts");
+const { sessionCost } = await import("../src/server/pricing.ts");
+type ChatRecord = import("../src/core/contracts/chat.ts").ChatRecord;
 
 const modelId = `${strong.model.provider}:${strong.model.id}`;
-const engine = () => piEngineForSpec({ provider: strong.model!.provider, id: strong.model!.id, ...(strong.thinkingLevel ? { thinkingLevel: strong.thinkingLevel as never } : {}) });
 
-/** The fixed learner. Each line is one spoken reply. */
-const PROBER_TURNS = [
+/** The fixed learner: setup answers, probe answers, then teaching replies.
+ *  The prober decides when the probe ends; the replies read sensibly
+ *  either side of that line. */
+const LEARNER = [
 	"I'd like to learn about DORA.",
 	"I work in EU payments. I'm on the European Payments Initiative, on Wero.",
 	"I want to understand what Article 28 of DORA asks of a payment firm that relies on cloud providers.",
@@ -55,10 +69,6 @@ const PROBER_TURNS = [
 	"Give me a nudge in the right direction, not the answer.",
 	"I know DORA is about operational resilience and that it applies to us from January 2025.",
 	"Not really. I think it says something about contracts with providers, but I couldn't tell you what.",
-];
-const TEACHER_SEED =
-	"(The spoken probe is finished. Setup answers: background, EU payments, working on the European Payments Initiative and Wero. Goal: understand what DORA Article 28 asks of a payment firm that relies on cloud providers. Session length: twenty minutes. Hint style: a nudge in the right direction, not the answer. Probe result: he knows DORA is about operational resilience and when it applies; he does not know what Article 28 contains: the firm's full responsibility, the ICT third-party risk strategy, the register of information, or exit strategies.) Please start teaching.";
-const TEACHER_TURNS = [
 	"I think the firm stays responsible for the service even when a cloud provider runs it.",
 	"And the register only has to list the critical providers, right?",
 	"I don't know.",
@@ -67,50 +77,50 @@ const TEACHER_TURNS = [
 	"OK, let's move on.",
 ];
 
-interface Reply { agent: "prober" | "teacher"; learner: string; reply: string; words: number; checks: ReturnType<typeof checkVoiceReply> }
+/** fetch, routed to the real handlers in this process. */
+const fetchFn = (async (input: string, init?: RequestInit) => {
+	const req = new Request(`http://kvasir.local${input}`, init);
+	if (input === "/api/chat") return handleChatRequest(req);
+	const m = /^\/api\/chats\/([^/]+)(\/stream)?$/.exec(input);
+	if (!m) throw new Error(`unrouted ${input}`);
+	const ctx = { params: Promise.resolve({ id: decodeURIComponent(m[1]!) }) };
+	return m[2] ? streamRoute.GET(req, ctx) : recordRoute.GET(req, ctx);
+}) as typeof fetch;
 
-const usage: Usage[] = [];
+const chat = createChat("Voice check", undefined, { voice: true });
+chatStore.saveSettings(chat.id, { model: strong.model, ...(strong.thinkingLevel ? { thinkingLevel: strong.thinkingLevel as never } : {}) });
+const send = createChatTurnSender(chat.id, fetchFn);
+
+interface Reply { phase: "probe" | "teach"; learner: string; reply: string; words: number; rejected: number; checks: ReturnType<typeof checkVoiceReply> }
 const replies: Reply[] = [];
-
-function lastAssistantText(messages: unknown[], from: number): string {
-	return messages
-		.slice(from)
-		.filter((m): m is { role: string; content: unknown } => (m as { role?: string }).role === "assistant")
-		.flatMap((m) => (Array.isArray(m.content) ? m.content : []))
-		.filter((c): c is { type: "text"; text: string } => (c as { type?: string }).type === "text")
-		.map((c) => c.text)
-		.join("\n")
-		.trim();
-}
-
-async function converse(agent: "prober" | "teacher", turns: string[]) {
-	const opts = { engine: engine(), tools: {}, promptProfile: "voice" as const, onUsage: (u: Usage) => void usage.push(u) };
-	const a = agent === "prober" ? createProberAgent({} as never, opts) : createTeacherAgent(undefined, opts);
-	for (const learner of turns) {
-		const from = a.state.messages.length;
-		await a.prompt(learner);
-		const reply = lastAssistantText(a.state.messages as unknown[], from);
-		const checks = checkVoiceReply(reply);
-		if (!reply) checks.push({ name: "short", pass: false, detail: "no spoken reply" });
-		replies.push({ agent, learner, reply, words: wordCount(reply), checks });
-		const failed = checks.filter((c) => !c.pass);
-		console.log(`${agent} ${replies.length}: ${failed.length ? `FAIL (${failed.map((c) => `${c.name}: ${c.detail}`).join("; ")})` : "pass"}`);
-	}
-}
+const hasProbeDone = (record: ChatRecord) => record.messages.some((m) => m.role === "assistant" && Array.isArray(m.content) && (m.content as { type?: string; name?: string }[]).some((p) => p.type === "toolCall" && p.name === "probe_done"));
+const rejections = (record: ChatRecord) => record.messages.filter((m) => m.role === "toolResult" && (m as { toolName?: string; isError?: boolean }).toolName === "ask_spoken" && (m as { isError?: boolean }).isError).length;
 
 console.log(`voice check at ${commit} on ${modelId}`);
-await converse("prober", PROBER_TURNS);
-await converse("teacher", [TEACHER_SEED, ...TEACHER_TURNS]);
+let rejectedBefore = 0;
+for (const learner of LEARNER) {
+	const before = chatStore.getChat(chat.id)!;
+	const phase = hasProbeDone(before) ? "teach" : "probe";
+	let reply = "";
+	for await (const text of send(learner, new AbortController().signal)) reply += text;
+	reply = reply.trim();
+	const after = chatStore.getChat(chat.id)!;
+	const rejected = rejections(after) - rejectedBefore;
+	rejectedBefore = rejections(after);
+	const checks = checkVoiceReply(reply);
+	if (!reply) checks.push({ name: "short", pass: false, detail: "no spoken reply" });
+	replies.push({ phase, learner, reply, words: wordCount(reply), rejected, checks });
+	const failed = checks.filter((c) => !c.pass);
+	console.log(`${phase} ${replies.length}: ${failed.length ? `FAIL (${failed.map((c) => `${c.name}: ${c.detail}`).join("; ")})` : "pass"}${rejected ? ` (${rejected} question${rejected > 1 ? "s" : ""} rejected and fixed)` : ""}`);
+}
 
-const total = usage.reduce(
-	(t, u) => ({ inputTokens: t.inputTokens + u.input, outputTokens: t.outputTokens + u.output, cacheReadTokens: t.cacheReadTokens + u.cacheRead, cacheWriteTokens: t.cacheWriteTokens + u.cacheWrite, cacheWrite1hTokens: t.cacheWrite1hTokens + (u.cacheWrite1h ?? 0) }),
-	{ inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, cacheWrite1hTokens: 0 },
-);
-const dollars = usage.reduce((sum, u) => sum + (callCost({ inputTokens: u.input, outputTokens: u.output, cacheReadTokens: u.cacheRead, cacheWriteTokens: u.cacheWrite, cacheWrite1hTokens: u.cacheWrite1h ?? 0 }, modelId) ?? 0), 0);
+const record = chatStore.getChat(chat.id)!;
+const dollars = sessionCost(record).cost;
 const passed = replies.filter((r) => r.checks.every((c) => c.pass)).length;
+const rejectedCalls = replies.reduce((n, r) => n + r.rejected, 0);
 const out = path.join(REPO, "evals", "voice", `${commit}.json`);
 fs.mkdirSync(path.dirname(out), { recursive: true });
-fs.writeFileSync(out, JSON.stringify({ commit, model: modelId, at: new Date().toISOString(), passed, total: replies.length, dollars: Math.round(dollars * 100) / 100, tokens: total, replies }, null, "\t") + "\n");
-console.log(`${passed} of ${replies.length} replies pass. About $${dollars.toFixed(2)}. Written to ${path.relative(REPO, out)}`);
-fs.rmSync(process.env.KV_DATA_DIR, { recursive: true, force: true });
+fs.writeFileSync(out, JSON.stringify({ commit, model: modelId, at: new Date().toISOString(), passed, total: replies.length, rejectedCalls, dollars: Math.round(dollars * 100) / 100, replies }, null, "\t") + "\n");
+console.log(`${passed} of ${replies.length} replies pass; ${rejectedCalls} question calls rejected by the validator and fixed. About $${dollars.toFixed(2)}. Written to ${path.relative(REPO, out)}`);
+fs.rmSync(TMP, { recursive: true, force: true });
 process.exit(passed === replies.length ? 0 : 1);
