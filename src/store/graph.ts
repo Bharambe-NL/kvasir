@@ -130,6 +130,8 @@ const isCheckpoint = (v: unknown): v is SessionCheckpoint =>
 const isCoverageEntry = (v: unknown): v is CoverageEntry =>
 	isRecord(v) && isString(v.chatId) && isString(v.fp) && typeof v.tokens === "number" && isString(v.foldedAt);
 
+const unitsCache = new Map<string, SourceUnit[]>();
+
 /** A version id is "ver_" + 12 hex; anything else never becomes a path. */
 function documentUnitsFile(versionId: string): string {
 	if (!/^ver_[0-9a-f]{12}$/.test(versionId)) throw new Error(`invalid version id: ${versionId}`);
@@ -204,15 +206,28 @@ export const graphStore: GraphStore = {
 	},
 	readDocumentUnits(versionId: string): SourceUnit[] | null {
 		assertGraphFormat();
+		let file: string;
+		try {
+			file = documentUnitsFile(versionId);
+		} catch {
+			return null;
+		}
+		// The files never change once written (D076), so a read is cached by
+		// its path; a missing file is not cached (it may be written later).
+		const cached = unitsCache.get(file);
+		if (cached) return cached;
 		let raw: string;
 		try {
-			raw = fs.readFileSync(documentUnitsFile(versionId), "utf-8");
+			raw = fs.readFileSync(file, "utf-8");
 		} catch {
 			return null;
 		}
 		try {
 			const parsed = JSON.parse(raw) as { units?: unknown };
-			return Array.isArray(parsed.units) ? parsed.units.filter(isSourceUnit) : null;
+			if (!Array.isArray(parsed.units)) return null;
+			const units = parsed.units.filter(isSourceUnit);
+			unitsCache.set(file, units);
+			return units;
 		} catch {
 			return null;
 		}
