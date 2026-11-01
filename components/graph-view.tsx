@@ -1484,8 +1484,9 @@ export function GraphView({
 				regions: regionTokens(scheme),
 				heatRings: appearance.theme === "eink",
 			},
-			// Match the app typography (Geist via the body's stack).
-			fontFamily: getComputedStyle(document.body).fontFamily,
+			// Graph labels are labels: the mono chrome font (D143), resolved
+			// from the token so the canvas gets the loaded family's real name.
+			fontFamily: getComputedStyle(document.documentElement).getPropertyValue("--font-ui").trim() || "monospace",
 			heat,
 		});
 	}, [snapshot, isEmpty, heat, scheme, colourKey]);
