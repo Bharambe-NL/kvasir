@@ -243,6 +243,12 @@ export interface ExtractedProposition {
 	 *  undefined → messageId "" (chat-level), so NO persisted shape or
 	 *  format version changes (GraphNode / ProvenancePoint untouched). */
 	messageId?: string;
+	/** OPTIONAL, SOURCES PATH ONLY (Kvasir P2-3, D068, D069): where the
+	 *  proposition comes from, one or more of the chunk's unit labels
+	 *  ("U12") with a quote from that unit. Checked at the submit step
+	 *  (core/source-extract.ts validateCitations); the merger writes one
+	 *  Citation line per entry. */
+	citations?: { unit: string; quote: string }[];
 }
 
 /** One proposed argument (extractor redesign, 2026-09-30). Endpoints are

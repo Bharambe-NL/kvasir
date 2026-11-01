@@ -68,6 +68,8 @@ import { MIN_CLUSTER_SIZE } from "./clusters.ts";
 import { formatChainLine } from "./chains.ts";
 import { attachImpToCommunities, birthSessionOf, birthSessionPartition } from "./session-clusters.ts";
 import type { ChatStore, GraphStore } from "./ports.ts";
+import type { SourceUnit } from "./contracts/sources.ts";
+import { locateQuote } from "./source-extract.ts";
 
 /** The storage ports every graph operation needs, passed explicitly. */
 export interface GraphDeps {
@@ -84,6 +86,32 @@ function newGraphNodeId(): string {
  *  IS its derived node's id; collision-free with n_ by construction). */
 function newGraphChainId(): string {
 	return `arg_${randomBytes(6).toString("hex")}`;
+}
+
+function newCitationId(): string {
+	return `cit_${randomBytes(6).toString("hex")}`;
+}
+
+/** Every citation of a sources-door job, resolved BEFORE anything is
+ *  written (gate check 3: no proposition from the sources door is stored
+ *  without a citation). Throws on a proposition without a resolvable one. */
+function resolveCitations(
+	findings: SessionFindings,
+	units: ReadonlyMap<string, SourceUnit>,
+): Map<string, { path: string[]; quote: string }[]> {
+	const out = new Map<string, { path: string[]; quote: string }[]>();
+	for (const p of findings.propositions) {
+		if (out.has(p.id)) continue;
+		const resolved: { path: string[]; quote: string }[] = [];
+		for (const c of p.citations ?? []) {
+			const unit = units.get(c.unit.trim());
+			const quote = unit ? locateQuote(unit.text, c.quote) : null;
+			if (unit && quote) resolved.push({ path: [...unit.path], quote });
+		}
+		if (resolved.length === 0) throw new Error(`sources merge refused: proposition ${p.id} has no valid citation`);
+		out.set(p.id, resolved);
+	}
+	return out;
 }
 
 /** A chain's merge key: sorted premises + conclusion — the identity an
@@ -109,6 +137,11 @@ export interface MergeSource {
 	 *  extracted batch — undefined (notes path / coverage-less callers) →
 	 *  the legacy whole-chat checkpoint is written instead. */
 	coverage?: CoverageEntry[];
+	/** The sources door (Kvasir P2-3): the document version this job read and
+	 *  its chunk's labelled units. Present → every proposition must carry a
+	 *  resolvable citation, and one Citation line is written per citation
+	 *  (D059, D069). */
+	citations?: { sourceId: string; version: string; units: ReadonlyMap<string, SourceUnit> };
 }
 
 /** The run's provenance point. Chat-level by default (submit-schema slim,
@@ -154,6 +187,7 @@ export function mergeFindings(
 ): EmissionStats {
 	const { graphStore: ledgers } = deps;
 	const stats: EmissionStats = { nodes: 0, chains: 0 };
+	const citationsOf = source.citations ? resolveCitations(findings, source.citations.units) : null;
 
 	// 1. Resolution: THIS job's propositions → graph node ids, built
 	//    in-memory as the propositions resolve (owner, 2026-09-29: the
@@ -208,6 +242,19 @@ export function mergeFindings(
 			existingIds.add(graphNodeId);
 		}
 		mapping.set(p.id, graphNodeId);
+		if (citationsOf && source.citations) {
+			for (const c of citationsOf.get(p.id) ?? []) {
+				ledgers.appendCitation({
+					id: newCitationId(),
+					nodeId: graphNodeId,
+					sourceId: source.citations.sourceId,
+					version: source.citations.version,
+					path: c.path,
+					quote: c.quote,
+					createdAt: now,
+				});
+			}
+		}
 	}
 
 	// 2. Chains — the extractor's alone since the digest-aware redesign

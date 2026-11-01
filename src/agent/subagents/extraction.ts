@@ -31,6 +31,9 @@ import { batchRuns, coverageOf, messageViewLines } from "../../core/coverage.ts"
 import { failedOutputCallIds, type LhMessage } from "../../core/native-messages.ts";
 import { auditorGraphTools } from "../tools/graph.ts";
 import { runSubmitAgent, healStringifiedArrays } from "./submit-agent.ts";
+import type { DocumentVersion, ParsedSource, SourceUnit } from "../../core/contracts/sources.ts";
+import { chunkUnits, labelUnits, sourceView, validateCitations } from "../../core/source-extract.ts";
+import { versionLabel } from "../../core/sources.ts";
 
 /**
  * The extraction pipeline (vision §1 construction, 2026-09-02 redesign;
@@ -230,6 +233,34 @@ const sessionFindingsSchema = Type.Object({
 	}),
 });
 
+// THE SOURCES EXTENSION (Kvasir P2-3, D068 to D070): every proposition
+// from a source document carries one or more citations, each a unit label
+// from the stretch plus a quote copied from that unit. Checked at the
+// submit step (validateCitations) and written by the merger.
+const citationSchema = Type.Object({
+	unit: Type.String({ description: 'A unit label from this stretch, copied exactly without the brackets ("U12").' }),
+	quote: Type.String({ description: "At least four words copied word for word from that unit's text." }),
+});
+
+const sourcesFindingsSchema = Type.Object({
+	propositions: Type.Array(
+		Type.Object({
+			...propositionProps,
+			citations: Type.Array(citationSchema, {
+				minItems: 1,
+				description:
+					"Where this proposition comes from: one or more units of this stretch, each with a quote copied word for word from that unit's text.",
+			}),
+		}),
+		{ description: propositionsDescription },
+	),
+	chains: Type.Array(chainSchema, {
+		description: chainsDescription,
+	}),
+});
+
+type SourcesFindingsSubmit = Static<typeof sourcesFindingsSchema>;
+
 /** What the extractor SUBMITS (the redesign's wire shape) — propositions
  *  + chains. fillFindings normalizes it; validateFindingsChains checks
  *  the chain laws; asSessionFindings lifts it straight into
@@ -355,7 +386,14 @@ function validateSessionAnchors(value: SessionFindingsSubmit, batchIds: Readonly
  *  anchor, 2026-10-13 — both doors lift through here). */
 const asSessionFindings = (
 	raw: {
-		propositions: Array<{ id: string; name: string; statement: string; aliases?: string[]; messageId?: string }>;
+		propositions: Array<{
+			id: string;
+			name: string;
+			statement: string;
+			aliases?: string[];
+			messageId?: string;
+			citations?: { unit: string; quote: string }[];
+		}>;
 		chains: Array<{ premises: string[]; conclusion: string }>;
 	},
 ): SessionFindings => ({
@@ -434,6 +472,26 @@ arguments. The tool's field descriptions carry the details.`;
 
 export const EXTRACTOR_INSTRUCTIONS = `${SESSION_PREAMBLE}\n\n${EXTRACTION_CORE}\n\n${SESSION_MESSAGE_ID_RULE}`;
 export const NOTES_EXTRACTOR_INSTRUCTIONS = `${NOTES_PREAMBLE}\n\n${EXTRACTION_CORE}`;
+
+// The sources door (Kvasir P2-3, approved on #33): its own preamble and the
+// citation rule; EXTRACTION_CORE is shared unchanged, so the session and
+// notes prompts stay byte-identical.
+export const SOURCES_PREAMBLE =
+	"You are the extraction stage of a learning application. You read one stretch of a source document " +
+	"(a regulation, guideline or paper, split into labelled units in reading order) and report what it " +
+	"teaches as findings for the learner's global knowledge graph, building on everything already " +
+	"extracted from this source.";
+
+export const SOURCES_CITATION_RULE =
+	"Every new proposition cites the text it comes from. Each unit in the stretch opens with a label in " +
+	"square brackets, such as [U12], followed by its address. Give each new proposition one or more " +
+	"citations: the unit's label, copied exactly, and a quote of at least four words, copied word for " +
+	"word from that unit's text, that states the idea most directly. Each citation is checked against " +
+	"its unit, and one that does not match is sent back to you to fix. When an idea is a rule the " +
+	'document lays down, name the document in the statement, for example "Under DORA, financial ' +
+	'entities must …", so the statement stands alone.';
+
+export const SOURCES_EXTRACTOR_INSTRUCTIONS = `${SOURCES_PREAMBLE}\n\n${EXTRACTION_CORE}\n\n${SOURCES_CITATION_RULE}`;
 
 // ── the same-source digest (owner, 2026-09-30 evening) ──
 //
@@ -522,6 +580,37 @@ function runNotesExtractor(
 		fill: fillNotesFindings,
 		validate: (value) => validateFindingsChains(value, existingIds),
 		systemPrompt: NOTES_EXTRACTOR_INSTRUCTIONS,
+		prompt,
+		engine,
+		signal,
+		onStep,
+		neverSubmitted: "the extractor never submitted findings",
+		prepareArguments: healStringifiedArrays,
+	}).then(asSessionFindings);
+}
+
+/** The extractor over ONE chunk of a source document (the sources door,
+ *  Kvasir P2-3): the notes shape plus required citations, checked against
+ *  THIS chunk's labelled units before the chain laws. A failing citation is
+ *  sent back to the model, which resubmits within its turns. */
+function runSourcesExtractor(
+	engine: PiEngine | undefined,
+	sourceId: string,
+	prompt: string,
+	existingIds: ReadonlySet<string>,
+	citable: ReadonlyMap<string, SourceUnit>,
+	signal: AbortSignal | undefined,
+	onStep: (usage: Usage, model: string, step: number, finishReason: string, tools: string) => void,
+): Promise<SessionFindings> {
+	return runSubmitAgent<SourcesFindingsSubmit>({
+		role: "extractor",
+		chatId: sourceId,
+		toolName: "submit_findings",
+		toolDescription: "Submit the document findings.",
+		parameters: sourcesFindingsSchema,
+		fill: fillFindings,
+		validate: (value) => validateCitations(value.propositions, citable) ?? validateFindingsChains(value, existingIds),
+		systemPrompt: SOURCES_EXTRACTOR_INSTRUCTIONS,
 		prompt,
 		engine,
 		signal,
@@ -760,6 +849,27 @@ export class NotesImportError extends Error {
 	}
 }
 
+export interface SourceImportInput {
+	/** The parsed document (server/sources.ts parseSource). */
+	parsed: ParsedSource;
+	/** The version line, written only when every chunk merged (D073: a
+	 *  partial or failed import can simply be run again). */
+	version: DocumentVersion;
+}
+
+/** A source import did not finish, or was refused before it started. */
+export class SourceImportError extends Error {
+	constructor(
+		public readonly outcome: "failed" | "partial" | "aborted" | "busy" | "duplicate",
+		public readonly partialStats: EmissionStats,
+		message: string,
+		options?: ErrorOptions,
+	) {
+		super(message, options);
+		this.name = "SourceImportError";
+	}
+}
+
 export interface ExtractionPipeline {
 	/** Extract + audit + merge ONE chat. Single-flight per chat; resolves to
 	 *  the merger's append stats (or throws — no checkpoint on failure). */
@@ -769,6 +879,10 @@ export interface ExtractionPipeline {
 	 *  path, so re-importing the same file re-runs extraction against the
 	 *  same source identity (mappings dedupe by it). */
 	importNotes(input: NotesImportInput): Promise<EmissionStats>;
+	/** The sources door (Kvasir P2-3): extract a parsed source document with
+	 *  a citation on every proposition. Refuses a version already imported
+	 *  (D073). */
+	importSource(input: SourceImportInput): Promise<EmissionStats>;
 }
 
 /** pi's per-step usage, flattened to the persisted CallUsage fields
@@ -1434,6 +1548,102 @@ export function createExtractionPipeline(deps: ExtractionPipelineDeps): Extracti
 		}
 	}
 
-	return { runExtraction, importNotes };
+	/** The sources door (Kvasir P2-3). Same run law as the notes door:
+	 *  chunks strictly in order per source, each continuing the source's
+	 *  digest, extract under the shared slot, audit and merge under the lock.
+	 *  The merger writes one Citation line per citation. */
+	async function importSource(input: SourceImportInput): Promise<EmissionStats> {
+		const { parsed, version } = input;
+		const id = version.sourceId;
+		const label = versionLabel(version);
+		if (graphStore.readDocumentVersions().some((v) => v.versionId === version.versionId)) {
+			throw new SourceImportError("duplicate", { nodes: 0, chains: 0 }, `This version of ${parsed.title} is already imported.`);
+		}
+		if (inFlight.has(id)) {
+			throw new SourceImportError("busy", { nodes: 0, chains: 0 }, "This document is already being imported. Try again when it finishes.");
+		}
+		inFlight.add(id);
+		const t0 = performance.now();
+		const mergedStats: EmissionStats = { nodes: 0, chains: 0 };
+		try {
+			refuseIfStagesUnready();
+			// The document's cluster label and usage log ride the notes
+			// source record (sources.json): doc id → title.
+			graphStore.upsertSource({ id, filePath: parsed.title, importedAt: version.importedAt });
+			const chunkTokens = deps.getChunkTokens?.() ?? FACTORY_SETTINGS.graph.extractionChunkTokens;
+			const chunks = chunkUnits(labelUnits(parsed.units), chunkTokens);
+			console.info(`[extraction ${id}] sources pipeline start (${parsed.title}, ${label}) — ${chunks.length} chunk(s) of ≤${chunkTokens} tok`);
+			const settled: PromiseSettledResult<EmissionStats>[] = [];
+			for (const [chunkIndex, chunk] of chunks.entries()) {
+				const part = chunks.length > 1 ? { i: chunkIndex + 1, n: chunks.length } : undefined;
+				try {
+					settled.push({
+						status: "fulfilled",
+						value: await runJob({ id, kind: "notes", label: parsed.title, part }, async (jobKey) => {
+							setPhase(jobKey, "queued", "notes", parsed.title, part);
+							const signal = runningExtractions.get(jobKey)?.controller.signal;
+							const findings = await withExtractSlot(jobKey, async () => {
+								setPhase(jobKey, "extracting", "notes", parsed.title, part);
+								signal?.throwIfAborted();
+								const graph = getGraph(graphStore);
+								const digest = sourceDigest(graph, id);
+								const view = sourceView(parsed, label, chunk, part);
+								return runSourcesExtractor(
+									stageEngine("extractor", deps.extractor),
+									id,
+									digest === "" ? view : `${digest}\n\n${view}`,
+									new Set(graph.nodes.map((n) => n.id)),
+									chunk.citable,
+									signal,
+									(usage, model, step, finishReason, tools) => {
+										recordStep(jobKey, "extractor", callUsage(usage), model);
+										console.info(`[extraction] extractor step ${step}: ${finishReason}, tools: ${tools}`);
+									},
+								);
+							});
+							return withAuditLock(jobKey, "notes", parsed.title, async () => {
+								setPhase(jobKey, "auditing", "notes", parsed.title, part);
+								const verdicts = await audit(jobKey, id, findings);
+								setPhase(jobKey, "merging", "notes", parsed.title, part);
+								const merged = mergeFindings(id, findings, verdicts, { chatStore, graphStore }, {
+									foldedAt: version.importedAt,
+									citations: { sourceId: id, version: version.versionId, units: chunk.citable },
+								});
+								mergedStats.nodes += merged.nodes;
+								mergedStats.chains! += merged.chains ?? 0;
+								settleGraphLayout(graphStore);
+								console.info(`[extraction ${jobKey}] merged: ${merged.nodes} nodes, ${merged.chains ?? 0} chains`);
+								return merged;
+							});
+						}),
+					});
+				} catch (err) {
+					settled.push({ status: "rejected", reason: err });
+					if (err instanceof Error && err.name === "AbortError") break;
+				}
+			}
+			const stats = aggregateJobs(id, settled);
+			const rejected = settled.filter((r) => r.status === "rejected");
+			if (rejected.length > 0 || settled.length !== chunks.length) {
+				const aborted = rejected.some((r) => r.reason instanceof Error && r.reason.name === "AbortError");
+				const outcome = aborted ? "aborted" : settled.some((r) => r.status === "fulfilled") ? "partial" : "failed";
+				const details = rejected.map((r) => (r.reason instanceof Error ? r.reason.message : String(r.reason))).join("; ");
+				throw new SourceImportError(outcome, mergedStats, details || "Source import did not complete");
+			}
+			// Every chunk merged: only now is this version imported (D073).
+			graphStore.appendDocumentVersion(version);
+			console.info(`[extraction ${id}] merged: ${stats.nodes} nodes, ${stats.chains ?? 0} chains (${Math.round(performance.now() - t0)}ms total)`);
+			return stats;
+		} catch (err) {
+			if (err instanceof SourceImportError || err instanceof ModelsNotConfiguredError || err instanceof ProviderKeyMissingError) throw err;
+			throw new SourceImportError(err instanceof Error && err.name === "AbortError" ? "aborted" : "failed", mergedStats,
+				err instanceof Error ? err.message : String(err), { cause: err });
+		} finally {
+			inFlight.delete(id);
+			finishExtraction(id);
+		}
+	}
+
+	return { runExtraction, importNotes, importSource };
 }
 

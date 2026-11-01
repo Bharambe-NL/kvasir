@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { planImport, postSourcesImport, resolvePending, type ImportPlan, type PendingSourceFile } from "@/components/source-import";
 
 // Transport-only types: never import the server's extraction/agent module here.
 export interface NotesImportResult {
@@ -56,30 +57,65 @@ export function useNotesImport(callbacks: { onStart?: () => void; onFinish?: () 
 	const [errors, setErrors] = useState<string[]>([]);
 	const [importing, setImporting] = useState(false);
 	const pending = useRef(false);
-	const submit = async (files: File[]) => {
-		if (pending.current || files.length === 0) return;
+	// The sources door (Kvasir P2-3): PDF and Markdown wait in the dialog
+	// for a version label (and, for Markdown, "Cite as source").
+	const [dialog, setDialog] = useState<{ ready: ImportPlan; pending: PendingSourceFile[] } | null>(null);
+	const describe = (r: { filePath: string; error?: string; code?: string; provider?: string; missing?: string[]; slots?: string[] }) =>
+		`${r.filePath}: ${r.error}${r.code ? `\n${r.code}${r.provider ? ` — ${r.provider}` : ""}${r.missing?.length ? ` — ${r.missing.join(", ")}` : ""}${r.slots?.length ? ` — ${r.slots.join(", ")}` : ""}` : ""}`;
+	const run = async (plan: ImportPlan) => {
+		const all = [...plan.notes, ...plan.sources.map((s) => s.file)];
+		if (pending.current || all.length === 0) return;
 		pending.current = true;
 		setImporting(true);
 		setErrors([]);
 		try {
 			callbacks.onStart?.();
-			const results = await postNotesImport(files);
-			setErrors(results
-				.filter((result) => !result.ok)
-				.sort((a, b) => a.requestIndex - b.requestIndex)
-				.map((r) => `${r.filePath}: ${r.error}${r.code ? `\n${r.code}${r.provider ? ` — ${r.provider}` : ""}${r.missing?.length ? ` — ${r.missing.join(", ")}` : ""}${r.slots?.length ? ` — ${r.slots.join(", ")}` : ""}` : ""}`));
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			setErrors(files.map((file) => `${file.name}: ${message}`));
+			const out: string[] = [];
+			if (plan.notes.length) {
+				try {
+					const results = await postNotesImport(plan.notes);
+					out.push(...results.filter((r) => !r.ok).sort((a, b) => a.requestIndex - b.requestIndex).map(describe));
+				} catch (error) {
+					const message = error instanceof Error ? error.message : String(error);
+					out.push(...plan.notes.map((file) => `${file.name}: ${message}`));
+				}
+			}
+			if (plan.sources.length) {
+				try {
+					const results = await postSourcesImport(plan.sources);
+					out.push(...results.filter((r) => !r.ok).sort((a, b) => a.requestIndex - b.requestIndex).map(describe));
+				} catch (error) {
+					const message = error instanceof Error ? error.message : String(error);
+					out.push(...plan.sources.map((s) => `${s.file.name}: ${message}`));
+				}
+			}
+			setErrors(out);
 		} finally {
 			pending.current = false;
 			setImporting(false);
 			callbacks.onFinish?.();
 		}
 	};
+	const select = (files: File[]) => {
+		const { ready, pending: waiting } = planImport(files);
+		if (waiting.length) setDialog({ ready, pending: waiting });
+		else void run(ready);
+	};
 	return {
 		errors, importing,
-		onImportFiles: (files: FileList | null) => { if (files) void submit(Array.from(files)); },
+		onImportFiles: (files: FileList | null) => { if (files) select(Array.from(files)); },
+		/** Props for <SourceImportDialog>: render it wherever the button is. */
+		sourceDialog: {
+			pending: dialog?.pending ?? [],
+			onChange: (index: number, next: PendingSourceFile) =>
+				setDialog((d) => (d ? { ...d, pending: d.pending.map((p, i) => (i === index ? next : p)) } : d)),
+			onImport: () => {
+				if (!dialog) return;
+				setDialog(null);
+				void run(resolvePending(dialog.ready, dialog.pending));
+			},
+			onCancel: () => setDialog(null),
+		},
 	};
 }
 

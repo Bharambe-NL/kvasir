@@ -73,3 +73,11 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D065 | 2026-10-31 | Citable parts of a EUR-Lex act: recitals (`["Recital 12"]`), the enacting articles, and annexes (`["Annex I", ...]`) | Sagar | |
 | D066 | 2026-10-31 | PDFs and Markdown follow the document's own numbering: for example `["Section 3.2", "paragraph 14"]` for EBA guidelines, and the heading path then paragraph number for Markdown. Unnumbered PDF text falls back to the page number | Sagar | |
 | D067 | 2026-10-31 | Test fixtures DORA (32022R2554) and PSD2 (32015L2366) as XHTML from the EU Publications Office Cellar service, and EBA/GL/2019/04 as PDF from eba.europa.eu, are committed under `tests/fixtures/sources/` with their sources acknowledged | Sagar | |
+| D068 | 2026-10-31 | The sources extractor cites a unit by a short label shown in its prompt (`[U12] …`); the server maps the label to the unit's path | Sagar | |
+| D069 | 2026-10-31 | A proposition from the sources door carries one or more citations | Sagar | |
+| D070 | 2026-10-31 | The quote check is exact after collapsing whitespace and treating curly and straight quotes, apostrophes and dashes alike; a quote has at least 4 words; a failing quote is sent back to the model to fix | Sagar | |
+| D071 | 2026-10-31 | P2-3 includes `POST /api/sources/import` and routes `.xhtml`/`.html` and `.pdf` files from the existing import button through the sources door | Sagar | |
+| D072 | 2026-10-31 | An Official Journal text's version date is the act's date from its title (DORA: 2022-12-14) | Sagar | |
+| D073 | 2026-10-31 | Importing a version that is already imported is refused with "This version of <title> is already imported."; nothing is re-extracted | Sagar | |
+| D074 | 2026-10-31 | PDF and Markdown imports ask for a version label, prefilled with the file name | Sagar | |
+| D075 | 2026-10-31 | Markdown stays a notes import by default; a "cite as source" toggle sends it through the sources door | Sagar | |
