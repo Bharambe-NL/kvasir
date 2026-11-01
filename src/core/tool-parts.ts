@@ -29,7 +29,7 @@
 
 import { Value } from "typebox/value";
 import type { TSchema } from "typebox";
-import { quizDisplayInputSchema, askInputSchema, askOptionProblems, quizInputProblems, explainInputProblems, explainDisplayInputSchema, type AskToolInput, type QuizToolInput, type ExplainToolInput } from "./question-core.ts";
+import { quizDisplayInputSchema, askInputSchema, askOptionProblems, askSpokenInputObject, quizInputProblems, explainInputProblems, explainDisplayInputSchema, type AskSpokenToolInput, type AskToolInput, type QuizToolInput, type ExplainToolInput } from "./question-core.ts";
 import { healEncodedArguments } from "./argument-heal.ts";
 import { probeDoneInputSchema, type ProbeDoneInput } from "./contracts/probe.ts";
 
@@ -111,6 +111,14 @@ export function parseExplainInput(input: unknown): ExplainToolInput | undefined 
 	if (!cleaned) return undefined;
 	if (explainInputProblems(cleaned).length > 0) return undefined;
 	return cleaned;
+}
+
+/** ask_spoken parse for DISPLAY (Kvasir P3-3): a voice session opened in
+ *  the written window shows an open spoken question as a text answer, as
+ *  free recall does. Lenient: the question is enough to show it. */
+export function parseAskSpokenInput(input: unknown): AskSpokenToolInput | undefined {
+	const cleaned = boundaryParse<AskSpokenToolInput>(askSpokenInputObject, input);
+	return cleaned?.question?.trim() ? cleaned : undefined;
 }
 
 /** probe_done parse — the core-owned schema the tool itself declares. */

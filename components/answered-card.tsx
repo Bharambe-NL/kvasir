@@ -32,7 +32,8 @@ export function AnsweredCard({ answer: savedAnswer, input }: { answer: QuestionA
 	}
 
 	const isQuiz = answer.kind === "quiz";
-	const isExplain = answer.kind === "explain";
+	// A spoken answer (Kvasir P3-3) reads like free recall: words, then the commitment.
+	const isExplain = answer.kind === "explain" || answer.kind === "spoken";
 	const selectedIdx = new Set(answer.answers.map((a) => a.index));
 	const correctIdx = new Set(answer.correctIndices ?? []);
 	// The question's own context rides the ORIGINAL CALL, not the answer
