@@ -171,3 +171,29 @@ describe("the canvas detail card (Done when)", () => {
 		assert.match(src, /citations=\{snapshot\?\.citations\}\s*outdated=\{snapshot\?\.outdated\}\s*onOpenCitation=\{citation\.open\}/, "the Chains table overlay gets the same map, the outdated list and the opener");
 	});
 });
+
+describe("outdated citations (Kvasir P2-5, D083)", () => {
+	it("the chip shows an Outdated tag only when outdated", async () => {
+		await mount(<><CitationChip labels={["A"]} outdated onOpen={() => {}} testid="c1" /><CitationChip labels={["B"]} onOpen={() => {}} testid="c2" /></>);
+		assert.equal(q("c1")!.querySelector("[data-testid='citation-outdated']")!.textContent, "Outdated");
+		assert.equal(q("c2")!.querySelector("[data-testid='citation-outdated']"), null);
+	});
+
+	it("the panel says where the text changed, with that version's text, or that it was removed", async () => {
+		const changed = { ...VIEW, outdated: { versionLabel: "2024-06-01", kind: "changed" as const, text: "Financial entities shall adopt a strategy on ICT third-party risk." } };
+		const removed = { ...VIEW, id: "cit_2", outdated: { versionLabel: "2024-06-01", kind: "removed" as const } };
+		await mount(<CitationPanel views={[changed, removed, { ...VIEW, id: "cit_3" }]} onClose={() => {}} />);
+		const notes = [...document.querySelectorAll("[data-testid='citation-outdated-note']")].map((n) => n.textContent);
+		assert.deepEqual(notes, [
+			"Changed in version 2024-06-01Financial entities shall adopt a strategy on ICT third-party risk.",
+			"Removed in version 2024-06-01",
+		]);
+	});
+
+	it("the transcript card tags an outdated proposition's chip", async () => {
+		fakeCitations({ a: [{ ...VIEW, outdated: { versionLabel: "2024-06-01", kind: "removed" } }] });
+		await mount(<GraphContextCard data={{ propositions: [{ id: "a", name: "Third-party risk", statement: "Statement a." }], chains: [] }} />);
+		await click(q("graph-context-toggle")!);
+		assert.ok(q("citation-chip-a")!.querySelector("[data-testid='citation-outdated']"));
+	});
+});

@@ -42,6 +42,9 @@ g.writeDocumentUnits(V1.versionId, [
 	{ path: ["Chapter V", "Section I", "Article 28"], heading: "General principles", text: "" },
 	{ path: PARA, text: TEXT },
 ]);
+// Kvasir P2-5: version 2's units reword Article 28(2), so its citation is outdated.
+const TEXT_V2 = "As part of their ICT risk management framework, financial entities shall adopt a strategy on ICT third-party risk.";
+g.writeDocumentUnits(V2.versionId, [{ path: ["Chapter V", "Section I", "Article 28"], heading: "General principles", text: "" }, { path: PARA, text: TEXT_V2 }, { path: ["Recital 12"], text: "This Regulation aims to consolidate the rules." }]);
 g.appendCitation({ id: "cit_aaaaaaaaaaaa", nodeId: n1!, sourceId: DORA, version: V1.versionId, path: PARA, quote: "shall adopt, and regularly review, a strategy", createdAt: "2026-11-01T09:00:00.000Z" });
 g.appendCitation({ id: "cit_bbbbbbbbbbbb", nodeId: n1!, sourceId: DORA, version: V2.versionId, path: ["Recital 12"], quote: "This Regulation aims to consolidate", createdAt: "2026-11-01T09:00:00.000Z" });
 g.appendCitation({ id: "cit_cccccccccccc", nodeId: "n_deleted", sourceId: DORA, version: V1.versionId, path: PARA, quote: "a strategy on ICT third-party", createdAt: "2026-11-01T09:00:00.000Z" });
@@ -57,10 +60,12 @@ describe("GET /api/graph/citations", () => {
 			id: "cit_aaaaaaaaaaaa", nodeId: n1, label: "Regulation (EU) 2022/2554, Art. 28(2)",
 			documentTitle: V2.title, versionLabel: "2022-12-14", path: PARA,
 			quote: "shall adopt, and regularly review, a strategy", unitText: TEXT,
+			outdated: { versionLabel: "2024-01-17", kind: "changed", text: TEXT_V2 },
 		});
 		assert.equal(b.label, "Regulation (EU) 2022/2554, Recital 12");
 		assert.equal(b.versionLabel, "2024-01-17");
-		assert.equal(b.unitText, null, "the second version's units were never stored");
+		assert.equal(b.unitText, "This Regulation aims to consolidate the rules.");
+		assert.equal(b.outdated, undefined, "a citation of the newest version is current");
 	});
 	it("returns {} for no ids or uncited nodes", async () => {
 		assert.deepEqual(await get(""), {});
@@ -72,6 +77,7 @@ describe("the snapshot's citations map (D077)", () => {
 	it("lists chip labels for cited live propositions only", () => {
 		const snap = graphSnapshot(stores);
 		assert.deepEqual(snap.citations, { [n1!]: ["Regulation (EU) 2022/2554, Art. 28(2)", "Regulation (EU) 2022/2554, Recital 12"] });
+		assert.deepEqual(snap.outdated, [n1], "Kvasir P2-5: its Article 28(2) citation is outdated");
 	});
 });
 
@@ -82,7 +88,7 @@ describe("the units file (D076)", () => {
 		g.writeDocumentUnits(V1.versionId, [{ path: ["x"], text: "different" }]);
 		assert.equal(fs.readFileSync(file, "utf8"), before);
 		assert.equal(g.readDocumentUnits(V1.versionId)![1]!.text, TEXT);
-		assert.equal(g.readDocumentUnits(V2.versionId), null);
+		assert.equal(g.readDocumentUnits("ver_000000000000"), null);
 		// An id that is not "ver_" + 12 hex never becomes a path.
 		assert.equal(g.readDocumentUnits("../../etc/passwd"), null);
 		assert.throws(() => g.writeDocumentUnits("../escape", []), /invalid version id/);
