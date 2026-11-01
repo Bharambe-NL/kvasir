@@ -69,3 +69,11 @@ it("every allowed exception is still needed", () => {
 		assert.ok(src.includes(a.text), `${a.file} no longer contains ${a.text}; drop it from ALLOWED (${a.why})`);
 	}
 });
+
+it("the scan catches what it should and skips what it should", () => {
+	const scan = (src: string) => [HEX, FUNC, PALETTE].flatMap((re) => [...stripComments(src).matchAll(re)].map((m) => m[0]));
+	assert.deepEqual(scan('<p className="text-red-500 hover:bg-white/10 border-sky-300" />'), ["text-red-500", "hover:bg-white/10", "border-sky-300"]);
+	assert.deepEqual(scan('const c = "#e5484d"; const d = `rgba(0,0,0,.5)`; const e = "oklch(0.7 0.1 20)";'), ["#e5484d", "rgba(", "oklch("]);
+	assert.deepEqual(scan('// issue #110 and #fff in a comment\n/* red-500 #abc */ const url = "https://x.test/#abc-1"; const ok = "text-danger bg-paper";'), []);
+	assert.deepEqual(scan('<span>&#160;</span>'), []);
+});
