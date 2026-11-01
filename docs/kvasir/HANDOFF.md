@@ -4,15 +4,17 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Current state
 
-- Phases in progress:
-  - P1 Retention and the learner layer: every task is merged (P1-1 to P1-8). The gate waits for two weeks of real use. Milestone 2, tracking issue #13.
-  - P2 Regulation grounding: opened 2026-10-31, runs alongside P1 (the roadmap allows it). Milestone 3, tracking issue #37, task issues #31 to #36.
-- Task: the P2 gate is on the `p2/gate` PR, waiting for Sagar's approval in #37. After approval: tag `v0.2.0`, publish the release, close milestone 3.
-- Branch: `p2/gate`
-- PR: the P2 gate PR
+- Phases:
+  - P0 Bootstrap and rename: done, `v0.0.1`.
+  - P1 Retention and the learner layer: every task merged; the gate waits for two weeks of real use. No separate tag: its work ships in `v0.2.0` (D088). Milestone 2, tracking issue #13.
+  - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
+- What can start now: P6 Platform hardening tasks (they depend only on P0). P3 and P4 need the P1 gate; P5 needs P1 and P2.
+- Branch: `main`
+- PR: none open
 
 ## Done
 
+- P2 gate passed via #45 (approved by Sagar in #37): all three checks live with his models on a temp data copy. Released as `v0.2.0` (notes only, D027; the tag's release workflow run was cancelled before building). D088: P2 is `v0.2.0` and P1 gets no separate tag.
 - P2-6 merged via #44 (prompt, tool and link form approved by Sagar): the `#src-` link form (`src/core/source-cite.ts`), `GET /api/graph/source-unit`, `citationSourceLines` in the graph-context marker, `read_source` (`src/agent/tools/sources.ts`) for the teacher behind the graph tools gate, the "Citing sources" prompt section, and lesson links rendered as chips (`components/source-link.tsx`). Live check done 2026-11-01 with Sagar's models on a temp data copy: DORA imported (138 propositions, 258 citations, none uncited), and the teacher cited Art. 28(1)(a) through `read_source`; the chip opens it. Decisions D084 (lesson citations are links rendered as the chip), D085 (session context carries picked propositions' citations; `read_source` tool), D086 (`read_source` rides Graph tools), D087 (teacher only). Plan approved on #36.
 - P2-5 merged via #43 (contracts and text approved by Sagar): `src/core/source-diff.ts` (`diffUnits`, `citationStatus`, `outdatedNodes`), `CitationView.outdated` and `GraphSnapshot.outdated`, `versionOf` and `GET /api/sources/documents`, diff-only extraction in `importSource`, the chip's "Outdated" tag, the panel's "Changed/Removed in version" note and the dialog's "Version of" select. `tests/source-diff.test.ts` flags exactly Art. 28(2) and 30(2)(f) across two DORA versions. Decisions D080 (outdated when the newest version drops the unit or the quote; points at the first such version), D081 (a new version extracts only new and changed units), D082 ("Version of" choice for PDF and Markdown in the import dialog), D083 (amber "Outdated" tag; panel shows "Changed in version" or "Removed in version"). Plan approved on #35.
 - P2-4 merged via #42 (store, contracts and text approved by Sagar): the units store (`writeDocumentUnits`, `readDocumentUnits`, `DOCUMENT_UNITS_DIR`), `citationLabel`, `chipText`, `citationLabels` and `CitationView` in `src/core/sources.ts`, the snapshot `citations` map, `citationViews` and `GET /api/graph/citations`, `components/citation-chip.tsx` on the canvas detail card, Chains table rows and the graph context card. Browser-checked on a seeded copy from the Chains table and a transcript; the canvas card was not clicked in the browser. Decisions D076 (every version's units stored at import in `data/graph/document-units/<versionId>.json`), D077 (legal short-form chip labels, "+N" for more), D078 (right-side panel with the quote highlighted), D079 (chip in the graph context card). Plan approved on #34.
@@ -36,9 +38,9 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. After Sagar approves the P2 gate in #37: merge the gate PR, tag `v0.2.0`, publish the release from the merged PR titles, close milestone 3, point this file at the next phase.
-2. Follow-up: a lesson citation showed " [blocked]" once while the reply was streaming (rehype-harden), then rendered as the chip; not reproduced. The P2 gate's first check (import DORA, every citation opens the right paragraph) needs P2-4's citation panel and a live model run.
-2. In parallel, Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
+1. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
+2. In the meantime, P6 tasks can start (`/kv-phase P6`, then a task), for example P6-2 (read-only MCP server) or P6-3 (Obsidian and Anki exports).
+3. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
 
 ## Waiting for Sagar
 
