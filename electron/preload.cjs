@@ -46,6 +46,13 @@ contextBridge.exposeInMainWorld("lh", {
 	// Show an export folder in Finder; main allows only paths inside the
 	// export root (Kvasir P6-3).
 	revealExport: (target) => ipcRenderer.invoke("lh:exports:reveal", target),
+	// Encryption at rest (Kvasir P6-6): the key never reaches the window;
+	// only the recovery key, once, on turning it on.
+	encryption: {
+		enable: () => ipcRenderer.invoke("lh:encryption:enable"),
+		disable: () => ipcRenderer.invoke("lh:encryption:disable"),
+		recover: (recoveryKey) => ipcRenderer.invoke("lh:encryption:recover", recoveryKey),
+	},
 	...(process.argv?.includes("--lh-web-subscriptions") ? {
 		subscriptionTransport: "web",
 		openSubscriptionBrowser: (action) => ipcRenderer.invoke("lh:subscriptions:web-browser", action),
