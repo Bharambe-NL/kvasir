@@ -87,3 +87,4 @@ export * from "./session-markdown.ts";
 export { formatInterval, heatBand, type HeatBand, type ReviewExclusionsView, type ReviewSummary, type ReviewQueueItem, type ReviewQueueView, type QueueStats, type Retention } from "./review-view.ts";
 export { chipText, citationLabel, citationLabels, documentShortName, shortPath, versionLabel, type CitationView } from "./sources.ts";
 export { parseSourceRef, sourceHref, sourceLink, type SourceRef, type SourceUnitView } from "./source-cite.ts";
+export { questionDataFor } from "./question-data.ts";
