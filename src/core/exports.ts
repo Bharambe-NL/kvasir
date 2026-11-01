@@ -60,14 +60,18 @@ export function noteName(name: string): string {
 	return safe || "Untitled";
 }
 
+/** The vault's own notes, which no proposition note may take. */
+const RESERVED = ["index"];
+
 /** Note names for every node. Names that clash (ignoring case, as macOS
- *  does) all get a short id suffix such as "Strategy (a1b2c3)". */
+ *  does) all get a short id suffix such as "Strategy (a1b2c3)"; so does a
+ *  name that matches the vault's index note. */
 export function noteNames(nodes: readonly Pick<GraphNode, "id" | "name">[]): Map<string, string> {
 	const base = new Map(nodes.map((n) => [n.id, noteName(n.name)]));
-	const count = new Map<string, number>();
+	const count = new Map<string, number>(RESERVED.map((r) => [r, 1]));
 	for (const name of base.values()) count.set(name.toLowerCase(), (count.get(name.toLowerCase()) ?? 0) + 1);
 	const out = new Map<string, string>();
-	const taken = new Set<string>();
+	const taken = new Set<string>(RESERVED);
 	for (const n of nodes) {
 		const name = base.get(n.id)!;
 		const short = n.id.replace(/^n_/, "");
