@@ -70,6 +70,7 @@ import { attachImpToCommunities, birthSessionOf, birthSessionPartition } from ".
 import type { ChatStore, GraphStore } from "./ports.ts";
 import type { SourceUnit } from "./contracts/sources.ts";
 import { locateQuote } from "./source-extract.ts";
+import { citationLabels } from "./sources.ts";
 
 /** The storage ports every graph operation needs, passed explicitly. */
 export interface GraphDeps {
@@ -629,6 +630,10 @@ export function graphSnapshot(deps: GraphDeps): GraphSnapshot {
 	// ever run. Absent on a fresh graph — the view falls back to its own
 	// one-shot pass until the first merge writes the ledger.
 	const positions = deps.graphStore.readPositions();
+	// Kvasir P2-4: each cited live proposition's chip labels (D077).
+	const live = new Set(graph.nodes.map((n) => n.id));
+	const allLabels = citationLabels(deps.graphStore.readCitations(), deps.graphStore.readDocumentVersions());
+	const citations = Object.fromEntries(Object.entries(allLabels).filter(([id]) => live.has(id)));
 
 	return {
 		nodes,
@@ -642,6 +647,7 @@ export function graphSnapshot(deps: GraphDeps): GraphSnapshot {
 		nodeSessions,
 		clusters,
 		...(Object.keys(positions).length > 0 ? { positions } : {}),
+		...(Object.keys(citations).length > 0 ? { citations } : {}),
 	};
 }
 

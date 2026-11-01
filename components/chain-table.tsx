@@ -73,6 +73,7 @@ import { TopBar } from "@/components/top-bar";
 import { DeleteNodeDialog } from "@/components/delete-node-dialog";
 import { LatexGlyph } from "@/components/latex-glyph";
 import { EXCLUDE_LABEL, EXCLUDED_TAG, INCLUDE_LABEL } from "@/components/review/use-review-exclusions";
+import { CitationChip } from "@/components/citation-chip";
 
 /** The sortable columns (owner ruling: all three — consistency). */
 export type ChainSortCol = "name" | "props" | "created";
@@ -119,6 +120,8 @@ export function ChainTableBody({
 	onSelect,
 	reviewExcluded,
 	onReviewExclusion,
+	citations,
+	onOpenCitation,
 }: {
 	nodes: GraphNode[];
 	chains: GraphChain[];
@@ -149,6 +152,9 @@ export function ChainTableBody({
 	 *  the toggle. Absent = no control on the cluster rows. */
 	reviewExcluded?: ReadonlySet<string>;
 	onReviewExclusion?: (sessionId: string, excluded: boolean) => void;
+	/** Kvasir P2-4: cited propositions' chip labels and the panel opener. */
+	citations?: Record<string, string[]>;
+	onOpenCitation?: (nodeId: string) => void;
 }) {
 	const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
 	const chains = useMemo(() => chainsForSelection(nodes, storedChains), [nodes, storedChains]);
@@ -497,6 +503,11 @@ export function ChainTableBody({
 															/>
 															<span className="min-w-0 flex-1 text-xs leading-relaxed text-muted-foreground">
 																{node.statement}
+																{citations?.[id] && onOpenCitation && (
+																	<span className="mt-1 block">
+																		<CitationChip labels={citations[id]} onOpen={() => onOpenCitation(id)} testid={`citation-chip-${id}`} />
+																	</span>
+																)}
 															</span>
 															<span className="w-14 shrink-0" />
 															<span className="w-20 shrink-0" />
@@ -639,6 +650,8 @@ export function ChainTableOverlay({
 	onSelectionChange,
 	reviewExcluded,
 	onReviewExclusion,
+	citations,
+	onOpenCitation,
 }: {
 	open: boolean;
 	nodes: GraphNode[];
@@ -651,6 +664,10 @@ export function ChainTableOverlay({
 	onSelectionChange?: (next: ReadonlySet<string>) => void;
 	reviewExcluded?: ReadonlySet<string>;
 	onReviewExclusion?: (sessionId: string, excluded: boolean) => void;
+	/** Kvasir P2-4: cited propositions' chip labels (the snapshot's
+	 *  `citations`) and the panel opener. Absent = no chips. */
+	citations?: Record<string, string[]>;
+	onOpenCitation?: (nodeId: string) => void;
 }) {
 	const [query, setQuery] = useState("");
 	const [sort, setSort] = useState<ChainSort>({ col: "name", dir: 1 });
@@ -738,6 +755,8 @@ export function ChainTableOverlay({
 					onDelete={() => setDeleteOpen(true)}
 					reviewExcluded={reviewExcluded}
 					onReviewExclusion={onReviewExclusion}
+					citations={citations}
+					onOpenCitation={onOpenCitation}
 					onClose={onClose}
 					selectMode={selectMode}
 					onSelect={onClose}

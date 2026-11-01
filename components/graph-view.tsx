@@ -67,6 +67,7 @@ import { useRouter } from "next/navigation";
 import { DueChip, RetentionToggle } from "@/components/review/retention-controls";
 import { useRetentionOverlay, useReviewSummary } from "@/components/review/use-review-summary";
 import { useReviewExclusions } from "@/components/review/use-review-exclusions";
+import { CitationChip, useCitationPanel } from "@/components/citation-chip";
 import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { NotesImportErrors, useNotesImport } from "@/components/notes-import.tsx";
 import { IMPORT_ACCEPT, SourceImportDialog } from "@/components/source-import";
@@ -1092,6 +1093,7 @@ export function GraphView({
 	const router = useRouter();
 	const reviewSummary = useReviewSummary();
 	const reviewExclusions = useReviewExclusions();
+	const citation = useCitationPanel();
 	const [retentionOn, setRetentionOn] = useRetentionOverlay();
 	const heat = useMemo(
 		() => (retentionOn && reviewSummary ? new Map(Object.entries(reviewSummary.heat)) : undefined),
@@ -1678,6 +1680,11 @@ export function GraphView({
 				>
 					<div className="text-sm font-medium leading-snug">{selected.node.name}</div>
 					<div className="mt-1 text-xs leading-relaxed text-muted-foreground">{selected.node.statement}</div>
+					{snapshot?.citations?.[selected.node.id] && (
+						<div className="mt-2">
+							<CitationChip labels={snapshot.citations[selected.node.id]} onOpen={() => citation.open(selected.node.id)} />
+						</div>
+					)}
 					{selected.sourceIds.length > 0 ? (
 						<div className="mt-3 flex flex-col gap-1">
 							<div className="text-xs text-muted-foreground">Sessions</div>
@@ -1732,6 +1739,8 @@ export function GraphView({
 				chains={snapshot?.chains ?? []}
 				sessions={snapshot?.sessions ?? {}}
 				fileSources={snapshot?.fileSources ?? {}}
+				citations={snapshot?.citations}
+				onOpenCitation={citation.open}
 				reviewExcluded={reviewExclusions.excluded}
 				onReviewExclusion={(sessionId, excluded) => void reviewExclusions.setExcluded(sessionId, excluded)}
 				onClose={() => {
@@ -1751,6 +1760,7 @@ export function GraphView({
 					}
 					onPracticeSelectionChange?.(picked);
 				}}
-			/>		</div>
+			/>
+			{citation.panel}		</div>
 	);
 }

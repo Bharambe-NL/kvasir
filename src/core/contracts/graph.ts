@@ -337,6 +337,9 @@ export interface GraphSnapshot {
 	 *  graph (the format-agnostic front door): a static provenance entry —
 	 *  the detail card shows the path as plain text, not a link. */
 	fileSources: Record<string, string>;
+	/** Kvasir P2-4 (D077): each cited proposition's citation chip labels, in
+	 *  citation order. Absent when nothing is cited. */
+	citations?: Record<string, string[]>;
 	/** nodeId → chatIds that touched the node (click-through provenance). */
 	nodeSessions: Record<string, string[]>;
 	/** Birth-session communities (core/session-clusters.ts: each

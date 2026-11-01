@@ -81,3 +81,7 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D073 | 2026-10-31 | Importing a version that is already imported is refused with "This version of <title> is already imported."; nothing is re-extracted | Sagar | |
 | D074 | 2026-10-31 | PDF and Markdown imports ask for a version label, prefilled with the file name | Sagar | |
 | D075 | 2026-10-31 | Markdown stays a notes import by default; a "cite as source" toggle sends it through the sources door | Sagar | |
+| D076 | 2026-11-01 | At import, every parsed unit of a version is stored in `data/graph/document-units/<versionId>.json`, written once and never changed; the citation panel and P2-5's version diff read it | Sagar | |
+| D077 | 2026-11-01 | A citation chip uses a legal short form: "Regulation (EU) 2022/2554, Art. 28(2)(a)", "Recital 12", "Annex I, point 3(a)"; PDFs and Markdown use their label, for example "EBA/GL/2019/04, 3.3.3 para 17". Two or more citations show the first plus "+N" | Sagar | |
+| D078 | 2026-11-01 | Clicking a chip opens a right-side panel over the current view: document title, version, path, the unit's heading and text with the quote highlighted, and every citation of the proposition. Esc or X closes it | Sagar | |
+| D079 | 2026-11-01 | In transcripts, the chip appears in the graph context card | Sagar | |

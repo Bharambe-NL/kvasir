@@ -37,6 +37,7 @@ function memoryLedgers(): GraphStore {
 	const sources = new Map<string, ReturnType<GraphStore["readSources"]>[number]>();
 	const documents: ReturnType<GraphStore["readDocumentVersions"]> = [];
 	const citations: ReturnType<GraphStore["readCitations"]> = [];
+	const units = new Map<string, ReturnType<GraphStore["readDocumentUnits"]> & object>();
 	return {
 		appendNode: (n) => void nodes.push(n), readNodes: () => [...nodes],
 		appendChain: (c) => void chains.push(c), readChains: () => [...chains],
@@ -44,6 +45,7 @@ function memoryLedgers(): GraphStore {
 		appendCoverage: () => {}, readCoverage: () => [],
 		appendDocumentVersion: (v) => void documents.push(v), readDocumentVersions: () => [...documents],
 		appendCitation: (c) => void citations.push(c), readCitations: () => [...citations],
+		writeDocumentUnits: (v, u) => void (units.has(v) || units.set(v, u)), readDocumentUnits: (v) => units.get(v) ?? null,
 		upsertSource: (s) => void sources.set(s.id, { ...s, extractions: sources.get(s.id)?.extractions ?? [] }),
 		readSources: () => [...sources.values()],
 		appendSourceUsage: (id, u) => void sources.get(id)?.extractions?.push(u),
