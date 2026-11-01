@@ -2,6 +2,28 @@
 
 Kvasir's voice sessions follow Sagar's Socratic Tutor contract (P3 brief). This page says where each rule lives and how the prompts are checked. Phase P3 builds the rest of voice: speech in and out (P3-2), spoken questions (P3-3), turn-taking (P3-4), drive mode (P3-5) and voice review (P3-6).
 
+## Speech in and out
+
+The voice loop (P3-2) joins three ports in `src/core/speech.ts`:
+
+- `SpeechIn` hears him: one `onFinal` per finished utterance, with partial words on the way.
+- `SpeechOut` speaks: one sentence at a time, stoppable at once.
+- `TurnSender` sends an utterance as a chat turn and yields the reply's new text as it streams.
+
+`runVoiceLoop` listens, sends what he said, and speaks each finished sentence while the reply is still streaming (D155), then listens again. Its states are listening, thinking, speaking and stopped. Until P3-4 brings barge-in, anything he says while the tutor is thinking or speaking is dropped.
+
+| Adapter | File | Provider |
+|---|---|---|
+| SpeechIn | `components/speech/deepgram-speech-in.ts` | Deepgram Nova-3 streaming, 16 kHz audio from the dictation capture worklet, interim results and endpointing |
+| SpeechOut | `components/speech/deepgram-speech-out.ts` | Deepgram Aura-2, voice `aura-2-thalia-en` (D158), 24 kHz audio played as it arrives |
+| TurnSender | `components/speech/chat-turn-sender.ts` | the chat itself: POST `/api/chat`, then `GET /api/chats/[id]/stream`, then the record if the turn already settled |
+
+Both Deepgram sockets authenticate with a short-lived token from `/api/stt/token` (D156); the key never reaches the window. Dictation keeps its own listener (D157).
+
+Cost (D154): Aura-2 is $0.030 per 1,000 characters, about $0.81 for an hour in which the tutor speaks half the time. Listening is billed per minute of audio by Nova-3.
+
+`tests/voice-loop.test.ts` drives a full scripted session with faux speech through the real chat handler; `tests/speech-adapters.test.ts` checks the Deepgram adapters against a fake socket.
+
 ## The voice prompt profile
 
 A voice session uses the `voice` profile (P3-1, D149): an overlay on the prober and teacher prompts. The agents keep their normal method; in voice the Markdown and LaTeX guide (`shared/40-formatting.md`) is dropped, and three fragments close the prompt:

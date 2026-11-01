@@ -84,6 +84,13 @@ export default defineConfig([
 								"The MCP server's tools are read-only by construction (Kvasir P6-2): src/mcp imports core only and receives read functions; the entry point scripts/mcp-server.ts wires the store readers.",
 						},
 						{
+							target: "./components/speech",
+							from: "./components",
+							except: ["./speech"],
+							message:
+								"The speech adapters (Kvasir P3-2) implement the SpeechIn and SpeechOut ports from @/src/core and stand alone: no other components, so any screen can use them.",
+						},
+						{
 							target: "./src/store/learner.ts",
 							from: ["./src/store/graph.ts", "./src/store/graph-format.ts"],
 							message:

@@ -9,6 +9,9 @@
  * this server. The token is only checked at the WebSocket handshake, so
  * long dictation sessions survive the TTL fine (Deepgram docs).
  *
+ * Voice sessions (Kvasir P3-2, D156) use the same token for both of
+ * their Deepgram sockets: listening (Nova-3) and speaking (Aura-2).
+ *
  * NOTE: the key needs ≥ Member permission in the Deepgram console to call
  * /auth/grant (their docs, token-based auth FAQ) — plain read/transcribe
  * keys return FORBIDDEN here.
