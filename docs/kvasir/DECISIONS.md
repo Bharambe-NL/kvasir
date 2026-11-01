@@ -93,3 +93,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D085 | 2026-11-01 | The teacher sees the citations of a session's picked propositions in the session context, and has a `read_source` tool to look up a document's articles and paragraphs by address or by words | Sagar | |
 | D086 | 2026-11-01 | `read_source` rides the existing "Graph tools" setting and the graph switch; no new setting | Sagar | |
 | D087 | 2026-11-01 | Only the teacher gets `read_source`; the prober keeps its map tools | Sagar | |
+| D088 | 2026-11-01 | P2 passed its gate before P1, so the P2 release is `v0.2.0` (package version 0.2.0) and includes the P1 work; when P1 passes its gate it is recorded in the roadmap and release notes without a separate `v0.1.0` tag, so versions stay in order | Sagar | |

@@ -5,7 +5,7 @@ Seven phases. Each phase has its own brief in `phases/`. A phase starts only whe
 | Phase | Name | Depends on | Release tag |
 |---|---|---|---|
 | P0 | Bootstrap and rename | none | `v0.0.1` |
-| P1 | Retention and the learner layer | P0 | `v0.1.0` |
+| P1 | Retention and the learner layer | P0 | none: included in `v0.2.0` (D088) |
 | P2 | Regulation grounding | P0 (can run in parallel with P1) | `v0.2.0` |
 | P3 | Voice tutor and drive mode | P1 | `v0.3.0` |
 | P4 | Mobile companion | P1, P3 | `v0.4.0` |
