@@ -16,6 +16,7 @@ import { activeProblemOf, danglingQuestionOf } from "../core/native-messages.ts"
 import { phaseAt3Lh } from "../core/phases.ts";
 import type { StoreBackend } from "./backend.ts";
 import { fileBackend } from "./file-backend.ts";
+import { encryptionLayer } from "./encrypted-backend.ts";
 
 /** Kvasir P6-1: the logic runs over a StoreBackend (backend.ts), so the same
  *  store works on data/chats/ (the `chatStore` export) and on SQLite. */
@@ -207,4 +208,4 @@ export function createChatStore(backend: StoreBackend): ChatStore {
 }
 
 /** The file-backed store (data/chats/), as wired before P6-1. */
-export const chatStore: ChatStore = createChatStore(fileBackend);
+export const chatStore: ChatStore = createChatStore(encryptionLayer(fileBackend));

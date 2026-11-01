@@ -7,6 +7,7 @@
  */
 
 import { activeBackend } from "../store/active.ts";
+import { encryptionLayer } from "../store/encrypted-backend.ts";
 import { chatStore as fileChatStore, createChatStore } from "../store/chats.ts";
 import { createGraphStore, graphStore as fileGraphStore } from "../store/graph.ts";
 import { createJobStore, jobStore as fileJobStore } from "../store/jobs.ts";
@@ -17,7 +18,9 @@ import type { GraphReader } from "../core/ports.ts";
 import { syncCustomProvider } from "./custom-provider.ts";
 // On files, the stores are the adapter modules' own singletons (the same
 // objects as before P6-1); on SQLite, new stores over the database.
-const backend = activeBackend();
+// Both are wrapped in the encrypting layer (P6-6), which passes through
+// on a plain folder.
+const backend = encryptionLayer(activeBackend());
 const onFiles = backend.kind === "files";
 if (!onFiles) console.info("[stores] using data/kvasir.db");
 const chatStore = onFiles ? fileChatStore : createChatStore(backend);

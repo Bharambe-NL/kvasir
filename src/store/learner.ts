@@ -22,6 +22,7 @@ import {
 import type { LearnerStore } from "../core/ports.ts";
 import type { StoreBackend } from "./backend.ts";
 import { fileBackend } from "./file-backend.ts";
+import { encryptionLayer } from "./encrypted-backend.ts";
 
 /** Kvasir P6-1: the logic runs over a StoreBackend (backend.ts), so the same
  *  store works on data/learner/ (the `learnerStore` export) and on SQLite. */
@@ -49,4 +50,4 @@ export function createLearnerStore(backend: StoreBackend): LearnerStore {
 }
 
 /** The file-backed store (data/learner/), as wired before P6-1. */
-export const learnerStore: LearnerStore = createLearnerStore(fileBackend);
+export const learnerStore: LearnerStore = createLearnerStore(encryptionLayer(fileBackend));

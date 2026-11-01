@@ -54,6 +54,7 @@ import { isCitation, isDocumentVersion } from "../core/contracts.ts";
 import type { GraphStore } from "../core/ports.ts";
 import { assertRecordId, type LedgerName, type StoreBackend } from "./backend.ts";
 import { fileBackend } from "./file-backend.ts";
+import { encryptionLayer } from "./encrypted-backend.ts";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
 	return typeof v === "object" && v !== null;
@@ -267,4 +268,4 @@ export function createGraphStore(backend: StoreBackend): GraphStore {
 }
 
 /** The file-backed store (data/graph/), as wired before P6-1. */
-export const graphStore: GraphStore = createGraphStore(fileBackend);
+export const graphStore: GraphStore = createGraphStore(encryptionLayer(fileBackend));
