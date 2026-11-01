@@ -11,12 +11,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P7 Look and feel: opened 2026-11-01, before P3 (D121). Milestone 5, tracking issue #69, task issues #64 to #68 (P7-1 to P7-5). Self-merge allowed for PRs that need no review (D122).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: none in progress. P7-3 merged via #75; next is `/kv-task P7-4` (the app symbol).
-- Branch: `main`
-- PR: none open
+- Task: P7-4 App symbol (#67) is in progress; plan approved on #67.
+- Branch: `p7/app-symbol`
+- PR: P7-4 draft, linked to #67
 
 ## Done
 
+- P7-4 started: D139 (the symbol: a chevron and a gold dot on black, checked against other marks), D140 (in the app the chevron takes the theme ink, the dot stays gold). Chosen after four rounds of drawings. Plan approved on #67.
 - P7-3 merged via #75 (themes approved by Sagar): theme blocks, `--highlight`, region tokens, E-ink rules and canvas rings, Theme and Highlight colour rows, contrast tests per theme and mode. It also fixes a P7-2 bug: the settings PUT validator refused mode `system` and dropped `lightBackground`, so neither saved; `tests/appearance-settings-route.test.ts` now covers the route. Known: Kvasir dark's red on cards is 4.46:1 (today's palette, kept). D132 (theme on top of Mode), D133 (Kvasir, Sepia, Forest, E-ink), D134 (one custom highlight), D135 (`--highlight`), D136 (E-ink greys plus shape), D137 (`theme` and `highlight` settings), D138 (region tokens). Plan approved on #66.
 - P7-2 merged via #73 (light screens approved by Sagar): `light-dark()` tokens and the mode class, server-rendered mode, per-mode backgrounds, the live Mode select, the canvas and Mermaid following the scheme, the Electron first paint, contrast tests. D128 (Dark, Light, System; default Dark), D129 (warm paper palette), D130 (a background per mode), D131 (`mode` gains `system`, new `lightBackground`). Plan approved on #65.
 - P7-1 merged via #71 (approved by Sagar): tokens in `app/globals.css`, 86 palette classes in 22 files swapped, heat colours resolved for the canvas, the guard `tests/no-hardcoded-colors.test.ts`. Screenshots before and after match except six named spots. D123 (palette classes count as hard-coded), D124 (token names), D125 (a test guards against hard-coded colours), D126 (today's shades kept, main and soft), D127 (`--paper` and `--ink-bright`). Plan approved on #64. Sagar's e-ink theme idea and the cluster region colours are noted on #66 for P7-3.
