@@ -10,13 +10,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Task: P6-3 Exports (#49) is in progress; plan approved on #49. P6-4's live baseline run is still to do (see Next). P6-2's Claude Desktop check is still Sagar's to do.
+- Task: P6-3 Exports (#49) is ready and waiting for Sagar's review (UI text) and his Obsidian and Anki checks. P6-4's live baseline run is still to do (see Next). P6-2's Claude Desktop check is still Sagar's to do.
 - Branch: `p6/exports`
-- PR: P6-3 draft, linked to #49
+- PR: #58, linked to #49
 
 ## Done
 
-- P6-3 started: D100 (Export menu in the graph toolbar), D101 (Anki text import file with guid), D102 (Basic card: name front; statement, chains and citations back), D103 (vault layout), D104 (vault has all; Anki skips excluded sessions), D105 (new dated folder in `~/Documents/Kvasir exports/`, Show in Finder). Plan approved on #49.
+- P6-3 built on #58, waiting for review: `src/core/exports.ts`, `src/server/exports.ts`, `POST /api/graph/export`, the Export menu (`components/graph-export.tsx`), the Show in Finder bridge (`lh.revealExport`, `electron/export-reveal.cjs`), `docs/exports.md`. D100 (Export menu in the graph toolbar), D101 (Anki text import file with guid), D102 (Basic card: name front; statement, chains and citations back), D103 (vault layout), D104 (vault has all; Anki skips excluded sessions), D105 (new dated folder in `~/Documents/Kvasir exports/`, Show in Finder). Plan approved on #49.
 - P6-4 merged via #56 (prompts, rubric, scenarios and results format approved by Sagar): `npm run eval` (`scripts/eval.ts`), `src/evals/` (driver, learner and judge, prompts, rubric, checks, transcript; own lint zone), `evals/scenarios/` (three), `evals/fixtures/data/` (golden data plus the DORA v1 import), `questionDataFor` moved to `src/core/question-data.ts`, `docs/evals.md`. Tests run a scenario with faux engines through the real chat handler. Decisions D094 (simulated learner), D095 (rubric judge plus hard checks), D096 (three scenarios), D097 (results committed under `evals/results/<commit>/`), D098 (models and a 12-reply cap), D099 (the learner runs on a provider other than Anthropic, `KV_EVAL_LEARNER`, default OpenRouter DeepSeek). The first live run (Opus 5.5 session and judge, Sonnet 5.5 learner) showed Anthropic blocks the learner's calls as duplicating model outputs, in all three scenarios; nothing was committed from it. Plan approved on #50.
 - P6-2 merged via #55 (tools and descriptions approved by Sagar; Claude Desktop check pending): `src/mcp/tools.ts` and `src/mcp/server.ts` (six read-only tools), `scripts/mcp-server.ts` (stdio), `scripts/mcp-config.ts` (`npm run mcp:config`), `docs/mcp.md`, the `src/mcp` lint zone, `readSource` moved to `src/core/source-read.ts`. Decisions D090 (six read-only tools), D091 (stdio command reading the data folder), D092 (learner state shared read-only), D093 (config snippet via `npm run mcp:config`). Plan approved on #48.
 - P6 opened via #54 (D089 self-merge allowed).
