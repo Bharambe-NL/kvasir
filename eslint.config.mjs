@@ -72,6 +72,12 @@ export default defineConfig([
 								"The agent layer receives its dependencies (storage ports via factories/closures) — it never imports the server layer or store adapters (architecture: docs/architecture.md).",
 						},
 						{
+							target: "./src/mcp",
+							from: ["./src/agent", "./src/server", "./src/store"],
+							message:
+								"The MCP server's tools are read-only by construction (Kvasir P6-2): src/mcp imports core only and receives read functions; the entry point scripts/mcp-server.ts wires the store readers.",
+						},
+						{
 							target: "./src/store/learner.ts",
 							from: ["./src/store/graph.ts", "./src/store/graph-format.ts"],
 							message:
