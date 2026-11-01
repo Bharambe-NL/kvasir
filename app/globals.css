@@ -58,7 +58,7 @@
 	--muted-foreground: light-dark(#6f6a62, #8d8d8d);
 	--accent: light-dark(var(--lh-light-accent, #e7e2d8), var(--lh-dark-accent, #2a2a2a));
 	--accent-foreground: light-dark(#1c1b19, #e6e6e6);
-	--destructive: light-dark(oklch(57.7% 0.245 27.325), oklch(0.704 0.191 22.216));
+	--destructive: light-dark(oklch(50.5% 0.213 27.518), oklch(0.704 0.191 22.216));
 	--border: light-dark(var(--lh-light-border, #d9d4ca), var(--lh-dark-border, #434343));
 	--input: light-dark(var(--lh-light-input, #d9d4ca), var(--lh-dark-input, #434343));
 	--ring: light-dark(#6f6a62, #8d8d8d);
@@ -80,12 +80,12 @@
 	/* Kvasir P7-1 (D124, D126, D127): every colour outside the base palette
 	   above, as named tokens with today's exact values. Light mode (P7-2)
 	   and colour themes (P7-3) change these, never the components. */
-	--danger: light-dark(oklch(57.7% 0.245 27.325), oklch(63.7% 0.237 25.331)); /* was red-500 */
-	--danger-soft: light-dark(oklch(63.7% 0.237 25.331), oklch(70.4% 0.191 22.216)); /* was red-400 */
-	--warning: light-dark(oklch(55.5% 0.163 48.998), oklch(76.9% 0.188 70.08)); /* was amber-500 */
-	--warning-soft: light-dark(oklch(66.6% 0.179 58.318), oklch(82.8% 0.189 84.429)); /* was amber-400 */
-	--success: light-dark(oklch(52.7% 0.154 150.069), oklch(72.3% 0.219 149.579)); /* was green-500 */
-	--success-soft: light-dark(oklch(62.7% 0.194 149.214), oklch(79.2% 0.209 151.711)); /* green-400 */
+	--danger: light-dark(oklch(44.4% 0.177 26.899), oklch(63.7% 0.237 25.331)); /* was red-500 */
+	--danger-soft: light-dark(oklch(50.5% 0.213 27.518), oklch(70.4% 0.191 22.216)); /* was red-400 */
+	--warning: light-dark(oklch(47.3% 0.137 46.201), oklch(76.9% 0.188 70.08)); /* was amber-500 */
+	--warning-soft: light-dark(oklch(55.5% 0.163 48.998), oklch(82.8% 0.189 84.429)); /* was amber-400 */
+	--success: light-dark(oklch(44.8% 0.119 151.328), oklch(72.3% 0.219 149.579)); /* was green-500 */
+	--success-soft: light-dark(oklch(52.7% 0.154 150.069), oklch(79.2% 0.209 151.711)); /* green-400 */
 	--heat-low: #e5484d;
 	--heat-mid: #f5a524;
 	--heat-high: #30a46c;

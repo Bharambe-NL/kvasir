@@ -34,6 +34,7 @@ import { useEffect, useRef, useState } from "react";
 import {
 	DEFAULT_BACKGROUNDS,
 	EXTRACTION_CHUNK_TOKENS_FLOOR,
+	FACTORY_SETTINGS,
 	resolveSettings,
 	type AppearanceMode,
 	type AppearanceSettings,
@@ -190,7 +191,7 @@ export function AppearanceSection({
 		<>
 			<SettingsRow label="Mode" testid="row-mode">
 				<ThinSelect
-					value={resolved.mode}
+					value={appearance?.mode ?? FACTORY_SETTINGS.appearance.mode}
 					ariaLabel="mode"
 					onChange={(v) => onSectionChange({ ...appearance, mode: v as AppearanceMode })}
 					testid="select-mode"
