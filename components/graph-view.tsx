@@ -66,6 +66,7 @@
 import { useRouter } from "next/navigation";
 import { DueChip, RetentionToggle } from "@/components/review/retention-controls";
 import { GraphExportMenu } from "@/components/graph-export";
+import { ViewSwitch } from "@/components/view-switch";
 import { useAppearance, useColorScheme, useColourKey } from "@/components/settings/appearance";
 import { useRetentionOverlay, useReviewSummary } from "@/components/review/use-review-summary";
 import { useReviewExclusions } from "@/components/review/use-review-exclusions";
@@ -74,7 +75,8 @@ import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, use
 import { NotesImportErrors, useNotesImport } from "@/components/notes-import.tsx";
 import { IMPORT_ACCEPT, SourceImportDialog } from "@/components/source-import";
 import Link from "next/link";
-import { FileTextIcon, ListTreeIcon, Loader2Icon, SearchIcon, SettingsIcon, UploadIcon, WaypointsIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileTextIcon, Loader2Icon, SearchIcon, SettingsIcon, WaypointsIcon } from "lucide-react";
 import { incrementalLayout, propositionSessionHref, type GraphCostSummary, type GraphNode, type GraphSnapshot } from "@/src/core";
 import { planCostLabel } from "@/components/usage-format";
 import { GraphCanvasRenderer, HEAT_TOKENS, type GraphRenderSettings } from "./graph-canvas.ts";
@@ -383,11 +385,12 @@ export function GraphCostControl({ costs }: { costs: GraphCostSummary }) {
 				type="button"
 				aria-expanded={open}
 				onClick={() => setOpen((o) => !o)}
-				className={`rounded-lg px-2 py-1 text-xs tabular-nums transition-colors hover:bg-accent ${
+				className={`rounded-lg px-2 py-1 text-xs transition-colors hover:bg-accent ${
 					open ? "text-foreground" : "text-muted-foreground hover:text-foreground"
 				}`}
 			>
-				{graphUsageLabel(costs)}
+				{/* Named, so the number is not a riddle (Kvasir P7-5). */}
+				Graph building: <span className="tabular-nums">{graphUsageLabel(costs)}</span>
 			</button>
 			</Hint>
 			{open && (
@@ -928,54 +931,28 @@ export function GraphChromeRow({
 			{/* The chain table (chains overlay, owner plan 2026-09-29). Own
 			    container (36px band), between the search and Import. */}
 			{!isEmpty && (
-				<div className="graph-chrome-fade-in shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur">
-					<Hint label="Every reasoning chain" side="bottom">
-						<button
-							type="button"
-							onClick={onOpenChains}
-							data-testid="open-chain-table"
-							className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent"
-						>
-							<ListTreeIcon className="size-3" />
-							Chains
-						</button>
-					</Hint>
+				// Graph and Chains as one switch (Kvasir P7-5); the chain
+				// table's header carries the same switch back.
+				<div className="graph-chrome-fade-in shrink-0">
+					<ViewSwitch value="graph" onGraph={() => {}} onChains={onOpenChains} />
 				</div>
 			)}
 			{!isEmpty && extra}
-			{/* Import notes — its own container (36px, header band); ALWAYS
-			    rendered (the empty-graph ruling above — the entry point). */}
-			<div className="shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur">
-				<input
-					ref={fileInputRef}
-					type="file"
-					multiple
-					accept={IMPORT_ACCEPT}
-					className="hidden"
-					onChange={(e) => {
-						onImportFiles(e.target.files);
-						e.target.value = ""; // allow re-picking the same file
-					}}
-				/>
-				<Hint
-					// The one button whose action isn't obvious from its label:
-					// the missing fact is where imports go (owner, subtlety
-					// round 2026-09-25).
-					label="Import notes into the graph"
-					side="bottom"
-				>
-					<button
-						type="button"
-						disabled={importing}
-						onClick={() => fileInputRef.current?.click()}
-						data-testid="import-notes"
-					className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
-				>
-						<UploadIcon className="size-3" />
-						{importing ? "Importing…" : "Import notes…"}
-					</button>
-				</Hint>
-			</div>
+			{/* The file picker behind "Import notes": the "…" menu opens it on
+			    a populated graph and the empty graph's own button on an empty
+			    one (Kvasir P7-5), so it renders always, hidden. */}
+			<input
+				ref={fileInputRef}
+				type="file"
+				multiple
+				accept={IMPORT_ACCEPT}
+				className="hidden"
+				data-testid="import-notes-input"
+				onChange={(e) => {
+					onImportFiles(e.target.files);
+					e.target.value = ""; // allow re-picking the same file
+				}}
+			/>
 			{!isEmpty && (
 				// Rendering settings — own component; the gear toggles it. The
 				// gear sits at the far right (owner, round 3) so its panel drops
@@ -1549,13 +1526,20 @@ export function GraphView({
 		<div className="relative h-full w-full">
 			{isEmpty ? (
 				// The empty graph keeps the first action clear without zero-valued statistics.
-				<div className="flex h-full w-full items-center justify-center px-4">
-					<div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
-						<WaypointsIcon className="size-10 opacity-40" strokeWidth={1.25} />
-						<div className="text-lg font-medium text-foreground">Knowledge graph</div>
-						<p className="max-w-sm text-sm">
-							Start a session or import notes to build your graph.
-						</p>
+				// Kvasir P7-5: a title, the line, and the two ways in as buttons.
+				<div className="flex h-full w-full items-center justify-center px-4 pb-32">
+					<div className="lh-fade-in flex flex-col items-center gap-3 text-center text-muted-foreground">
+						<WaypointsIcon className="size-14 opacity-40" strokeWidth={1} />
+						<h2 className="font-title text-title tracking-tight text-foreground">Your knowledge graph</h2>
+						<p className="max-w-sm text-base">Start a session or import notes to build your graph.</p>
+						<div className="mt-3 flex gap-2">
+							<Button asChild variant="outline">
+								<Link href="/chat/new" data-testid="empty-graph-start">Start a session</Link>
+							</Button>
+							<Button type="button" variant="outline" disabled={importing} data-testid="empty-graph-import" onClick={() => fileInputRef.current?.click()}>
+								{importing ? "Importing…" : "Import notes"}
+							</Button>
+						</div>
 					</div>
 				</div>
 			) : (
@@ -1671,7 +1655,7 @@ export function GraphView({
 						<>
 							<DueChip due={reviewSummary?.due ?? 0} onOpen={() => router.push("/review")} />
 							<RetentionToggle on={retentionOn} onChange={setRetentionOn} />
-							<GraphExportMenu />
+							<GraphExportMenu onImport={() => fileInputRef.current?.click()} importing={importing} />
 						</>
 					}
 				/>
@@ -1780,6 +1764,7 @@ export function GraphView({
 				onOpenCitation={citation.open}
 				reviewExcluded={reviewExclusions.excluded}
 				onReviewExclusion={(sessionId, excluded) => void reviewExclusions.setExcluded(sessionId, excluded)}
+				viewSwitch
 				onClose={() => {
 					setChainsOpen(false);
 					onChainSelectClose?.();

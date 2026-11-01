@@ -1,7 +1,8 @@
 /**
- * The Export menu's states (Kvasir P6-3, D100, D105), rendered to static
- * markup: closed, open, exporting, done for each kind with and without the
- * Show in Finder bridge, and the error line.
+ * The "…" menu's states (Kvasir P6-3, D100, D105; Kvasir P7-5), rendered
+ * to static markup: closed, open with and without the Import item,
+ * exporting, done for each kind with and without the Show in Finder
+ * bridge, and the error line.
  */
 import React from "react";
 (globalThis as Record<string, unknown>).React = React;
@@ -15,12 +16,19 @@ const html = (state: ExportState, open = true, reveal = true) =>
 	renderToStaticMarkup(<ExportMenuView open={open} onToggle={() => {}} state={state} onExport={() => {}} onReveal={reveal ? () => {} : undefined} />);
 const text = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/&gt;/g, ">").replace(/\s+/g, " ").trim();
 
-describe("the Export menu", () => {
-	it("closed: only the Export button", () => {
-		assert.equal(text(html({ status: "idle" }, false)), "Export");
+describe("the import and export menu", () => {
+	it("closed: only the … button, named for screen readers", () => {
+		const h = html({ status: "idle" }, false);
+		assert.equal(text(h), "");
+		assert.match(h, /aria-label="Import and export"/);
 	});
-	it("open: the two items", () => {
-		assert.equal(text(html({ status: "idle" })), "Export Obsidian vault Anki deck");
+	it("open: the two export items", () => {
+		assert.equal(text(html({ status: "idle" })), "Obsidian vault Anki deck");
+	});
+	it("open with an importer: Import notes first, then the exports under a heading (P7-5)", () => {
+		const h = renderToStaticMarkup(<ExportMenuView open onToggle={() => {}} state={{ status: "idle" }} onExport={() => {}} onImport={() => {}} />);
+		assert.equal(text(h), "Import notes… Export Obsidian vault Anki deck");
+		assert.match(h, /data-testid="import-notes"/);
 	});
 	it("exporting: the items are disabled", () => {
 		const h = html({ status: "exporting", kind: "anki" });

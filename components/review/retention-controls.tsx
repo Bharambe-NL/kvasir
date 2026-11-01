@@ -13,14 +13,20 @@ import { Hint } from "@/components/ui/hint";
 const PILL = "graph-chrome-fade-in shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur";
 const BUTTON = "flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent";
 
-/** "{n} due", opening /review. Hidden when nothing is due (D048). */
+/** "{n} due", opening /review. Hidden when nothing is due (D048). A count
+ *  you can follow, not another pill (Kvasir P7-5). */
 export function DueChip({ due, onOpen }: { due: number; onOpen: () => void }) {
 	if (due <= 0) return null;
 	return (
-		<div className={PILL}>
+		<div className="graph-chrome-fade-in flex h-[36px] shrink-0 items-center">
 			<Hint label="Open spaced review" side="bottom">
-				<button type="button" onClick={onOpen} data-testid="review-due-chip" className={BUTTON}>
-					{due} due
+				<button
+					type="button"
+					onClick={onOpen}
+					data-testid="review-due-chip"
+					className="rounded-md px-1.5 py-1 text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+				>
+					<span className="tabular-nums font-semibold text-highlight">{due}</span> due
 				</button>
 			</Hint>
 		</div>

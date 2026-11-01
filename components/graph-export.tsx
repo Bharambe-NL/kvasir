@@ -1,13 +1,15 @@
 "use client";
 
 /**
- * The graph toolbar's Export menu (Kvasir P6-3, D100, D105): Obsidian vault
- * or Anki deck, written by POST /api/graph/export into a new dated folder.
- * The done line shows where, with Show in Finder when the desktop bridge is
- * there. `ExportMenuView` is presentational so tests render each state.
+ * The graph toolbar's "…" menu (Kvasir P7-5): Import notes, then the
+ * exports (Kvasir P6-3, D100, D105): Obsidian vault or Anki deck, written
+ * by POST /api/graph/export into a new dated folder. The done line shows
+ * where, with Show in Finder when the desktop bridge is there.
+ * `ExportMenuView` is presentational so tests render each state.
  */
 
 import { useEffect, useRef, useState } from "react";
+import { EllipsisIcon } from "lucide-react";
 import { Hint } from "@/components/ui/hint";
 
 const PILL = "graph-chrome-fade-in relative shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur";
@@ -28,6 +30,8 @@ export function ExportMenuView({
 	state,
 	onExport,
 	onReveal,
+	onImport,
+	importing = false,
 }: {
 	open: boolean;
 	onToggle: () => void;
@@ -35,17 +39,29 @@ export function ExportMenuView({
 	onExport: (kind: ExportKind) => void;
 	/** Absent outside the desktop app: no Show in Finder button. */
 	onReveal?: (path: string) => void;
+	/** Opens the notes file picker; absent: no Import item. */
+	onImport?: () => void;
+	importing?: boolean;
 }) {
 	const busy = state.status === "exporting";
 	return (
 		<div className={PILL}>
-			<Hint label="Export the graph" side="bottom">
-				<button type="button" aria-expanded={open} aria-haspopup="menu" onClick={onToggle} data-testid="graph-export-button" className={`${BUTTON} ${open ? "bg-accent text-foreground" : ""}`}>
-					Export
+			<Hint label="Import and export" side="bottom">
+				<button type="button" aria-expanded={open} aria-haspopup="menu" aria-label="Import and export" onClick={onToggle} data-testid="graph-export-button" className={`${BUTTON} ${open ? "bg-accent text-foreground" : ""}`}>
+					<EllipsisIcon className="size-4" />
 				</button>
 			</Hint>
 			{open && (
-				<div role="menu" data-testid="graph-export-menu" className="absolute right-0 top-full z-20 mt-2 w-72 rounded-xl border bg-card p-1 shadow-lg">
+				<div role="menu" data-testid="graph-export-menu" className="lh-fade-in absolute right-0 top-full z-20 mt-2 w-72 rounded-xl border bg-card p-1 shadow-lg">
+					{onImport && (
+						<>
+							<button type="button" role="menuitem" disabled={importing} onClick={() => { onToggle(); onImport(); }} data-testid="import-notes" className={ITEM}>
+								{importing ? "Importing…" : "Import notes…"}
+							</button>
+							<div className="my-1 border-t" role="separator" />
+							<p className="px-2.5 pb-0.5 pt-1 text-[11px] uppercase tracking-wider text-muted-foreground">Export</p>
+						</>
+					)}
 					<button type="button" role="menuitem" disabled={busy} onClick={() => onExport("obsidian")} className={ITEM}>
 						Obsidian vault
 					</button>
@@ -78,7 +94,7 @@ export function ExportMenuView({
 }
 
 /** The menu with its state, the request and the desktop bridge. */
-export function GraphExportMenu() {
+export function GraphExportMenu({ onImport, importing }: { onImport?: () => void; importing?: boolean } = {}) {
 	const [open, setOpen] = useState(false);
 	const [state, setState] = useState<ExportState>({ status: "idle" });
 	const ref = useRef<HTMLDivElement>(null);
@@ -111,7 +127,7 @@ export function GraphExportMenu() {
 	};
 	return (
 		<div ref={ref}>
-			<ExportMenuView open={open} onToggle={() => setOpen((o) => !o)} state={state} onExport={onExport} onReveal={reveal} />
+			<ExportMenuView open={open} onToggle={() => setOpen((o) => !o)} state={state} onExport={onExport} onReveal={reveal} onImport={onImport} importing={importing} />
 		</div>
 	);
 }
