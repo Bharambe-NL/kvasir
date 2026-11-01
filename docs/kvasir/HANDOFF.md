@@ -11,12 +11,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P7 Look and feel: opened 2026-11-01, before P3 (D121). Milestone 5, tracking issue #69, task issues #64 to #68 (P7-1 to P7-5). Self-merge allowed for PRs that need no review (D122).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: none in progress. Next is P7-5 polish pass.
-- Branch: none
-- PR: none open
+- Task: P7-5 Polish pass (#68) is in progress; plan approved on #68.
+- Branch: `p7/polish-pass`
+- PR: P7-5 draft, linked to #68
 
 ## Done
 
+- P7-5 started: D141 (four areas: chat, review, home and sidebar, settings and dialogs), D142 (72-character chat column), D143 (type roles), D144 (subtle motion), D145 (approval per area from screenshots). Plan approved on #68.
 - P7-4 merged via #77 (symbol approved by Sagar): D139 (the symbol: a chevron and a gold dot on black, checked against other marks), D140 (in the app the chevron takes the theme ink, the dot stays gold). Chosen after four rounds of drawings. Plan approved on #67. Built: `src/core/kvasir-mark.ts` is the one source; `npm run icons` writes the `.ico`, `.png`, `.icns`, Icon Composer layers and favicon; the sidebar mark follows the theme; `tests/app-icon.test.tsx` keeps every file equal to the source; `docs/brand.md` explains it. The bridge test `binds 127.0.0.1` times out on this Mac's network (it connects to the LAN address); CI is green and this branch touches no bridge code.
 - P7-3 merged via #75 (themes approved by Sagar): theme blocks, `--highlight`, region tokens, E-ink rules and canvas rings, Theme and Highlight colour rows, contrast tests per theme and mode. It also fixes a P7-2 bug: the settings PUT validator refused mode `system` and dropped `lightBackground`, so neither saved; `tests/appearance-settings-route.test.ts` now covers the route. Known: Kvasir dark's red on cards is 4.46:1 (today's palette, kept). D132 (theme on top of Mode), D133 (Kvasir, Sepia, Forest, E-ink), D134 (one custom highlight), D135 (`--highlight`), D136 (E-ink greys plus shape), D137 (`theme` and `highlight` settings), D138 (region tokens). Plan approved on #66.
 - P7-2 merged via #73 (light screens approved by Sagar): `light-dark()` tokens and the mode class, server-rendered mode, per-mode backgrounds, the live Mode select, the canvas and Mermaid following the scheme, the Electron first paint, contrast tests. D128 (Dark, Light, System; default Dark), D129 (warm paper palette), D130 (a background per mode), D131 (`mode` gains `system`, new `lightBackground`). Plan approved on #65.
