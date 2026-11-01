@@ -18,7 +18,7 @@ import { ServerEventsProvider, type NotifySource } from "../components/server-ev
 import type { ReviewQueueItem, ReviewQueueView } from "../src/core/index.ts";
 
 const dom = parseHTML("<html><body></body></html>");
-Object.assign(globalThis, { window: dom.window, document: dom.document, CustomEvent: dom.window.CustomEvent });
+Object.assign(globalThis, { self: dom.window, window: dom.window, document: dom.document, CustomEvent: dom.window.CustomEvent });
 const originalFetch = globalThis.fetch;
 
 const NOW = "2026-11-01T09:00:00.000Z";
@@ -100,7 +100,8 @@ describe("review session, keyboard only (Done when)", () => {
 		const host = await mount(fakeEvents().connect);
 
 		assert.equal(text(host, "review-prompt"), "Cue for n_1");
-		assert.equal(text(host, "review-format"), "Cue");
+		assert.equal(text(host, "review-format"), "Cue · 1 of 2");
+		assert.equal(q(host, "review-progress")!.style.width, "0%");
 		assert.equal(q(host, "review-answer"), null, "the answer starts hidden");
 
 		await press(" ");
@@ -115,6 +116,8 @@ describe("review session, keyboard only (Done when)", () => {
 		assert.equal(api.posts[0]!.rating, 3);
 		assert.match(String(api.posts[0]!.id), /^rev_/);
 		assert.equal(text(host, "review-prompt"), "Cue for n_2");
+		assert.equal(text(host, "review-format"), "Cue · 2 of 2", "the visit keeps its size as cards are rated");
+		assert.equal(q(host, "review-progress")!.style.width, "50%");
 		assert.equal(q(host, "review-answer"), null, "the next card starts hidden");
 
 		await press("1", { metaKey: true });
@@ -131,11 +134,11 @@ describe("review session, keyboard only (Done when)", () => {
 		assert.ok(q(host, "review-empty"), "the queue is done");
 	});
 
-	it("shows the name fallback as Recall (D042)", async () => {
+	it("shows the name fallback as Recall (D042), the label carrying the word once (P7-5)", async () => {
 		fakeApi([view([item("n_1", { question: { format: "fallback", prompt: "Recall: Name n_1", answer: "Statement." } })])]);
 		const host = await mount(fakeEvents().connect);
-		assert.equal(text(host, "review-format"), "Recall");
-		assert.equal(text(host, "review-prompt"), "Recall: Name n_1");
+		assert.equal(text(host, "review-format"), "Recall · 1 of 1");
+		assert.equal(text(host, "review-prompt"), "Name n_1");
 	});
 
 	it("refetches on reviews-changed, so a generated question replaces the fallback", async () => {
@@ -145,21 +148,30 @@ describe("review session, keyboard only (Done when)", () => {
 			view([item("n_1", { question: { format: "cue", prompt: "A real cue", answer: "Statement." } })]),
 		]);
 		const host = await mount(events.connect);
-		assert.equal(text(host, "review-format"), "Recall");
+		assert.equal(text(host, "review-format"), "Recall · 1 of 1");
 		await act(async () => events.fire("reviews-changed"));
 		await settle();
 		assert.equal(api.gets(), 2);
-		assert.equal(text(host, "review-format"), "Cue");
+		assert.equal(text(host, "review-format"), "Cue · 1 of 1");
 		assert.equal(text(host, "review-prompt"), "A real cue");
 	});
 
-	it("shows the counts, the retention line and the empty state", async () => {
+	it("shows the counts, the retention line and the caught-up state (P7-5)", async () => {
 		fakeApi([view([], { stats: { reviewedToday: 5, newToday: 3, newLeft: 17, totalLeft: 195, nextDueAt: plus(10) }, retention: { recalled: 23, total: 25 } })]);
 		const host = await mount(fakeEvents().connect);
 		assert.equal(text(host, "review-counts"), "0 due · 17 new left today");
 		assert.equal(text(host, "review-retention"), "Retention, last 30 days: 92% of 25 scheduled reviews");
-		assert.match(text(host, "review-empty")!, /Nothing due right now\./);
-		assert.match(text(host, "review-empty")!, /Next card due in 10 min\./);
+		assert.match(text(host, "review-empty")!, /All caught up\./);
+		assert.equal(text(host, "review-next"), "Next review in 10 min");
+		assert.equal(q(host, "review-practise")!.getAttribute("href"), "/chat/new?mode=practice");
+		assert.equal(text(host, "review-practise"), "Practise instead");
+	});
+
+	it("says nothing is scheduled yet when no card is waiting (P7-5)", async () => {
+		fakeApi([view([], { stats: { reviewedToday: 0, newToday: 0, newLeft: 20, totalLeft: 200, nextDueAt: null }, retention: null })]);
+		const host = await mount(fakeEvents().connect);
+		assert.equal(text(host, "review-empty"), "Nothing to review yet. Teach a session and its ideas come back here.");
+		assert.equal(q(host, "review-practise"), null);
 	});
 
 	it("says when there are not enough scheduled reviews to measure retention", async () => {
