@@ -165,9 +165,9 @@ describe("the canvas detail card (Done when)", () => {
 		const src = readFileSync(new URL("../components/graph-view.tsx", import.meta.url), "utf8");
 		const card = src.slice(src.indexOf("{selected.node.statement}"), src.indexOf('<div className="text-xs text-muted-foreground">Sessions</div>'));
 		assert.match(card, /snapshot\?\.citations\?\.\[selected\.node\.id\]/);
-		assert.match(card, /<CitationChip labels=\{snapshot\.citations\[selected\.node\.id\]\} onOpen=\{\(\) => citation\.open\(selected\.node\.id\)\} \/>/);
+		assert.match(card, /<CitationChip\s+labels=\{snapshot\.citations\[selected\.node\.id\]\}\s+outdated=\{snapshot\.outdated\?\.includes\(selected\.node\.id\) \?\? false\}\s+onOpen=\{\(\) => citation\.open\(selected\.node\.id\)\}\s+\/>/);
 		assert.match(src, /const citation = useCitationPanel\(\);/);
 		assert.match(src, /\{citation\.panel\}/);
-		assert.match(src, /citations=\{snapshot\?\.citations\}\s*onOpenCitation=\{citation\.open\}/, "the Chains table overlay gets the same map and opener");
+		assert.match(src, /citations=\{snapshot\?\.citations\}\s*outdated=\{snapshot\?\.outdated\}\s*onOpenCitation=\{citation\.open\}/, "the Chains table overlay gets the same map, the outdated list and the opener");
 	});
 });

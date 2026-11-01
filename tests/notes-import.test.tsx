@@ -205,6 +205,7 @@ it("actual attempts clear errors immediately, guard synchronous reentry, preserv
 it("Markdown waits in the dialog and, with Cite as source off, goes to the notes route (Kvasir P2-3, D075)", async () => {
 	const posted: string[] = [];
 	globalThis.fetch = async (url, init) => {
+		if (String(url) === "/api/sources/documents") return Response.json([]);
 		posted.push(`${url} ${((init?.body as FormData).getAll("files") as File[]).map((f) => f.name).join(",")}`);
 		return Response.json({ results: [{ requestIndex: 0, filePath: "plan.md", ok: true, outcome: "completed", stats: { nodes: 0, chains: 0 } }] });
 	};
@@ -220,7 +221,9 @@ it("Markdown waits in the dialog and, with Cite as source off, goes to the notes
 
 it("Cancel in the dialog sends nothing (Kvasir P2-3)", async () => {
 	let calls = 0;
-	globalThis.fetch = async () => { calls++; return Response.json({ results: [] }); };
+	// Opening the dialog reads the documents list (Kvasir P2-5); only import
+	// requests count.
+	globalThis.fetch = async (url) => { if (String(url) !== "/api/sources/documents") calls++; return Response.json(String(url) === "/api/sources/documents" ? [] : { results: [] }); };
 	await mount();
 	await submit([new File(["# Plan"], "plan.md"), new File(["x"], "other.txt")]);
 	await act(async () => { current.sourceDialog.onCancel(); });
