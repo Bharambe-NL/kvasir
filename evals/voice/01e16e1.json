@@ -1,0 +1,453 @@
+{
+	"commit": "01e16e1",
+	"model": "anthropic:claude-opus-5-5",
+	"at": "2026-11-01T19:17:23.024Z",
+	"passed": 12,
+	"total": 13,
+	"rejectedCalls": 2,
+	"dollars": 0.43,
+	"replies": [
+		{
+			"phase": "probe",
+			"learner": "I'd like to learn about DORA.",
+			"reply": "What do you do for work?",
+			"words": 6,
+			"rejected": 1,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I work in EU payments. I'm on the European Payments Initiative, on Wero.",
+			"reply": "By the end, what do you want to be able to do or understand about DORA, the Digital Operational Resilience Act, in your work on Wero?",
+			"words": 26,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I want to understand what Article 28 of DORA asks of a payment firm that relies on cloud providers.",
+			"reply": "How many minutes do you have right now?",
+			"words": 8,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "About twenty minutes.",
+			"reply": "When you get stuck on a question, how do you like to be helped?",
+			"words": 14,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "Give me a nudge in the right direction, not the answer.",
+			"reply": "Under DORA, who does the regulator hold responsible for that failure?",
+			"words": 11,
+			"rejected": 1,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I know DORA is about operational resilience and that it applies to us from January 2025.",
+			"reply": "So when the cloud outage breaks payments, who answers to the regulator: the payment firm or the cloud provider?",
+			"words": 19,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "Not really. I think it says something about contracts with providers, but I couldn't tell you what.",
+			"reply": "If you were the regulator, what would you want a payment firm to have done before and during its reliance on a cloud provider?",
+			"words": 24,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I think the firm stays responsible for the service even when a cloud provider runs it.",
+			"reply": "Across that lifecycle, what would you expect the regulator to want the payment firm to have in place?",
+			"words": 18,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "And the register only has to list the critical providers, right?",
+			"reply": "In your own words, what makes a function at a payment firm critical or important under DORA?",
+			"words": 17,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "I don't know.",
+			"reply": "With that in mind, how would you decide whether a function counts as critical or important?",
+			"words": 16,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "No idea, sorry.",
+			"reply": "What do you think a payment firm should have prepared in case it has to leave its cloud provider quickly?",
+			"words": 20,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		},
+		{
+			"phase": "probe",
+			"learner": "So we need a plan to leave the provider without breaking the payment service.",
+			"reply": "I've finished finding out what you already know. Most of the lesson will be new ground.\n\n1. **Who is responsible:** Wero's payment firm stays fully responsible to the regulator, even when a cloud provider runs the service. You only got there after I'd said it, so we'll go over it once more.\n2. **Leaving a provider:** you knew the firm needs a plan to leave a provider without breaking the payment service. DORA calls this an exit strategy. You didn't mention that the plan has to be written down and tested, or that the contract must give the firm the right to end it.\n3. **The register:** you thought it lists only the critical providers. It actually lists every contract with a technology supplier, and the important ones are marked.\n4. **Critical or important functions:** you didn't know what makes a function critical or important. Most of Article twenty-eight depends on that idea, so the lesson starts there.\n\nAfter that, the lesson follows a cloud provider from start to finish: choosing it, running with it, and leaving it. Wero is the example throughout. It covers the checks before signing, including the risk of relying too heavily on one provider, plus audits, reporting to the regulator, and exit plans. When you get stuck, you'll get a nudge, not the answer.",
+			"words": 219,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": false,
+					"detail": "bold: \"**Who is responsible:**\""
+				},
+				{
+					"name": "short",
+					"pass": false,
+					"detail": "219 words"
+				}
+			]
+		},
+		{
+			"phase": "teach",
+			"learner": "OK, let's move on.",
+			"reply": "What kinds of damage would a full-day outage of payment processing do to the firm behind Wero?",
+			"words": 17,
+			"rejected": 0,
+			"checks": [
+				{
+					"name": "one question",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no formulas",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no options",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "no markdown",
+					"pass": true,
+					"detail": ""
+				},
+				{
+					"name": "short",
+					"pass": true,
+					"detail": ""
+				}
+			]
+		}
+	]
+}
