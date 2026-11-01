@@ -10,13 +10,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Task: P6-1 SQLite stores (#47) is in progress; plan approved on #47. P6-3's in-app Obsidian and Anki checks are Sagar's, P6-4's live baseline run is still to do, and P6-2's Claude Desktop check is still Sagar's (see Next).
+- Task: P6-1 SQLite stores (#47) is ready and waiting for Sagar's review (a store format). P6-3's in-app Obsidian and Anki checks are Sagar's, P6-4's live baseline run is still to do, and P6-2's Claude Desktop check is still Sagar's (see Next).
 - Branch: `p6/sqlite-stores`
-- PR: #60 (draft), linked to #47
+- PR: #60, linked to #47
 
 ## Done
 
-- P6-1 started: D106 (`node:sqlite`), D107 (what moves into `data/kvasir.db`), D108 (SQLite when `kvasir.db` exists), D109 (migration both ways, old side moved aside), D110 (JSON rows plus key columns), D111 (shared port contract suites). Plan approved on #47.
+- P6-1 built on #60, waiting for review: `StoreBackend` (`src/store/backend.ts`) under the four stores, `fileBackend`, the SQLite backend (`src/store/sqlite/`), `src/store/active.ts` (SQLite when `data/kvasir.db` exists), `src/store/migrate.ts` with `npm run migrate:sqlite` and `npm run migrate:files`, `tests/store-contract/`, `docs/sqlite.md`. Live round trip on a copy of Sagar's data: migrated, browsed in the production build, migrated back; files identical except positions the app saved while on SQLite. D106 (`node:sqlite`), D107 (what moves into `data/kvasir.db`), D108 (SQLite when `kvasir.db` exists), D109 (migration both ways, old side moved aside), D110 (JSON rows plus key columns), D111 (shared port contract suites). Plan approved on #47.
 - P6-3 merged via #58 (UI text approved by Sagar): `src/core/exports.ts`, `src/server/exports.ts`, `POST /api/graph/export`, the Export menu (`components/graph-export.tsx`), the Show in Finder bridge (`lh.revealExport`, `electron/export-reveal.cjs`), `docs/exports.md`. D100 (Export menu in the graph toolbar), D101 (Anki text import file with guid), D102 (Basic card: name front; statement, chains and citations back), D103 (vault layout), D104 (vault has all; Anki skips excluded sessions), D105 (new dated folder in `~/Documents/Kvasir exports/`, Show in Finder). Plan approved on #49.
 - P6-4 merged via #56 (prompts, rubric, scenarios and results format approved by Sagar): `npm run eval` (`scripts/eval.ts`), `src/evals/` (driver, learner and judge, prompts, rubric, checks, transcript; own lint zone), `evals/scenarios/` (three), `evals/fixtures/data/` (golden data plus the DORA v1 import), `questionDataFor` moved to `src/core/question-data.ts`, `docs/evals.md`. Tests run a scenario with faux engines through the real chat handler. Decisions D094 (simulated learner), D095 (rubric judge plus hard checks), D096 (three scenarios), D097 (results committed under `evals/results/<commit>/`), D098 (models and a 12-reply cap), D099 (the learner runs on a provider other than Anthropic, `KV_EVAL_LEARNER`, default OpenRouter DeepSeek). The first live run (Opus 5.5 session and judge, Sonnet 5.5 learner) showed Anthropic blocks the learner's calls as duplicating model outputs, in all three scenarios; nothing was committed from it. Plan approved on #50.
 - P6-2 merged via #55 (tools and descriptions approved by Sagar; Claude Desktop check pending): `src/mcp/tools.ts` and `src/mcp/server.ts` (six read-only tools), `scripts/mcp-server.ts` (stdio), `scripts/mcp-config.ts` (`npm run mcp:config`), `docs/mcp.md`, the `src/mcp` lint zone, `readSource` moved to `src/core/source-read.ts`. Decisions D090 (six read-only tools), D091 (stdio command reading the data folder), D092 (learner state shared read-only), D093 (config snippet via `npm run mcp:config`). Plan approved on #48.
@@ -62,6 +62,7 @@ Self-merge is allowed in P1 (D029, recorded in #13) and P2 (D057, recorded in #3
 
 ## Notes
 
+- Never run `npm run migrate:*` on Sagar's app folder yourself; it is his to run (`docs/sqlite.md`). Test on a copy of `graph`, `learner`, `chats` and `jobs`, never `auth.json`.
 - `npm run eval` works on a temp copy of `evals/fixtures/data/`, never your own data. A run stopped part way leaves a results folder; delete it rather than commit it.
 
 - One test fails on this Mac only: `tests/claude-code-tool-bridge.test.ts` "binds 127.0.0.1". macOS firewall stealth mode drops the LAN connection, so it times out instead of being refused. It passes in CI.
