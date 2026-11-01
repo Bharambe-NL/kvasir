@@ -27,6 +27,7 @@
  * (fully concrete) view lives in settings-resolution.ts.
  */
 
+import { THEME_IDS, type ThemeId } from "./theme-presets.ts";
 import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
 import { AUTH_PROVIDER_KEYS } from "./auth-keys.ts";
 import { CLAUDE_CODE_PROVIDER } from "./contracts/claude-code.ts";
@@ -396,6 +397,11 @@ export interface AppearanceSettings {
 	/** The light mode's background (P7-2, D130, D131). null = the light
 	 *  default. */
 	lightBackground?: string | null;
+	/** The colour theme over the mode (P7-3, D132, D137). Default kvasir. */
+	theme?: ThemeId;
+	/** A custom highlight colour over any theme (D134). null = the theme's
+	 *  own. */
+	highlight?: string | null;
 	/** The main reading font (everything that is Source Sans 3 today), by
 	 *  name — user-chosen from installed fonts. null = Source Sans 3. */
 	fontFamily?: string | null;
@@ -502,6 +508,8 @@ export interface FactorySettings {
 		mode: AppearanceMode;
 		background: string | null;
 		lightBackground: string | null;
+		theme: ThemeId;
+		highlight: string | null;
 		fontFamily: string | null;
 		proseFontSize: number;
 		sessionNameSerif: boolean;
@@ -523,6 +531,8 @@ export const FACTORY_SETTINGS: FactorySettings = {
 		mode: "dark",
 		background: null, // the dark default lives in app/globals.css
 		lightBackground: null, // the light default lives in app/globals.css
+		theme: "kvasir",
+		highlight: null,
 		fontFamily: null, // Source Sans 3
 		proseFontSize: 16,
 		sessionNameSerif: true,
@@ -751,6 +761,8 @@ function sanitizeAppearance(raw: Record<string, unknown>): AppearanceSettings {
 	if (APPEARANCE_MODES.includes(raw.mode as AppearanceMode)) out.mode = raw.mode as AppearanceMode;
 	if (raw.background !== undefined) out.background = sanitizeHexOrNull(raw.background);
 	if (raw.lightBackground !== undefined) out.lightBackground = sanitizeHexOrNull(raw.lightBackground);
+	if (THEME_IDS.includes(raw.theme as ThemeId)) out.theme = raw.theme as ThemeId;
+	if (raw.highlight !== undefined) out.highlight = sanitizeHexOrNull(raw.highlight);
 	if (raw.fontFamily !== undefined) {
 		out.fontFamily = typeof raw.fontFamily === "string" && raw.fontFamily.trim() ? raw.fontFamily : null;
 	}

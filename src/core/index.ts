@@ -89,3 +89,4 @@ export { chipText, citationLabel, citationLabels, documentShortName, shortPath, 
 export { parseSourceRef, sourceHref, sourceLink, type SourceRef, type SourceUnitView } from "./source-cite.ts";
 export { questionDataFor } from "./question-data.ts";
 export * from "./background-defaults.ts";
+export * from "./theme-presets.ts";
