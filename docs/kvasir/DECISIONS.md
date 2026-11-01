@@ -94,3 +94,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D086 | 2026-11-01 | `read_source` rides the existing "Graph tools" setting and the graph switch; no new setting | Sagar | |
 | D087 | 2026-11-01 | Only the teacher gets `read_source`; the prober keeps its map tools | Sagar | |
 | D088 | 2026-11-01 | P2 passed its gate before P1, so the P2 release is `v0.2.0` (package version 0.2.0) and includes the P1 work; when P1 passes its gate it is recorded in the roadmap and release notes without a separate `v0.1.0` tag, so versions stay in order | Sagar | |
+| D089 | 2026-11-01 | Self-merge is allowed in P6 for PRs that need no review from Sagar (no contract, prompt, store format or user-facing text change), as D029 and D057 allowed for P1 and P2 | Sagar | |

@@ -35,4 +35,4 @@ Then tag the release on `main` and close the phase milestone.
 | P3 | Not started | |
 | P4 | Not started | |
 | P5 | Not started | |
-| P6 | Not started | |
+| P6 | In progress | |
