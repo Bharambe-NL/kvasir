@@ -27,8 +27,13 @@ const field = (value: unknown, key: string): string | null => {
 	return typeof v === "string" ? v : null;
 };
 
-/** Run `fn` in one transaction; roll back on any throw. */
+/** Run `fn` in one transaction; roll back on any throw. Inside a caller's
+ *  open transaction (the migration's), `fn` joins it. */
 function inTransaction(db: DatabaseSync, fn: () => void): void {
+	if (db.isTransaction) {
+		fn();
+		return;
+	}
 	db.exec("BEGIN IMMEDIATE");
 	try {
 		fn();

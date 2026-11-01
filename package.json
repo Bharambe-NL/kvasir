@@ -26,6 +26,8 @@
 		"build": "next build",
 		"start": "next start",
 		"test": "NODE_ENV=test tsx --test tests/*.test.ts tests/*.test.tsx tests/store-contract/*.test.ts",
+		"migrate:sqlite": "tsx scripts/migrate-store.ts sqlite",
+		"migrate:files": "tsx scripts/migrate-store.ts files",
 		"lint": "eslint .",
 		"typecheck": "tsc --noEmit",
 		"desktop:dev": "concurrently -k \"next dev\" \"KV_DEV_URL=http://localhost:3000 electron .\"",
