@@ -19,6 +19,7 @@
 
 import { Type, type Static } from "typebox";
 import { stripModelValueDebris } from "./value-debris.ts";
+import { checkVoiceReply } from "./voice-checks.ts";
 
 // ─── shared types ───────────────────────────────────────────────────────────
 
@@ -356,6 +357,79 @@ export function explainInputProblems(input: { correctAnswer: string }): string[]
 	return [];
 }
 
+// ─── ask_spoken (Kvasir P3-3, D159 to D163) ─────────────────────────────────
+
+/** The spoken question: the one question tool of a voice session (D160).
+ *  With `correctAnswer` it is graded (committed before asking, graded by
+ *  the tutor in its next reply, D159); without one it is an open question
+ *  with no right answer. The prober's form. */
+export const askSpokenInputBase = Type.Object({
+	question: Type.String({
+		description:
+			"The ONE question to say aloud, exactly as it should be spoken: one sentence, at most 40 words, ending in a single " +
+			"question mark. No options to choose from, no formulas or symbols, no Markdown. It is spoken last in your turn, " +
+			"and the turn ends on it; his spoken answer arrives as the result.",
+	}),
+	correctAnswer: Type.Optional(
+		Type.String({
+			description:
+				"For a question with a right answer: the full correct answer in your own words, reasoning included, COMMITTED " +
+				"before he hears the question. Grade his spoken answer strictly against it in your next reply; never revise it " +
+				"after hearing him. Leave it out for an open question with no right answer (his background, his goal, a preference).",
+		}),
+	),
+});
+
+/** The teacher's form: the plan fields, required when the question is
+ *  graded (validated at call time), as for the quiz. */
+export const askSpokenInputObject = Type.Object({
+	...askSpokenInputBase.properties,
+	type: Type.Optional(
+		Type.Union([Type.Literal("predict"), Type.Literal("check")], {
+			description:
+				"For a graded question, REQUIRED, as a bare word: predict = asked BEFORE you teach the step; check = asked AFTER " +
+				"the step's teaching. Leave it out for an open question.",
+		}),
+	),
+	nodeId: Type.Optional(
+		Type.String({
+			description:
+				"For a graded question, REQUIRED: the plan-tree node id the question is about, exactly one of this session's " +
+				"plan_init node slugs. Leave it out for an open question.",
+		}),
+	),
+});
+
+export const ASK_SPOKEN_WORD_CAP = 40;
+
+export type AskSpokenToolInput = Static<typeof askSpokenInputObject>;
+
+/** The spoken question's authoring contract (D163): what a listener can
+ *  take in as one question. Empty result = a question fit to be spoken. */
+export function askSpokenProblems(input: { question: string; correctAnswer?: string; type?: string; nodeId?: string }, opts: { teach?: boolean } = {}): string[] {
+	const problems: string[] = [];
+	const question = input.question.trim();
+	if (!question) problems.push("question is required: the one question to say aloud.");
+	for (const check of checkVoiceReply(question)) {
+		if (check.pass || check.name === "short") continue;
+		if (check.name === "one question") problems.push(`Ask exactly one question: this has ${check.detail}. Split it across turns.`);
+		else if (check.name === "no options") problems.push(`No options to choose from (${check.detail}): ask an open question he answers in his own words.`);
+		else if (check.name === "no formulas") problems.push(`No formulas or symbols (${check.detail}): say it in plain words.`);
+		else problems.push(`No written formatting (${check.detail}): this is spoken.`);
+	}
+	const words = question.split(/\s+/).filter(Boolean).length;
+	if (words > ASK_SPOKEN_WORD_CAP) problems.push(`At most ${ASK_SPOKEN_WORD_CAP} words: this has ${words}. Give the context in your spoken text before the question.`);
+	if (question && !question.endsWith("?")) problems.push("End the question with its question mark; it is the last thing he hears.");
+	if (input.correctAnswer !== undefined && input.correctAnswer.trim().length === 0) {
+		problems.push("correctAnswer is empty: commit the full correct answer, or leave the field out for an open question.");
+	}
+	if (opts.teach && input.correctAnswer?.trim()) {
+		if (!input.type) problems.push("type is required for a graded question: predict or check.");
+		if (!input.nodeId) problems.push("nodeId is required for a graded question: the plan node it is about.");
+	}
+	return problems;
+}
+
 /** The tool names that carry the quizzing mechanic — the teach seam
  *  (phases), the plan-position fold, and the pending gate all recognize
  *  whichever is armed. */
@@ -404,7 +478,7 @@ export interface OptionAnswer {
 	index: number; // 1-based display index
 }
 
-export type QuestionKind = "quiz" | "ask" | "explain";
+export type QuestionKind = "quiz" | "ask" | "explain" | "spoken";
 export type SelectMode = "single-select" | "multi-select";
 export type QuestionMode = SelectMode | "text";
 
@@ -742,10 +816,11 @@ export function buildAnswer(qd: QuestionData, req: AnswerRequest, tool?: string)
 			base.confidence = Math.max(0, Math.min(100, Math.round(req.confidence)));
 		}
 	}
-	if (qd.kind === "explain") {
+	if (qd.kind === "explain" || qd.kind === "spoken") {
 		// No client grading — the model grades in its reply, against the
 		// commitment. The commitment snapshots for the reveal + rendering.
-		base.committed = qd.committedAnswer;
+		// A spoken question (Kvasir P3-3, D159) commits only when graded.
+		if (qd.committedAnswer !== undefined) base.committed = qd.committedAnswer;
 	}
 	return base;
 }
