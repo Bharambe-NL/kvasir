@@ -1,5 +1,7 @@
 node_modules/
 data/
+# The teaching-eval fixture is test data, not a live data folder (Kvasir P6-4).
+!/evals/fixtures/data/
 .next/
 *.log
 .DS_Store

@@ -1,0 +1,8 @@
+{
+	"id": "dora-art28",
+	"title": "DORA Article 28 with a misconception",
+	"persona": "You work in payments compliance at an authorised payment institution. You know DORA exists but have not read Article 28. You believe that once a cloud contract makes the provider liable for outages, regulatory responsibility for the outsourced service moves to the provider. You answer in short sentences and are sometimes unsure.",
+	"opening": "Teach me what DORA Article 28 requires on ICT third-party risk.",
+	"rubric": ["probes_first", "one_step", "checks_landing", "accuracy", "fixes_misconception_dora", "cites_source"],
+	"checks": ["handoff", "taught_with_checks", "no_failed_turns", "citations"]
+}

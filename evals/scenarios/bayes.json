@@ -1,0 +1,8 @@
+{
+	"id": "bayes",
+	"title": "Bayes' rule, confusing P(A|B) with P(B|A)",
+	"persona": "You are an analyst who can compute simple probabilities. You treat the probability of a positive test given the disease as if it were the probability of the disease given a positive test, so you think a 99% accurate test means a positive result is 99% likely to be right. You answer briefly and give numbers when asked.",
+	"opening": "Help me understand Bayes' rule properly.",
+	"rubric": ["probes_first", "one_step", "checks_landing", "accuracy", "fixes_misconception_bayes"],
+	"checks": ["handoff", "taught_with_checks", "no_failed_turns"]
+}

@@ -1,0 +1,8 @@
+{
+	"id": "fast-learner",
+	"title": "A fast learner who already knows most of DORA Chapter V",
+	"persona": "You have studied DORA Chapter V closely: you know that financial entities stay fully responsible when they use ICT providers, the register of information, the pre-contract checks and the termination rights, and you answer questions about them correctly and confidently. You are unsure only about exit plans under Article 28(8), and you say so when it comes up.",
+	"opening": "I want to check my understanding of DORA's third-party risk rules.",
+	"rubric": ["probes_first", "one_step", "checks_landing", "accuracy", "skips_known", "cites_source"],
+	"checks": ["handoff", "taught_with_checks", "no_failed_turns", "citations"]
+}
