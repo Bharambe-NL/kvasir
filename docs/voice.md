@@ -33,7 +33,7 @@ A chat is a voice session when its record has `voice: true` (P3-3, D161), set wh
 
 The validator, `askSpokenProblems` in `src/core/question-core.ts` (D163), sends a call back to the model to fix when:
 - the turn already asked a question
-- the question has more than one question mark
+- the question has more than one question mark, or joins a second question with "and" or "or" (D164)
 - it offers options
 - it holds a formula or symbols, or Markdown
 - it runs past 40 words

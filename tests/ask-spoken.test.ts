@@ -29,10 +29,19 @@ describe("askSpokenProblems (D163)", () => {
 		["too long", `${Array.from({ length: 41 }, () => "word").join(" ")}?`, /At most 40 words/],
 		["no question mark", "Tell me who is responsible.", /question mark/],
 		["empty question", "  ", /question is required/],
+		["a second question joined with and (D164)", "Does it go in the register, and how is it treated there?", /starts a second one/],
+		["a second question joined with or (D164)", "Who does the regulator hold to account, or why not the provider?", /starts a second one/],
+		["an and-why tail (D164)", "Who does the regulator hold to account and why?", /starts a second one/],
 	];
 	for (const [what, question, pattern] of rejects) {
 		it(`rejects ${what}`, () => assert.match(askSpokenProblems({ question }).join("\n"), pattern));
 	}
+
+	it("one question that happens to contain and or or still passes (D164)", () => {
+		for (const q of ["What happens to payments when the provider fails and the firm has no exit plan?", "Who answers to the regulator when Wero and its cloud host both go down?"]) {
+			assert.deepEqual(askSpokenProblems({ question: q }), [], q);
+		}
+	});
 
 	it("an empty commitment is refused; the teacher's graded question needs type and nodeId", () => {
 		assert.match(askSpokenProblems({ question: GOOD, correctAnswer: " " }).join("\n"), /correctAnswer is empty/);

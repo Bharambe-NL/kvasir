@@ -404,7 +404,7 @@ export const ASK_SPOKEN_WORD_CAP = 40;
 
 export type AskSpokenToolInput = Static<typeof askSpokenInputObject>;
 
-/** The spoken question's authoring contract (D163): what a listener can
+/** The spoken question's authoring contract (D163, D164): what a listener can
  *  take in as one question. Empty result = a question fit to be spoken. */
 export function askSpokenProblems(input: { question: string; correctAnswer?: string; type?: string; nodeId?: string }, opts: { teach?: boolean } = {}): string[] {
 	const problems: string[] = [];
@@ -417,6 +417,9 @@ export function askSpokenProblems(input: { question: string; correctAnswer?: str
 		else if (check.name === "no formulas") problems.push(`No formulas or symbols (${check.detail}): say it in plain words.`);
 		else problems.push(`No written formatting (${check.detail}): this is spoken.`);
 	}
+	// Two questions under one question mark (D164): "..., and why?".
+	const joined = /(?:,|\b)\s*(?:and|or)\s+(?:if so,?\s+)?(?:why|how|what|which|who|whom|whose|where|when|is|are|was|were|does|do|did|should|would|could|can|will)\b/i.exec(question);
+	if (joined) problems.push(`Ask exactly one question: "${joined[0].trim()}" starts a second one. Ask it in a later turn.`);
 	const words = question.split(/\s+/).filter(Boolean).length;
 	if (words > ASK_SPOKEN_WORD_CAP) problems.push(`At most ${ASK_SPOKEN_WORD_CAP} words: this has ${words}. Give the context in your spoken text before the question.`);
 	if (question && !question.endsWith("?")) problems.push("End the question with its question mark; it is the last thing he hears.");

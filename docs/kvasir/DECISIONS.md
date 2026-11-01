@@ -169,3 +169,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D161 | 2026-11-01 | A chat is a voice session when its record has `voice: true`, set at creation and never changed | Sagar | |
 | D162 | 2026-11-01 | With an `ask_spoken` open, the voice loop's turn sender sends the next utterance as that question's answer, through the existing answer path; the server is unchanged there | Sagar | |
 | D163 | 2026-11-01 | The `ask_spoken` validator rejects a second question call in the turn, more than one question mark, option lists, formula symbols, Markdown, and more than 40 words, so the model fixes the call before anything is spoken | Sagar | |
+| D164 | 2026-11-01 | The `ask_spoken` validator also rejects two questions joined with "and" or "or" under one question mark ("..., and why?", "..., or how ..."), extending D163 to what it is meant to catch | Sagar | D163 |
