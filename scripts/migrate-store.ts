@@ -4,10 +4,13 @@
  * picks the folder, as for the app; unset, it is the repo's data/ (dev) as
  * for `next dev`. Pass the desktop app's folder to migrate it:
  *   KV_DATA_DIR=~/Library/Application\ Support/Kvasir/data npm run migrate:sqlite
- * Close the app first: the script refuses while the Kvasir app is running.
+ * Close the app first: the script refuses to touch the desktop app's folder
+ * while the Kvasir app is running.
  */
 
 import { execFileSync } from "node:child_process";
+import * as path from "node:path";
+import { defaultDataDir } from "./mcp-server-paths.ts";
 
 const direction = process.argv[2];
 if (direction !== "sqlite" && direction !== "files") {
@@ -23,7 +26,8 @@ function appRunning(): boolean {
 		return false; // pgrep exits 1 when nothing matches
 	}
 }
-if (appRunning()) {
+const target = path.resolve(process.env.KV_DATA_DIR || path.join(import.meta.dirname, "..", "data"));
+if (target === path.resolve(defaultDataDir()) && appRunning()) {
 	console.error("The Kvasir app is running. Quit it, then run the migration again.");
 	process.exit(1);
 }
