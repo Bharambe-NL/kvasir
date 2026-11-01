@@ -79,10 +79,15 @@ export function searchGraph(ctx: KvasirReadContext, input: { query?: string; lim
 			const name = n.name.toLowerCase();
 			const all = [n.name, n.statement, ...n.aliases].join(" ").toLowerCase();
 			if (!words.every((w) => all.includes(w))) return null;
-			return { n, score: words.filter((w) => name.includes(w)).length };
+			// Exact name, then a name starting with the query, then the words in
+			// the name, then the words anywhere; shorter names first on ties.
+			const q = words.join(" ");
+			const score =
+				(name === q ? 1000 : 0) + (name.startsWith(q) ? 100 : 0) + words.filter((w) => name.includes(w)).length;
+			return { n, score };
 		})
 		.filter((x): x is { n: GraphNode; score: number } => x !== null)
-		.sort((a, b) => b.score - a.score || a.n.name.localeCompare(b.n.name));
+		.sort((a, b) => b.score - a.score || a.n.name.length - b.n.name.length || a.n.name.localeCompare(b.n.name));
 	if (scored.length === 0) return "No proposition matched. Try fewer or different words.";
 	const shown = scored.slice(0, limit);
 	const lines = [`${scored.length} proposition${scored.length === 1 ? "" : "s"} matched${scored.length > shown.length ? `, showing ${shown.length}` : ""}:`];
