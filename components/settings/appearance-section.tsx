@@ -47,7 +47,7 @@ import { MenuShell } from "@/components/menu-shell";
 import { Hint } from "@/components/ui/hint";
 import { useAppearance } from "./appearance.tsx";
 import { FontMenuList } from "./model-menu";
-import { CommitInput, SettingsMenuTrigger, SettingsRow, ThinSelect, Toggle } from "./controls.tsx";
+import { CommitInput, SettingsMenuTrigger, SettingsRow, MenuSelect, Toggle } from "./controls.tsx";
 
 /** The factory reading family — the DEFAULT row's identity (unset =
  *  this). Exported for tests. */
@@ -193,30 +193,26 @@ export function AppearanceSection({
 	return (
 		<>
 			<SettingsRow label="Mode" testid="row-mode">
-				<ThinSelect
+				<MenuSelect<AppearanceMode>
 					value={appearance?.mode ?? FACTORY_SETTINGS.appearance.mode}
 					ariaLabel="mode"
-					onChange={(v) => onSectionChange({ ...appearance, mode: v as AppearanceMode })}
+					onChange={(v) => onSectionChange({ ...appearance, mode: v })}
 					testid="select-mode"
-				>
-					<option value="dark">Dark</option>
-					<option value="light">Light</option>
-					<option value="system">System</option>
-				</ThinSelect>
+					options={[
+						{ value: "dark", label: "Dark" },
+						{ value: "light", label: "Light" },
+						{ value: "system", label: "System" },
+					]}
+				/>
 			</SettingsRow>
 			<SettingsRow label="Theme" testid="row-theme">
-				<ThinSelect
+				<MenuSelect<ThemeId>
 					value={appearance?.theme ?? FACTORY_SETTINGS.appearance.theme}
 					ariaLabel="theme"
-					onChange={(v) => onSectionChange({ ...appearance, theme: v as ThemeId })}
+					onChange={(v) => onSectionChange({ ...appearance, theme: v })}
 					testid="select-theme"
-				>
-					{THEMES.map((t) => (
-						<option key={t.id} value={t.id}>
-							{t.name}
-						</option>
-					))}
-				</ThinSelect>
+					options={THEMES.map((t) => ({ value: t.id, label: t.name }))}
+				/>
 			</SettingsRow>
 			<SettingsRow label="Highlight colour" hint="Empty = the theme's own" testid="row-highlight">
 				<span className="flex items-center gap-1.5">
