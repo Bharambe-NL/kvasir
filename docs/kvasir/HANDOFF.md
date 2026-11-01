@@ -10,13 +10,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Task: P6-4 Teaching evals (#50) is ready and waiting for Sagar's review (prompts, rubric, scenarios and the results format). The live baseline run is not done yet: see Next. P6-2's Claude Desktop check is still Sagar's to do.
-- Branch: `p6/teaching-evals`
-- PR: #56, linked to #50
+- Task: none in progress. P6-4 merged via #56; its live baseline run is still to do (see Next). P6-2's Claude Desktop check is still Sagar's to do.
+- Branch: `main`
+- PR: none open
 
 ## Done
 
-- P6-4 built on #56, waiting for review: `npm run eval` (`scripts/eval.ts`), `src/evals/` (driver, learner and judge, prompts, rubric, checks, transcript; own lint zone), `evals/scenarios/` (three), `evals/fixtures/data/` (golden data plus the DORA v1 import), `questionDataFor` moved to `src/core/question-data.ts`, `docs/evals.md`. Tests run a scenario with faux engines through the real chat handler. Decisions D094 (simulated learner), D095 (rubric judge plus hard checks), D096 (three scenarios), D097 (results committed under `evals/results/<commit>/`), D098 (models and a 12-reply cap), D099 (the learner runs on a provider other than Anthropic, `KV_EVAL_LEARNER`, default OpenRouter DeepSeek). The first live run (Opus 5.5 session and judge, Sonnet 5.5 learner) showed Anthropic blocks the learner's calls as duplicating model outputs, in all three scenarios; nothing was committed from it. Plan approved on #50.
+- P6-4 merged via #56 (prompts, rubric, scenarios and results format approved by Sagar): `npm run eval` (`scripts/eval.ts`), `src/evals/` (driver, learner and judge, prompts, rubric, checks, transcript; own lint zone), `evals/scenarios/` (three), `evals/fixtures/data/` (golden data plus the DORA v1 import), `questionDataFor` moved to `src/core/question-data.ts`, `docs/evals.md`. Tests run a scenario with faux engines through the real chat handler. Decisions D094 (simulated learner), D095 (rubric judge plus hard checks), D096 (three scenarios), D097 (results committed under `evals/results/<commit>/`), D098 (models and a 12-reply cap), D099 (the learner runs on a provider other than Anthropic, `KV_EVAL_LEARNER`, default OpenRouter DeepSeek). The first live run (Opus 5.5 session and judge, Sonnet 5.5 learner) showed Anthropic blocks the learner's calls as duplicating model outputs, in all three scenarios; nothing was committed from it. Plan approved on #50.
 - P6-2 merged via #55 (tools and descriptions approved by Sagar; Claude Desktop check pending): `src/mcp/tools.ts` and `src/mcp/server.ts` (six read-only tools), `scripts/mcp-server.ts` (stdio), `scripts/mcp-config.ts` (`npm run mcp:config`), `docs/mcp.md`, the `src/mcp` lint zone, `readSource` moved to `src/core/source-read.ts`. Decisions D090 (six read-only tools), D091 (stdio command reading the data folder), D092 (learner state shared read-only), D093 (config snippet via `npm run mcp:config`). Plan approved on #48.
 - P6 opened via #54 (D089 self-merge allowed).
 - P2 gate passed via #45 (approved by Sagar in #37): all three checks live with his models on a temp data copy. Released as `v0.2.0` (notes only, D027; the tag's release workflow run was cancelled before building). D088: P2 is `v0.2.0` and P1 gets no separate tag.
@@ -43,7 +43,8 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. Review and merge #56 (P6-4). Then the live baseline: Sagar adds a non-Anthropic sign-in in Kvasir (OpenRouter for the default learner, or set `KV_EVAL_LEARNER=provider/model`), then `npm run eval` (about $2 to $5) and commit `evals/results/<commit>/` in its own PR. P6-7 (#6, house-style prompts) needs that baseline to compare against.
+1. The P6-4 live baseline: Sagar adds a non-Anthropic sign-in in Kvasir (OpenRouter for the default learner, or set `KV_EVAL_LEARNER=provider/model`), then `npm run eval` (about $2 to $5) and commit `evals/results/<commit>/` in its own PR. P6-7 (#6, house-style prompts) needs that baseline to compare against.
+   - The fixture lives in `evals/fixtures/data/`; `.gitignore` unignores it because the root `data/` rule matches any folder named `data`.
 2. Sagar's Claude Desktop check for P6-2: add the `npm run -s mcp:config` entry to `claude_desktop_config.json`, restart, see the six tools, ask a question from his graph (`docs/mcp.md`). Record the result in #53; the P6 gate needs it.
 3. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 4. In the meantime, a P6 task: run `/kv-task P6-<n>`. Each asks its own questions; P6-2 confirms the tool list, P6-6 the key recovery method.
