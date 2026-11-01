@@ -68,6 +68,13 @@ declare global {
 			getPathForFile?: (file: File) => string;
 			/** Show an export folder in Finder (Kvasir P6-3); false when refused. */
 			revealExport?: (path: string) => Promise<boolean>;
+			/** Encryption at rest (Kvasir P6-6); main does the work, the key
+			 *  never reaches the window. */
+			encryption?: {
+				enable(): Promise<{ recoveryKey: string }>;
+				disable(): Promise<void>;
+				recover(recoveryKey: string): Promise<{ ok: boolean; error?: string }>;
+			};
 			/** External Next desktop-dev uses the server's web connections. */
 			subscriptionTransport?: "desktop" | "web";
 			openSubscriptionBrowser?: (action: string) => Promise<void>;
