@@ -12,12 +12,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P3 Voice tutor and drive mode: opened 2026-11-01. Milestone 6, tracking issue #88, task issues #82 to #87 (P3-1 to P3-6). Release tags now count up (D147): P3's gate takes the next minor after the latest release. Self-merge allowed for PRs that need no review (D148).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: none in progress. Next is P3-1 voice prompt profile (`/kv-task P3-1`).
-- Branch: none
-- PR: none open
+- Task: P3-1 Voice prompt profile (#82) is in progress; plan approved on #82.
+- Branch: `p3/voice-prompt-profile`
+- PR: P3-1 draft, linked to #82
 
 ## Done
 
+- P3-1 started: D149 (an overlay folder), D150 (composition only until P3-3), D151 (the prober asks the four setup questions), D152 (examples from the learner's field), D153 (a scripted live check). Plan approved on #82.
 - P3 opened: milestone 6, tracking issue #88, task issues #82 to #87. D147: release tags count up in release order. D148: P3 self-merge.
 - P7 gate passed via #81 (approved by Sagar): all five checks pass; version 0.7.0; tagged `v0.7.0` and published with notes only (the Mac package stopped on missing Apple signing secrets, and Sagar chose no installers, as for `v0.2.0`). Milestone 5 and #69 closed.
 - P7-5 merged via #79 (all four areas approved by Sagar): D141 (four areas: chat, review, home and sidebar, settings and dialogs), D142 (72-character chat column), D143 (type roles), D144 (subtle motion), D145 (approval per area from screenshots). Plan approved on #68. Built: type roles and motion tokens; chat column and calmer title; review card with place and progress, two empty states; Graph and Chains switch, "…" menu, cost label, notice line, empty graph buttons; one menu select in settings and dialogs. D146: the notice reads "No provider key yet. Add one to start."
