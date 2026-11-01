@@ -12,7 +12,7 @@
  */
 
 import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
-import { isHexColor, type ChatSettings } from "../core";
+import { APPEARANCE_MODES, THEME_IDS, isHexColor, type AppearanceMode, type ChatSettings, type ThemeId } from "../core";
 import type {
 	AgentSettings,
 	AppearanceSettings,
@@ -228,22 +228,40 @@ function parseHexOrNull(value: unknown, field: string): { color?: string | null;
 	return { color: value };
 }
 
-/** appearance: { mode?, background?, fontFamily?, proseFontSize?,
- *  sessionNameSerif?, mdRendering? } */
+/** appearance: { mode?, background?, lightBackground?, theme?, highlight?,
+ *  fontFamily?, proseFontSize?, sessionNameSerif?, mdRendering? } */
 export function parseAppearanceSettingsBody(body: unknown): SettingsBodyResult<AppearanceSettings> {
 	const raw = asRecord(body);
 	if (!raw) return { ok: false, error: "Invalid JSON body" };
 	const settings: AppearanceSettings = {};
 	if (raw.mode !== undefined) {
-		if (raw.mode !== "dark" && raw.mode !== "light") {
-			return { ok: false, error: "mode must be \"dark\" or \"light\"" };
+		if (!APPEARANCE_MODES.includes(raw.mode as AppearanceMode)) {
+			return { ok: false, error: "mode must be \"dark\", \"light\" or \"system\"" };
 		}
-		settings.mode = raw.mode;
+		settings.mode = raw.mode as AppearanceMode;
 	}
 	if (raw.background !== undefined) {
 		const parsed = parseHexOrNull(raw.background, "background");
 		if (parsed.error) return { ok: false, error: parsed.error };
 		settings.background = parsed.color ?? null;
+	}
+	// Kvasir P7-2 (D131) and P7-3 (D137): the light background, the theme and
+	// the custom highlight.
+	if (raw.lightBackground !== undefined) {
+		const parsed = parseHexOrNull(raw.lightBackground, "lightBackground");
+		if (parsed.error) return { ok: false, error: parsed.error };
+		settings.lightBackground = parsed.color ?? null;
+	}
+	if (raw.theme !== undefined) {
+		if (!THEME_IDS.includes(raw.theme as ThemeId)) {
+			return { ok: false, error: `theme must be one of ${THEME_IDS.map((t) => `"${t}"`).join(", ")}` };
+		}
+		settings.theme = raw.theme as ThemeId;
+	}
+	if (raw.highlight !== undefined) {
+		const parsed = parseHexOrNull(raw.highlight, "highlight");
+		if (parsed.error) return { ok: false, error: parsed.error };
+		settings.highlight = parsed.color ?? null;
 	}
 	if (raw.fontFamily !== undefined) {
 		if (raw.fontFamily !== null && (typeof raw.fontFamily !== "string" || !raw.fontFamily.trim())) {

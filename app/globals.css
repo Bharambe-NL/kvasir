@@ -103,6 +103,17 @@
 	--ink-bright: light-dark(#1c1b19, #fff);
 	--mark-fill: light-dark(#6f6a62, rgb(148, 148, 148));
 	--mark-detail: light-dark(#1c1b19, #fff);
+	/* Kvasir P7-3 (D135, D138): the highlight (selected, active, focus) and
+	   the graph's cluster region numbers. Kvasir's highlight is today's
+	   primary ink, so the default theme looks as before. light-dark() takes
+	   colours only, so the region numbers come as -light and -dark pairs. */
+	--highlight: light-dark(#1c1b19, #e6e6e6);
+	--on-highlight: light-dark(#faf8f4, #141414);
+	--region-saturation: 65%;
+	--region-lightness-light: 60%;
+	--region-lightness-dark: 60%;
+	--region-label-lightness-light: 32%;
+	--region-label-lightness-dark: 78%;
 }
 
 /* The app is always dark (<html class="dark">); mirror the same values so
@@ -118,6 +129,153 @@
 }
 .system {
 	color-scheme: light dark;
+}
+
+/* Kvasir P7-3 (D132, D133): colour themes on top of Mode. <html> carries
+   one theme class beside the mode class; Kvasir is the default above and
+   has no class. Each theme sets its tokens as light-dark(light, dark), so
+   Mode still picks the half. The derived surfaces keep the per-mode hooks,
+   so the custom background fields still apply. */
+.theme-sepia {
+	--background: light-dark(var(--lh-light-background, #f6efe3), var(--lh-dark-background, #1a1612));
+	--card: light-dark(var(--lh-light-card, #ede4d3), var(--lh-dark-card, #231d17));
+	--popover: light-dark(var(--lh-light-popover, #ede4d3), var(--lh-dark-popover, #231d17));
+	--secondary: light-dark(var(--lh-light-secondary, #ede4d3), var(--lh-dark-secondary, #231d17));
+	--muted: light-dark(var(--lh-light-muted, #ede4d3), var(--lh-dark-muted, #231d17));
+	--accent: light-dark(var(--lh-light-accent, #e2d6c0), var(--lh-dark-accent, #30281f));
+	--border: light-dark(var(--lh-light-border, #d3c4a8), var(--lh-dark-border, #4a3e30));
+	--input: light-dark(var(--lh-light-input, #d3c4a8), var(--lh-dark-input, #4a3e30));
+	--primary-foreground: light-dark(var(--lh-light-primary-foreground, #f6efe3), var(--lh-dark-primary-foreground, #1a1612));
+	--foreground: light-dark(#2b2118, #ece2d0);
+	--card-foreground: light-dark(#2b2118, #ece2d0);
+	--popover-foreground: light-dark(#2b2118, #ece2d0);
+	--primary: light-dark(#2b2118, #ece2d0);
+	--secondary-foreground: light-dark(#2b2118, #ece2d0);
+	--accent-foreground: light-dark(#2b2118, #ece2d0);
+	--muted-foreground: light-dark(#6e5e49, #a39478);
+	--highlight: light-dark(#9a5b2e, #d29a62);
+	--on-highlight: light-dark(#ffffff, #1a1612);
+	--ring: var(--highlight);
+	--ink-bright: light-dark(#2b2118, #ece2d0);
+	--region-saturation: 45%;
+	--region-lightness-light: 60%;
+	--region-lightness-dark: 55%;
+	--region-label-lightness-light: 30%;
+	--region-label-lightness-dark: 78%;
+	/* Lighter red on the tinted dark cards, for contrast (P7-3). */
+	--danger: light-dark(oklch(44.4% 0.177 26.899), oklch(70.4% 0.191 22.216));
+}
+.theme-forest {
+	--background: light-dark(var(--lh-light-background, #f3f6f2), var(--lh-dark-background, #121714));
+	--card: light-dark(var(--lh-light-card, #e8eee6), var(--lh-dark-card, #19201b));
+	--popover: light-dark(var(--lh-light-popover, #e8eee6), var(--lh-dark-popover, #19201b));
+	--secondary: light-dark(var(--lh-light-secondary, #e8eee6), var(--lh-dark-secondary, #19201b));
+	--muted: light-dark(var(--lh-light-muted, #e8eee6), var(--lh-dark-muted, #19201b));
+	--accent: light-dark(var(--lh-light-accent, #dbe4d8), var(--lh-dark-accent, #243029));
+	--border: light-dark(var(--lh-light-border, #c9d5c6), var(--lh-dark-border, #3a4a3f));
+	--input: light-dark(var(--lh-light-input, #c9d5c6), var(--lh-dark-input, #3a4a3f));
+	--primary-foreground: light-dark(var(--lh-light-primary-foreground, #f3f6f2), var(--lh-dark-primary-foreground, #121714));
+	--foreground: light-dark(#18201a, #e1e8e2);
+	--card-foreground: light-dark(#18201a, #e1e8e2);
+	--popover-foreground: light-dark(#18201a, #e1e8e2);
+	--primary: light-dark(#18201a, #e1e8e2);
+	--secondary-foreground: light-dark(#18201a, #e1e8e2);
+	--accent-foreground: light-dark(#18201a, #e1e8e2);
+	--muted-foreground: light-dark(#5d6b5f, #8fa194);
+	--highlight: light-dark(#2f7a4f, #6cc28f);
+	--on-highlight: light-dark(#ffffff, #121714);
+	--ring: var(--highlight);
+	--ink-bright: light-dark(#18201a, #e1e8e2);
+	--region-saturation: 40%;
+	--region-lightness-light: 60%;
+	--region-lightness-dark: 55%;
+	--region-label-lightness-light: 30%;
+	--region-label-lightness-dark: 78%;
+	/* Lighter red on the tinted dark cards, for contrast (P7-3). */
+	--danger: light-dark(oklch(44.4% 0.177 26.899), oklch(70.4% 0.191 22.216));
+}
+.theme-eink {
+	--background: light-dark(var(--lh-light-background, #f4f4f1), var(--lh-dark-background, #000000));
+	--card: light-dark(var(--lh-light-card, #ebebe7), var(--lh-dark-card, #111111));
+	--popover: light-dark(var(--lh-light-popover, #ebebe7), var(--lh-dark-popover, #111111));
+	--secondary: light-dark(var(--lh-light-secondary, #ebebe7), var(--lh-dark-secondary, #111111));
+	--muted: light-dark(var(--lh-light-muted, #ebebe7), var(--lh-dark-muted, #111111));
+	--accent: light-dark(var(--lh-light-accent, #dcdcd8), var(--lh-dark-accent, #222222));
+	--border: light-dark(var(--lh-light-border, #8a8a86), var(--lh-dark-border, #777777));
+	--input: light-dark(var(--lh-light-input, #8a8a86), var(--lh-dark-input, #777777));
+	--primary-foreground: light-dark(var(--lh-light-primary-foreground, #f4f4f1), var(--lh-dark-primary-foreground, #000000));
+	--foreground: light-dark(#000000, #ffffff);
+	--card-foreground: light-dark(#000000, #ffffff);
+	--popover-foreground: light-dark(#000000, #ffffff);
+	--primary: light-dark(#000000, #ffffff);
+	--secondary-foreground: light-dark(#000000, #ffffff);
+	--accent-foreground: light-dark(#000000, #ffffff);
+	--muted-foreground: light-dark(#4a4a4a, #b0b0b0);
+	--highlight: light-dark(#000000, #ffffff);
+	--on-highlight: light-dark(#ffffff, #000000);
+	--ring: var(--highlight);
+	--ink-bright: light-dark(#000000, #ffffff);
+	--region-saturation: 0%;
+	--region-lightness-light: 82%;
+	--region-lightness-dark: 30%;
+	--region-label-lightness-light: 20%;
+	--region-label-lightness-dark: 85%;
+	--danger: light-dark(#000000, #ffffff);
+	--danger-soft: light-dark(#000000, #ffffff);
+	--destructive: light-dark(#000000, #ffffff);
+	--warning: light-dark(#000000, #ffffff);
+	--warning-soft: light-dark(#4a4a4a, #b0b0b0);
+	--success: light-dark(#000000, #ffffff);
+	--success-soft: light-dark(#4a4a4a, #b0b0b0);
+	--heat-low: light-dark(#000000, #ffffff);
+	--heat-mid: light-dark(#6b6b6b, #9a9a9a);
+	--heat-high: light-dark(#b5b5b5, #555555);
+	--confidence-0: light-dark(#444444, #bbbbbb);
+	--confidence-30: light-dark(#444444, #bbbbbb);
+	--confidence-50: light-dark(#444444, #bbbbbb);
+	--confidence-70: light-dark(#444444, #bbbbbb);
+	--confidence-90: light-dark(#444444, #bbbbbb);
+	--confidence-100: light-dark(#444444, #bbbbbb);
+	--confidence-track: light-dark(#dcdcd8, #222222);
+	--confidence-tick: light-dark(#000000, #ffffff);
+	--mark-fill: light-dark(#4a4a4a, #b0b0b0);
+	--mark-detail: light-dark(#000000, #ffffff);
+}
+
+/* Text selection takes the highlight in the coloured themes; Kvasir keeps
+   the browser's own. */
+.theme-sepia ::selection,
+.theme-forest ::selection,
+.theme-eink ::selection {
+	background: color-mix(in srgb, var(--highlight) 30%, transparent);
+}
+
+/* Switches that are on take the highlight in the coloured themes (P7-3);
+   Kvasir keeps its grey track and ink knob. */
+:is(.theme-sepia, .theme-forest, .theme-eink) [role="switch"][aria-checked="true"] {
+	background-color: var(--highlight);
+}
+:is(.theme-sepia, .theme-forest, .theme-eink) [role="switch"][aria-checked="true"] > span {
+	background-color: var(--on-highlight);
+	color: var(--highlight);
+}
+
+/* E-ink (D136): no motion, as with the OS reduce-motion setting, and a
+   symbol before status text, which has no colour here. */
+.theme-eink *,
+.theme-eink *::before,
+.theme-eink *::after {
+	animation: none !important;
+	transition: none !important;
+}
+.theme-eink .text-danger::before {
+	content: "\2715\00a0";
+}
+.theme-eink .text-warning::before {
+	content: "!\00a0";
+}
+.theme-eink .text-success::before {
+	content: "\2713\00a0";
 }
 
 /* CMU Serif bold (titles) — bundled local file, no CDN dependency. */
@@ -197,6 +355,8 @@
 	--color-scrim: var(--scrim);
 	--color-on-accent: var(--on-accent);
 	--color-paper: var(--paper);
+	--color-highlight: var(--highlight);
+	--color-on-highlight: var(--on-highlight);
 	--color-ink-bright: var(--ink-bright);
 	--color-border: var(--border);
 	--color-input: var(--input);

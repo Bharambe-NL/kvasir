@@ -137,3 +137,10 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D129 | 2026-11-01 | The light palette is warm paper: background #faf8f4, cards #f2efe9, text #1c1b19, borders #d9d4ca | Sagar | |
 | D130 | 2026-11-01 | The Background setting becomes one per mode (Dark background, Light background), each with its own derivation: lighter steps in dark, darker steps in light | Sagar | |
 | D131 | 2026-11-01 | Settings shape: `appearance.mode` is `"dark" | "light" | "system"`; `appearance.background` keeps meaning the dark background; a new `appearance.lightBackground` (hex or null) is the light one. No migration | Sagar | |
+| D132 | 2026-11-01 | A colour theme sits on top of Mode: each theme has a dark and a light version and Mode picks one. E-ink's light version is paper and ink, its dark version white ink on black | Sagar | |
+| D133 | 2026-11-01 | Four preset themes: Kvasir (today's palettes), Sepia, Forest and E-ink | Sagar | |
+| D134 | 2026-11-01 | Custom colour is one accent, the highlight colour (swatches plus a hex field), over any preset; the per-mode background fields stay | Sagar | |
+| D135 | 2026-11-01 | The chromatic accent token is `--highlight` with `--on-highlight` for text on it (Tailwind `bg-highlight`, `ring-highlight` and so on); `--accent` stays the grey hover background | Sagar | |
+| D136 | 2026-11-01 | E-ink shows colour-coded things with greys plus shape: three grey heat levels and a ring on slipping nodes, a grey confidence fill with ticks, status text in ink with a symbol, grey cluster regions, and all motion off | Sagar | |
+| D137 | 2026-11-01 | Settings shape: `appearance.theme` is `"kvasir" | "sepia" | "forest" | "eink"` (default `"kvasir"`); `appearance.highlight` is a hex or null (null = the theme's own). Optional, no migration | Sagar | |
+| D138 | 2026-11-01 | Cluster regions take `--region-saturation`, `--region-lightness` and `--region-label-lightness` per theme and mode (E-ink: saturation 0); the hue stays per cluster | Sagar | |

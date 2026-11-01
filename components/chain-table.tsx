@@ -552,7 +552,7 @@ export function ChainTableBody({
 								data-testid="chain-practice-done"
 								onClick={onSelect}
 								aria-label={`Done picking — ${selection.size} ${selection.size === 1 ? "proposition" : "propositions"} selected`}
-								className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+								className="flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1.5 text-xs font-medium text-on-highlight transition-colors hover:bg-highlight/80"
 							>
 								<DumbbellIcon aria-hidden="true" className="size-3.5" />
 								Done

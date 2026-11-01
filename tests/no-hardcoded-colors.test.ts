@@ -13,7 +13,7 @@ import { it } from "node:test";
 
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 const ROOTS = ["components", "app", "src"];
-const TOKEN_FILES = new Set(["app/globals.css", "src/core/background-defaults.ts"]);
+const TOKEN_FILES = new Set(["app/globals.css", "src/core/background-defaults.ts", "src/core/theme-presets.ts"]);
 
 /** Exceptions: file, the exact text allowed there, and why. */
 const ALLOWED: { file: string; text: string; why: string }[] = [

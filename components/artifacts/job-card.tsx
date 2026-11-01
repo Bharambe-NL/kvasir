@@ -105,7 +105,7 @@ export function ResearchBriefCard({ output }: { output: unknown }) {
 									href={s.url}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-primary underline-offset-2 hover:underline"
+									className="text-highlight underline-offset-2 hover:underline"
 								>
 									{s.title}
 								</a>

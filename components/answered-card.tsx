@@ -110,7 +110,7 @@ export function AnsweredCard({ answer: savedAnswer, input }: { answer: QuestionA
 									"flex items-center gap-2 rounded-lg border px-3 py-1.5",
 									sel && key && "border-success/60 bg-success/10",
 									sel && !key && isQuiz && "border-danger/60 bg-danger/10",
-									sel && !isQuiz && "border-primary bg-accent",
+									sel && !isQuiz && "border-highlight bg-accent",
 									!sel && key && "border-success/40",
 								)}
 							>
@@ -152,7 +152,7 @@ export function AnsweredCard({ answer: savedAnswer, input }: { answer: QuestionA
 					{answer.other && (
 						<div
 							data-testid="answered-other"
-							className="flex items-center gap-2 rounded-lg border border-primary bg-accent px-3 py-1.5"
+							className="flex items-center gap-2 rounded-lg border border-highlight bg-accent px-3 py-1.5"
 						>
 							<span>“<PathText text={answer.other} />”</span>
 						</div>

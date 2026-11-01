@@ -215,14 +215,14 @@ export function QuestionDockBar({
 				onClick={onExpand}
 				className="dock-variant flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/40"
 			>
-				<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+				<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-highlight/15 text-highlight">
 					<PlayIcon className="size-3.5" />
 				</span>
 				<span className="min-w-0 flex-1">
 					<span className="block text-sm font-medium">Check your understanding</span>
 					<span className="block truncate text-xs text-muted-foreground">{teaserText(question)}</span>
 				</span>
-				<span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
+				<span className="flex shrink-0 items-center gap-1 text-xs font-medium text-highlight">
 					Open <ChevronRightIcon className="size-3.5" />
 				</span>
 			</button>
@@ -554,7 +554,7 @@ function QuestionDockForm({
 									onClick={() => toggle(i)}
 									className={cn(
 										"flex items-start gap-3 rounded-lg border px-3 py-2 text-left text-sm outline-none transition-colors",
-										isSel ? "border-primary bg-accent" : "hover:bg-accent/50",
+										isSel ? "border-highlight bg-accent" : "hover:bg-accent/50",
 										i === kbdIdx && !isSel && "ring-1 ring-border bg-accent/40",
 									)}
 								>
@@ -562,7 +562,7 @@ function QuestionDockForm({
 										className={cn(
 											"mt-0.5 flex size-4 shrink-0 items-center justify-center border",
 											qd.mode === "multi-select" ? "rounded-sm" : "rounded-full",
-											isSel ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/40",
+											isSel ? "border-highlight bg-highlight text-on-highlight" : "border-muted-foreground/40",
 										)}
 									>
 										{isSel && (
@@ -602,7 +602,7 @@ function QuestionDockForm({
 									// Option-row layout + radio circle (owner); the dashed
 									// outline stays — this is the deliberate non-answer.
 									"flex items-start gap-3 rounded-lg border border-dashed px-3 py-2 text-left text-sm outline-none transition-colors",
-									sel.dontKnow ? "border-primary text-foreground" : "text-muted-foreground",
+									sel.dontKnow ? "border-highlight text-foreground" : "text-muted-foreground",
 									kbdIdx === optionCount && !sel.dontKnow && "ring-1 ring-border bg-accent/40",
 								)}
 							>
@@ -610,7 +610,7 @@ function QuestionDockForm({
 									className={cn(
 										"mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border",
 										sel.dontKnow
-											? "border-primary bg-primary text-primary-foreground"
+											? "border-highlight bg-highlight text-on-highlight"
 											: "border-muted-foreground/40",
 									)}
 								>
@@ -629,7 +629,7 @@ function QuestionDockForm({
 								onClick={selectOther}
 								className={cn(
 									"flex items-start gap-3 rounded-lg border px-3 py-2 text-left text-sm outline-none transition-colors",
-									sel.otherSelected ? "border-primary bg-accent" : "border-dashed hover:bg-accent/50",
+									sel.otherSelected ? "border-highlight bg-accent" : "border-dashed hover:bg-accent/50",
 									kbdIdx === optionCount && !sel.otherSelected && "ring-1 ring-border bg-accent/40",
 								)}
 							>
@@ -638,7 +638,7 @@ function QuestionDockForm({
 										"mt-0.5 flex size-4 shrink-0 items-center justify-center border",
 										qd.mode === "multi-select" ? "rounded-sm" : "rounded-full",
 										sel.otherSelected
-											? "border-primary bg-primary text-primary-foreground"
+											? "border-highlight bg-highlight text-on-highlight"
 											: "border-muted-foreground/40",
 									)}
 								>
@@ -798,7 +798,7 @@ function QuestionDockForm({
 			>
 				<div
 					data-testid={qd.mode === "text" ? "answer-field" : "thinking-field"}
-					className="rounded-[10px] border border-border/70 bg-background/60 transition-colors focus-within:border-primary/50"
+					className="rounded-[10px] border border-border/70 bg-background/60 transition-colors focus-within:border-highlight/50"
 				>
 					<div className="px-2.5 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
 						{qd.mode === "text" ? "Your answer" : "YOUR THINKING"}

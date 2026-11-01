@@ -19,8 +19,8 @@
  * with the other navigations — mod+, pushes /settings from anywhere.)
  */
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { FACTORY_SETTINGS, type AppearanceSettings } from "@/src/core";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { FACTORY_SETTINGS, THEME_IDS, onHighlight, themeClass, type AppearanceSettings, type ThemeId } from "@/src/core";
 
 /** The resolved, fully-concrete appearance view (delta + factory merged). */
 export function resolveAppearance(delta: AppearanceSettings | undefined) {
@@ -29,6 +29,8 @@ export function resolveAppearance(delta: AppearanceSettings | undefined) {
 		mode: delta?.mode ?? f.mode,
 		background: delta?.background ?? f.background,
 		lightBackground: delta?.lightBackground ?? f.lightBackground,
+		theme: delta?.theme ?? f.theme,
+		highlight: delta?.highlight ?? f.highlight,
 		fontFamily: delta?.fontFamily ?? f.fontFamily,
 		proseFontSize: delta?.proseFontSize ?? f.proseFontSize,
 		sessionNameSerif: delta?.sessionNameSerif ?? f.sessionNameSerif,
@@ -87,6 +89,17 @@ export function applyModeClass(root: { classList: DOMTokenList }, mode: (typeof 
 	root.classList.add(mode);
 }
 
+/** Put the theme's class on <html> (P7-3, D132), removing the others;
+ *  Kvasir has none. */
+export function applyThemeClass(root: { classList: DOMTokenList }, theme: ThemeId): void {
+	for (const t of THEME_IDS) {
+		const c = themeClass(t);
+		if (c && t !== theme) root.classList.remove(c);
+	}
+	const c = themeClass(theme);
+	if (c) root.classList.add(c);
+}
+
 /** THE mapping: resolved appearance → the CSS variables to set on <html>.
  *  Absent entries = leave the factory stylesheet value in place. Pure —
  *  exported for tests. */
@@ -94,6 +107,13 @@ export function appearanceVars(a: ReturnType<typeof resolveAppearance>): Record<
 	const vars: Record<string, string> = {};
 	if (a.background !== null) Object.assign(vars, derivedPalette(a.background, "dark"));
 	if (a.lightBackground !== null) Object.assign(vars, derivedPalette(a.lightBackground, "light"));
+	// A custom highlight over any theme (P7-3, D134): the colour, readable
+	// text on it, and the focus ring.
+	if (a.highlight !== null) {
+		vars["--highlight"] = a.highlight;
+		vars["--on-highlight"] = onHighlight(a.highlight);
+		vars["--ring"] = a.highlight;
+	}
 	if (a.fontFamily !== null) {
 		vars["--font-prose"] = `"${a.fontFamily}", var(--font-sans3), ui-sans-serif, system-ui, sans-serif`;
 	}
@@ -146,10 +166,15 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
 	// the client takes over only once the record has arrived, so the
 	// factory default never flips a light page dark for a moment.
 	const [loaded, setLoaded] = useState(false);
-	const mode = resolveAppearance(delta).mode;
-	useEffect(() => {
-		if (loaded) applyModeClass(document.documentElement, mode);
-	}, [loaded, mode]);
+	const { mode, theme } = resolveAppearance(delta);
+	// Layout effects run before any passive effect in the same commit, so
+	// the class and variables are in place before children (the graph
+	// canvas) re-read their colours.
+	useLayoutEffect(() => {
+		if (!loaded) return;
+		applyModeClass(document.documentElement, mode);
+		applyThemeClass(document.documentElement, theme);
+	}, [loaded, mode, theme]);
 	const appliedRef = useRef<string>("");
 
 	// The vars apply on every change — stringified as the change signal.
@@ -162,7 +187,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
 	// has ever set is tracked; names absent from the new set are removed so
 	// the factory stylesheet value returns.
 	const appliedNamesRef = useRef<Set<string>>(new Set());
-	useEffect(() => {
+	useLayoutEffect(() => {
 		if (appliedRef.current === key) return;
 		appliedRef.current = key;
 		const root = document.documentElement;
@@ -226,4 +251,13 @@ export function useColorScheme(): "dark" | "light" {
 		return () => mq.removeEventListener("change", on);
 	}, []);
 	return appearance.mode === "system" ? (osDark ? "dark" : "light") : appearance.mode;
+}
+
+/** Everything that changes the colours code paints itself (P7-3): the
+ *  scheme on screen, the theme and the custom highlight. The graph canvas
+ *  re-reads its colours when this changes. */
+export function useColourKey(): string {
+	const scheme = useColorScheme();
+	const { appearance } = useAppearance();
+	return `${scheme}:${appearance.theme}:${appearance.highlight ?? ""}`;
 }

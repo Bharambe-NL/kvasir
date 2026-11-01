@@ -9,6 +9,7 @@ import { AppearanceProvider } from "@/components/settings/appearance";
 import UpdateBanner from "@/components/update-banner";
 import { EncryptionGate } from "@/components/locked-screen";
 import { effectiveSettings } from "@/src/server";
+import { themeClass } from "@/src/core";
 
 // Chrome = JetBrains Mono, teaching prose = Source Sans 3, titles = CMU
 // Serif (the bundled lh-cmu @font-face in globals.css — no CDN).
@@ -20,13 +21,14 @@ export const metadata: Metadata = {
 	description: "A teacher agent with a memory — sessions, quizzes, and a knowledge graph of what you know.",
 };
 
-/** The saved mode (Kvasir P7-2, D128) as the <html> class, so the first
+/** The saved mode (Kvasir P7-2, D128) and theme (P7-3, D132) as the <html> classes, so the first
  *  paint is already in the right colours. AppearanceProvider keeps it live
  *  afterwards. Unreadable settings (a locked encrypted folder cannot lock
  *  settings.json, but be safe) fall back to the default, dark. */
 function modeClass(): string {
 	try {
-		return effectiveSettings().appearance.mode;
+		const { mode, theme } = effectiveSettings().appearance;
+		return [mode, themeClass(theme)].filter(Boolean).join(" ");
 	} catch {
 		return "dark";
 	}

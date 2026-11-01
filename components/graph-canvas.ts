@@ -121,10 +121,16 @@ export interface CanvasColors {
 	/** The retention overlay's band colours, resolved from --heat-* (P7-1);
 	 *  absent = no overlay colours known, so the overlay is not drawn. */
 	heat?: Readonly<Record<HeatBand, string>>;
-	/** Light or dark on screen (P7-2): cluster labels take a darker
-	 *  lightness on paper so they stay readable. Absent = dark. */
-	scheme?: "dark" | "light";
+	/** The cluster regions' saturation and lightness from the theme and
+	 *  mode (P7-3, D138), as CSS percentages; the hue stays per cluster.
+	 *  Absent = the Kvasir dark values. */
+	regions?: { saturation: string; lightness: string; labelLightness: string };
+	/** E-ink (D136): a ring around slipping nodes, so the band reads
+	 *  without colour. */
+	heatRings?: boolean;
 }
+
+const KVASIR_REGIONS = { saturation: "65%", lightness: "60%", labelLightness: "78%" };
 
 export interface CanvasData {
 	nodes: CanvasNode[];
@@ -669,6 +675,8 @@ export class GraphCanvasRenderer {
 	private nodesPath: Path2D | null = null;
 	/** One disc path per heat band (P1-6); empty when the overlay is off. */
 	private heatPaths: { band: HeatBand; path: Path2D }[] = [];
+	private heatRingPath: Path2D = new Path2D();
+	private heatRingWidth = 1;
 	private shaftsPath: Path2D = new Path2D();
 	private headsPath: Path2D = new Path2D();
 	private regionCanvas: HTMLCanvasElement | null = null;
@@ -1294,6 +1302,19 @@ export class GraphCanvasRenderer {
 			}
 		}
 		this.heatPaths = [...bandPaths].map(([band, path]) => ({ band, path }));
+		// E-ink (P7-3, D136): a ring around each slipping node.
+		const ring = new Path2D();
+		if (data.heat && data.colors.heatRings) {
+			for (const n of data.nodes) {
+				if (!isVisible(n.id) || isImpNodeId(n.id)) continue;
+				const r = data.heat.get(n.id);
+				if (r === undefined || heatBand(r) !== "low") continue;
+				ring.moveTo(n.x + nodeR * 2, n.y);
+				ring.arc(n.x, n.y, nodeR * 2, 0, Math.PI * 2);
+			}
+		}
+		this.heatRingPath = ring;
+		this.heatRingWidth = nodeR * 0.5;
 
 		// Edge shafts + arrowheads (rendering arc, owner 2026-09-30): all
 		// arrows are PLAIN single shafts — the old double-shaft glyph is
@@ -1545,6 +1566,7 @@ export class GraphCanvasRenderer {
 		// round-cap strokes (Minkowski dilation). NO blanket per-node discs
 		// — they double-counted where nodes sit on edges (user-identified
 		// hot spots, when clusters were edge-based).
+		const regions = data.colors.regions ?? KVASIR_REGIONS;
 		data.clusters.forEach((cluster, ci) => {
 			const hue = clusterHue(cluster.id);
 			// Full-opacity strokes: alpha is applied ONCE at the very end
@@ -1554,7 +1576,7 @@ export class GraphCanvasRenderer {
 			// counted spot (user report 2026-09-14). At alpha 1 the alpha
 			// channel is a pure coverage indicator: overlaps of any count
 			// contribute exactly 1.0.
-			rctx.strokeStyle = `hsla(${hue}, 65%, 60%, 1)`;
+			rctx.strokeStyle = `hsla(${hue}, ${regions.saturation}, ${regions.lightness}, 1)`;
 			rctx.beginPath();
 			// Endpoints actually covered by a stroke's round caps.
 			const touched = new Set<string>();
@@ -1583,7 +1605,7 @@ export class GraphCanvasRenderer {
 			// radius as a round cap = dilation) covers exactly the members no
 			// stroke reached: every member is painted by its edges' caps OR
 			// one disc, never both — the no-double-counting rule survives.
-			rctx.fillStyle = `hsla(${hue}, 65%, 60%, 1)`;
+			rctx.fillStyle = `hsla(${hue}, ${regions.saturation}, ${regions.lightness}, 1)`;
 			const discR = dilationW / cell;
 			for (const id of cluster.members) {
 				if (touched.has(id) || !isVisible(id)) continue;
@@ -1720,6 +1742,11 @@ export class GraphCanvasRenderer {
 				ctx.fillStyle = heat[band];
 				ctx.fill(path);
 			}
+			if (data.colors.heatRings) {
+				ctx.strokeStyle = heat.low;
+				ctx.lineWidth = this.heatRingWidth;
+				ctx.stroke(this.heatRingPath);
+			}
 		}
 
 		// 6. Node labels — one global gate, faded together. World-scaled
@@ -1782,7 +1809,8 @@ export class GraphCanvasRenderer {
 			const lineH = (settings.clusterLabelSize * REGION_LABEL_LINE_HEIGHT) / k;
 			for (const rm of this.regionMeta) {
 				if (!rm.lines) continue;
-				ctx.fillStyle = `hsla(${rm.hue}, 55%, ${data.colors.scheme === "light" ? 32 : 78}%, 0.85)`;
+				const rg = data.colors.regions ?? KVASIR_REGIONS;
+				ctx.fillStyle = `hsla(${rm.hue}, ${rg.saturation === "0%" ? "0%" : "55%"}, ${rg.labelLightness}, 0.85)`;
 				const firstOffset = (-(rm.lines.length - 1) / 2) * lineH;
 				for (let i = 0; i < rm.lines.length; i++) {
 					ctx.fillText(rm.lines[i]!, rm.cx, rm.cy + firstOffset + i * lineH);

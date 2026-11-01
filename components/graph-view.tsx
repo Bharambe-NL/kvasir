@@ -66,7 +66,7 @@
 import { useRouter } from "next/navigation";
 import { DueChip, RetentionToggle } from "@/components/review/retention-controls";
 import { GraphExportMenu } from "@/components/graph-export";
-import { useColorScheme } from "@/components/settings/appearance";
+import { useAppearance, useColorScheme, useColourKey } from "@/components/settings/appearance";
 import { useRetentionOverlay, useReviewSummary } from "@/components/review/use-review-summary";
 import { useReviewExclusions } from "@/components/review/use-review-exclusions";
 import { CitationChip, useCitationPanel } from "@/components/citation-chip";
@@ -229,6 +229,17 @@ function tokenHex(cssVar: string): string {
 	const value = getComputedStyle(probe).color;
 	probe.remove();
 	return value ? cssColorToHex(value) : "#888888";
+}
+
+/** The cluster region numbers for the scheme on screen (P7-3, D138). */
+function regionTokens(scheme: "dark" | "light"): { saturation: string; lightness: string; labelLightness: string } {
+	const css = getComputedStyle(document.documentElement);
+	const read = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
+	return {
+		saturation: read("--region-saturation", "65%"),
+		lightness: read(`--region-lightness-${scheme}`, "60%"),
+		labelLightness: read(`--region-label-lightness-${scheme}`, scheme === "light" ? "32%" : "78%"),
+	};
 }
 
 // ---- Component ------------------------------------------------------------
@@ -1108,6 +1119,9 @@ export function GraphView({
 	// Light or dark on screen (P7-2): the canvas re-reads its colours when
 	// it changes.
 	const scheme = useColorScheme();
+	// The theme and custom highlight (P7-3) also change what it paints.
+	const colourKey = useColourKey();
+	const { appearance } = useAppearance();
 	const heat = useMemo(
 		() => (retentionOn && reviewSummary ? new Map(Object.entries(reviewSummary.heat)) : undefined),
 		[retentionOn, reviewSummary],
@@ -1467,13 +1481,14 @@ export function GraphView({
 				label: tokenHex("--muted-foreground"),
 				hoverText: tokenHex("--foreground"),
 				heat: { low: tokenHex(HEAT_TOKENS.low), mid: tokenHex(HEAT_TOKENS.mid), high: tokenHex(HEAT_TOKENS.high) },
-				scheme,
+				regions: regionTokens(scheme),
+				heatRings: appearance.theme === "eink",
 			},
 			// Match the app typography (Geist via the body's stack).
 			fontFamily: getComputedStyle(document.body).fontFamily,
 			heat,
 		});
-	}, [snapshot, isEmpty, heat, scheme]);
+	}, [snapshot, isEmpty, heat, scheme, colourKey]);
 
 	// Feed #2 — settings: just marks the frame dirty. No rebuild, no
 	// re-layout, no camera touch (the whole point of the new renderer).
