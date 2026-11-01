@@ -10,7 +10,7 @@ Updated by Claude Code at the end of each session. Read this first.
   - P2 Regulation grounding: done 2026-11-01, released as `v0.2.0`. Milestone 3 closed, tracking issue #37 closed.
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - P3 and P4 need the P1 gate; P5 needs P1 and P2.
-- Task: P6-6 Encryption at rest (#52) is ready and waiting for Sagar's review (UI text, store format, the IPC path) and the live check in a packaged build. P6-3's in-app Obsidian and Anki checks are Sagar's, P6-4's live baseline run is still to do, and P6-2's Claude Desktop check is still Sagar's (see Next).
+- Task: P6-6 Encryption at rest (#52) is ready and waiting for Sagar's review (UI text, store format, the IPC path). Live check in a packaged build passed (Sagar, 2026-11-01, run 41296962901). P6-3's in-app Obsidian and Anki checks are Sagar's, P6-4's live baseline run is still to do, and P6-2's Claude Desktop check is still Sagar's (see Next).
 - Branch: `p6/encryption-at-rest`
 - PR: #62, linked to #52
 
