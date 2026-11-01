@@ -91,3 +91,4 @@ export { questionDataFor } from "./question-data.ts";
 export * from "./background-defaults.ts";
 export * from "./theme-presets.ts";
 export * from "./kvasir-mark.ts";
+export * from "./speech.ts";
