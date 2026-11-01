@@ -6,8 +6,10 @@
  * of the Kvasir app's own settings (KV_EVAL_SETTINGS, default the desktop
  * app's settings.json). Keys come from the app's key file, read in place
  * (KV_AUTH_FILE, default the desktop app's auth.json), never copied. The
- * prober and teacher use the session model (strong slot), the learner the
- * cheap slot, the judge the strong slot (D098).
+ * prober and teacher use the session model (strong slot) and so does the
+ * judge (D098). The simulated learner runs on another provider (D099):
+ * KV_EVAL_LEARNER as provider/model id, default the fixture's OpenRouter
+ * DeepSeek model.
  */
 
 import { execFileSync } from "node:child_process";
@@ -21,8 +23,8 @@ const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const appData = defaultDataDir();
 const settingsFile = process.env.KV_EVAL_SETTINGS || path.join(appData, "settings.json");
 const appSettings = JSON.parse(fs.readFileSync(settingsFile, "utf8")) as { models?: Record<string, { model?: { provider: string; id: string }; thinkingLevel?: string }> };
-if (!appSettings.models?.strong?.model || !appSettings.models?.cheap?.model) {
-	console.error(`No strong and cheap model slots in ${settingsFile}. Set them in the Kvasir app first.`);
+if (!appSettings.models?.strong?.model) {
+	console.error(`No strong model slot in ${settingsFile}. Set it in the Kvasir app first.`);
 	process.exit(1);
 }
 
@@ -35,7 +37,8 @@ process.env.KV_DATA_DIR = TMP;
 process.env.KV_AUTH_FILE ||= path.join(path.dirname(appData), "auth.json");
 
 const git = (...args: string[]) => execFileSync("git", args, { cwd: REPO, encoding: "utf8" }).trim();
-const dirty = git("status", "--porcelain", "--", ".", ":!evals/results").length > 0;
+// next build rewrites next-env.d.ts; it is not code the eval measures.
+const dirty = git("status", "--porcelain", "--", ".", ":!evals/results", ":!next-env.d.ts").length > 0;
 const commit = `${git("rev-parse", "--short", "HEAD")}${dirty ? "-dirty" : ""}`;
 
 const { handleChatRequest, runningTurn, createChat, stores, sourceUnitView } = await import("../src/server/index.ts");
@@ -46,10 +49,17 @@ type Scenario = import("../src/evals/types.ts").Scenario;
 type RoleUsage = import("../src/evals/types.ts").RoleUsage;
 type ChatInput = import("../src/core/input-events.ts").ChatInput;
 
-const slot = (name: "strong" | "cheap") => {
-	const s = appSettings.models![name]!;
+const strong = () => {
+	const s = appSettings.models!.strong!;
 	return piEngineForSpec({ provider: s.model!.provider, id: s.model!.id, ...(s.thinkingLevel ? { thinkingLevel: s.thinkingLevel as never } : {}) });
 };
+const learnerSpec = process.env.KV_EVAL_LEARNER || "openrouter/deepseek/deepseek-v4.1-flash";
+const cut = learnerSpec.indexOf("/");
+if (cut < 1) {
+	console.error(`KV_EVAL_LEARNER is provider/model id, such as openrouter/deepseek/deepseek-v4.1-flash; got "${learnerSpec}".`);
+	process.exit(1);
+}
+const learner = () => piEngineForSpec({ provider: learnerSpec.slice(0, cut), id: learnerSpec.slice(cut + 1) });
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function settle(chatId: string): Promise<void> {
@@ -81,12 +91,13 @@ const session = {
 		const rows: RoleUsage[] = [];
 		for (const turn of stores.chatStore.getChat(chatId)?.turns ?? []) {
 			let row = rows.find((r) => r.model === turn.model);
-			if (!row) rows.push((row = { model: turn.model, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 }));
+			if (!row) rows.push((row = { model: turn.model, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, cacheWrite1hTokens: 0 }));
 			for (const s of turn.steps) {
 				row.inputTokens += s.inputTokens ?? 0;
 				row.outputTokens += s.outputTokens ?? 0;
 				row.cacheReadTokens += s.cacheReadTokens ?? 0;
-				row.cacheWriteTokens += (s.cacheWriteTokens ?? 0) + (s.cacheWrite1hTokens ?? 0);
+				row.cacheWriteTokens += s.cacheWriteTokens ?? 0;
+				row.cacheWrite1hTokens += s.cacheWrite1hTokens ?? 0;
 			}
 		}
 		return rows;
@@ -107,9 +118,10 @@ const scenarios = wanted.length ? all.filter((s) => wanted.includes(s.id)) : all
 const outDir = path.join(REPO, "evals", "results", commit);
 fs.mkdirSync(outDir, { recursive: true });
 console.log(`Teaching evals at ${commit}: ${scenarios.map((s) => s.id).join(", ")} (data copy ${TMP})`);
+console.log(`Session and judge: ${appSettings.models!.strong!.model!.provider}/${appSettings.models!.strong!.model!.id}. Learner: ${learnerSpec}.`);
 const results = [];
 for (const scenario of scenarios) {
-	const result = await runScenario({ scenario, session, learner: slot("cheap"), judge: slot("strong"), commit, log: (l) => console.log(l) });
+	const result = await runScenario({ scenario, session, learner: learner(), judge: strong(), commit, log: (l) => console.log(l) });
 	fs.writeFileSync(path.join(outDir, `${scenario.id}.json`), `${JSON.stringify(result, null, "\t")}\n`);
 	results.push(result);
 	console.log(`[${scenario.id}] done: ${result.stop}, checks ${result.checks.filter((c) => c.pass).length}/${result.checks.length}, rubric ${result.total.score}/${result.total.max}`);
@@ -121,7 +133,7 @@ let unknownCost = false;
 for (const r of results) {
 	for (const rows of Object.values(r.usage)) {
 		for (const row of rows) {
-			const c = callCost({ inputTokens: row.inputTokens, outputTokens: row.outputTokens, cacheReadTokens: row.cacheReadTokens, cacheWriteTokens: row.cacheWriteTokens }, row.model);
+			const c = callCost({ inputTokens: row.inputTokens, outputTokens: row.outputTokens, cacheReadTokens: row.cacheReadTokens, cacheWriteTokens: row.cacheWriteTokens, cacheWrite1hTokens: row.cacheWrite1hTokens }, row.model);
 			if (c === null) unknownCost = true;
 			else cost += c;
 		}

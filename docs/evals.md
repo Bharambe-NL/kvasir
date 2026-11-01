@@ -18,7 +18,8 @@ A run costs real model calls. Expect about $2 to $5 for the three scenarios, dep
 
 What a run needs:
 
-- The desktop app's settings, with a strong and a cheap model slot. The script reads `~/Library/Application Support/Kvasir/data/settings.json`, or the file in `KV_EVAL_SETTINGS`.
+- The desktop app's settings, with a strong model slot. The script reads `~/Library/Application Support/Kvasir/data/settings.json`, or the file in `KV_EVAL_SETTINGS`.
+- A sign-in in the app for the learner's provider. The learner runs on `openrouter/deepseek/deepseek-v4.1-flash` unless `KV_EVAL_LEARNER` names another, as provider/model id. It runs on a provider other than Anthropic because Anthropic blocks a model writing the learner's side of a session (D099).
 - The app's provider sign-in. `KV_AUTH_FILE` points at the app's `auth.json` in place when it is unset; the file is never copied.
 
 The run never touches your own data. It copies `evals/fixtures/data/` to a temporary folder, puts your model slots in the copy's settings, and points `KV_DATA_DIR` at the copy.
@@ -27,7 +28,7 @@ The run never touches your own data. It copies `evals/fixtures/data/` to a tempo
 
 1. A chat is created in the fixture copy and the learner's opening message is posted through the real chat handler, as the app's composer would.
 2. The prober and teacher answer with the strong model (the session model).
-3. The simulated learner (the cheap model, playing the scenario's persona) reads the session as text and makes one move:
+3. The simulated learner (the learner model, playing the scenario's persona) reads the session as text and makes one move:
    - When a question is pending, it picks option letters, writes an answer, or presses I don't know. The answer is built with the dock's own `questionDataFor` and `buildAnswer`, so it is exactly what a click sends.
    - When nothing is pending, it writes its next message. An empty message ends the session.
 4. Steps 2 and 3 repeat until the learner ends the session or makes 12 replies.

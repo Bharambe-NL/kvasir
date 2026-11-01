@@ -39,6 +39,8 @@ export interface RoleUsage {
 	outputTokens: number;
 	cacheReadTokens: number;
 	cacheWriteTokens: number;
+	/** The part of cacheWriteTokens written with one-hour retention. */
+	cacheWrite1hTokens: number;
 }
 
 export interface ScenarioResult {

@@ -43,11 +43,12 @@ export interface RunOptions {
 function adder(list: RoleUsage[]) {
 	return (u: Usage, model: string) => {
 		let row = list.find((r) => r.model === model);
-		if (!row) list.push((row = { model, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 }));
+		if (!row) list.push((row = { model, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, cacheWrite1hTokens: 0 }));
 		row.inputTokens += u.input;
 		row.outputTokens += u.output;
 		row.cacheReadTokens += u.cacheRead;
-		row.cacheWriteTokens += u.cacheWrite + (u.cacheWrite1h ?? 0);
+		row.cacheWriteTokens += u.cacheWrite;
+		row.cacheWrite1hTokens += u.cacheWrite1h ?? 0;
 	};
 }
 
