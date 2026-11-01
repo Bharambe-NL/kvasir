@@ -7,13 +7,13 @@ Updated by Claude Code at the end of each session. Read this first.
 - Phases in progress:
   - P1 Retention and the learner layer: every task is merged (P1-1 to P1-8). The gate waits for two weeks of real use. Milestone 2, tracking issue #13.
   - P2 Regulation grounding: opened 2026-10-31, runs alongside P1 (the roadmap allows it). Milestone 3, tracking issue #37, task issues #31 to #36.
-- Task: P2-6 Teacher citations (#36) is ready on #44, waiting for Sagar's review and the live check.
-- Branch: `p2/teacher-citations`
-- PR: #44 ready
+- Task: every P2 task is merged (P2-1 to P2-6). Next: the P2 gate (`/kv-gate P2`).
+- Branch: `main`
+- PR: none open
 
 ## Done
 
-- P2-6 built on #44: the `#src-` link form (`src/core/source-cite.ts`), `GET /api/graph/source-unit`, `citationSourceLines` in the graph-context marker, `read_source` (`src/agent/tools/sources.ts`) for the teacher behind the graph tools gate, the "Citing sources" prompt section, and lesson links rendered as chips (`components/source-link.tsx`). The faux Done-when passes; the live session on DORA is not run yet. Decisions D084 (lesson citations are links rendered as the chip), D085 (session context carries picked propositions' citations; `read_source` tool), D086 (`read_source` rides Graph tools), D087 (teacher only). Plan approved on #36.
+- P2-6 merged via #44 (prompt, tool and link form approved by Sagar): the `#src-` link form (`src/core/source-cite.ts`), `GET /api/graph/source-unit`, `citationSourceLines` in the graph-context marker, `read_source` (`src/agent/tools/sources.ts`) for the teacher behind the graph tools gate, the "Citing sources" prompt section, and lesson links rendered as chips (`components/source-link.tsx`). Live check done 2026-11-01 with Sagar's models on a temp data copy: DORA imported (138 propositions, 258 citations, none uncited), and the teacher cited Art. 28(1)(a) through `read_source`; the chip opens it. Decisions D084 (lesson citations are links rendered as the chip), D085 (session context carries picked propositions' citations; `read_source` tool), D086 (`read_source` rides Graph tools), D087 (teacher only). Plan approved on #36.
 - P2-5 merged via #43 (contracts and text approved by Sagar): `src/core/source-diff.ts` (`diffUnits`, `citationStatus`, `outdatedNodes`), `CitationView.outdated` and `GraphSnapshot.outdated`, `versionOf` and `GET /api/sources/documents`, diff-only extraction in `importSource`, the chip's "Outdated" tag, the panel's "Changed/Removed in version" note and the dialog's "Version of" select. `tests/source-diff.test.ts` flags exactly Art. 28(2) and 30(2)(f) across two DORA versions. Decisions D080 (outdated when the newest version drops the unit or the quote; points at the first such version), D081 (a new version extracts only new and changed units), D082 ("Version of" choice for PDF and Markdown in the import dialog), D083 (amber "Outdated" tag; panel shows "Changed in version" or "Removed in version"). Plan approved on #35.
 - P2-4 merged via #42 (store, contracts and text approved by Sagar): the units store (`writeDocumentUnits`, `readDocumentUnits`, `DOCUMENT_UNITS_DIR`), `citationLabel`, `chipText`, `citationLabels` and `CitationView` in `src/core/sources.ts`, the snapshot `citations` map, `citationViews` and `GET /api/graph/citations`, `components/citation-chip.tsx` on the canvas detail card, Chains table rows and the graph context card. Browser-checked on a seeded copy from the Chains table and a transcript; the canvas card was not clicked in the browser. Decisions D076 (every version's units stored at import in `data/graph/document-units/<versionId>.json`), D077 (legal short-form chip labels, "+N" for more), D078 (right-side panel with the quote highlighted), D079 (chip in the graph context card). Plan approved on #34.
 - P2-3 merged via #41 (prompt, contracts and text approved by Sagar): `src/core/source-extract.ts` (labels, chunking, view, `validateCitations`, `locateQuote`, `actDateOf`), citations on `ExtractedProposition` and written by `mergeFindings`, `SOURCES_PREAMBLE` and `SOURCES_CITATION_RULE`, `extraction.importSource` and `SourceImportError`, `importSourceFile`, `POST /api/sources/import`, `components/source-import.tsx` (dialog and routing). Tests: `tests/source-extraction.test.ts` (the Done-when), `tests/sources-import-route.test.ts` (DORA end to end with a citing faux model), `tests/render-source-import.test.tsx`. Decisions D068 (cite by unit label), D069 (one or more citations), D070 (quote check: exact after folding whitespace, quotes and dashes; at least 4 words; failures sent back), D071 (import route and button in P2-3), D072 (Official Journal version date is the act's date), D073 (duplicate version refused), D074 (PDF and Markdown ask for a label, prefilled with the file name), D075 (Markdown stays notes unless "Cite as source"). Plan approved on #33.
@@ -36,14 +36,13 @@ Updated by Claude Code at the end of each session. Read this first.
 
 ## Next
 
-1. The live check on #44: Sagar chooses whether Claude runs it on a temp copy with his models or he runs it in the app. Then merge #44, tick P2-6 in #37. Every P2 task is then merged.
-2. The P2 gate (`/kv-gate P2`): import DORA, two versions, no uncited proposition. The P2 gate's first check (import DORA, every citation opens the right paragraph) needs P2-4's citation panel and a live model run.
+1. The P2 gate (`/kv-gate P2`): import DORA (every citation opens the right paragraph), two versions (only changed propositions flagged), no uncited proposition.
+2. Follow-up: a lesson citation showed " [blocked]" once while the reply was streaming (rehype-harden), then rendered as the chip; not reproduced. The P2 gate's first check (import DORA, every citation opens the right paragraph) needs P2-4's citation panel and a live model run.
 2. In parallel, Sagar uses Kvasir for two weeks of real review. Then run the P1 gate (`/kv-gate P1`).
 
 ## Waiting for Sagar
 
 - All P1 open decisions are taken (D030, D031, D032, D036, D038, D041). All five P2 open decisions are taken (D058 to D062).
-- Review of #44 (the prompt section, the tool description and messages, the link form), and the choice of who runs the live check.
 
 Self-merge is allowed in P1 (D029, recorded in #13) and P2 (D057, recorded in #37) for PRs that need no review from Sagar.
 
