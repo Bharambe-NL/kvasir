@@ -11,13 +11,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P7 Look and feel: opened 2026-11-01, before P3 (D121). Milestone 5, tracking issue #69, task issues #64 to #68 (P7-1 to P7-5). Self-merge allowed for PRs that need no review (D122).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: P7-5 Polish pass (#68): all four areas built, waiting on Sagar's approval of each from screenshots (PR #79).
-- Branch: `p7/polish-pass`
-- PR: #79, ready for review
+- Task: none in progress. All five P7 tasks are merged; next is the P7 gate, then P3.
+- Branch: none
+- PR: none open
 
 ## Done
 
-- P7-5 started: D141 (four areas: chat, review, home and sidebar, settings and dialogs), D142 (72-character chat column), D143 (type roles), D144 (subtle motion), D145 (approval per area from screenshots). Plan approved on #68. Built: type roles and motion tokens; chat column and calmer title; review card with place and progress, two empty states; Graph and Chains switch, "…" menu, cost label, notice line, empty graph buttons; one menu select in settings and dialogs. D146: the notice reads "No provider key yet. Add one to start."
+- P7-5 merged via #79 (all four areas approved by Sagar): D141 (four areas: chat, review, home and sidebar, settings and dialogs), D142 (72-character chat column), D143 (type roles), D144 (subtle motion), D145 (approval per area from screenshots). Plan approved on #68. Built: type roles and motion tokens; chat column and calmer title; review card with place and progress, two empty states; Graph and Chains switch, "…" menu, cost label, notice line, empty graph buttons; one menu select in settings and dialogs. D146: the notice reads "No provider key yet. Add one to start."
 - P7-4 merged via #77 (symbol approved by Sagar): D139 (the symbol: a chevron and a gold dot on black, checked against other marks), D140 (in the app the chevron takes the theme ink, the dot stays gold). Chosen after four rounds of drawings. Plan approved on #67. Built: `src/core/kvasir-mark.ts` is the one source; `npm run icons` writes the `.ico`, `.png`, `.icns`, Icon Composer layers and favicon; the sidebar mark follows the theme; `tests/app-icon.test.tsx` keeps every file equal to the source; `docs/brand.md` explains it. The bridge test `binds 127.0.0.1` times out on this Mac's network (it connects to the LAN address); CI is green and this branch touches no bridge code.
 - P7-3 merged via #75 (themes approved by Sagar): theme blocks, `--highlight`, region tokens, E-ink rules and canvas rings, Theme and Highlight colour rows, contrast tests per theme and mode. It also fixes a P7-2 bug: the settings PUT validator refused mode `system` and dropped `lightBackground`, so neither saved; `tests/appearance-settings-route.test.ts` now covers the route. Known: Kvasir dark's red on cards is 4.46:1 (today's palette, kept). D132 (theme on top of Mode), D133 (Kvasir, Sepia, Forest, E-ink), D134 (one custom highlight), D135 (`--highlight`), D136 (E-ink greys plus shape), D137 (`theme` and `highlight` settings), D138 (region tokens). Plan approved on #66.
 - P7-2 merged via #73 (light screens approved by Sagar): `light-dark()` tokens and the mode class, server-rendered mode, per-mode backgrounds, the live Mode select, the canvas and Mermaid following the scheme, the Electron first paint, contrast tests. D128 (Dark, Light, System; default Dark), D129 (warm paper palette), D130 (a background per mode), D131 (`mode` gains `system`, new `lightBackground`). Plan approved on #65.
@@ -60,7 +60,7 @@ Updated by Claude Code at the end of each session. Read this first.
 4. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 5. Optional for Sagar: move his app data to SQLite with the app closed (`docs/sqlite.md`).
 6. Optional for Sagar: turn on encryption in his own app (Settings > Security; `docs/encryption.md`). Save the recovery key.
-7. P7-5 polish pass (`/kv-task P7-5`); then P3, P4 and P5.
+7. P7 gate (`/kv-gate P7`): every task is merged, so the gate records the checks and tags the release. Then P3, P4 and P5 (D119: gates block nothing).
    - Open for Sagar from P7-3: Kvasir dark's red error text on cards is 4.46:1 (just under 4.5:1); fixing it means a slightly lighter red in Kvasir dark. Listed as a known exception in `tests/color-themes.test.tsx`.
 8. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
 9. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.
