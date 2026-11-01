@@ -32,7 +32,7 @@ export type DraftPick = { id: string; name: string; statement: string };
  * server-side (per-session models, owner 2026-09-28).
  */
 
-const DOCK = "mx-auto w-full max-w-[46rem] px-4";
+const DOCK = "mx-auto w-full max-w-[38rem] px-4";
 
 /**
  * Create, safely hand over the full opening text, then return a short
@@ -166,10 +166,12 @@ export function DraftShell({
 					{/* The pointer-events pattern (953b22b): the sticky wrapper is
 					    pointer-events-none so nothing here blocks the empty-state
 					    area; the blob and the stats row re-enable it themselves. */}
-					<div className="pointer-events-none sticky bottom-0 mt-auto w-full">
-						<Conversation className="h-full min-w-0 flex-1" initial="instant">
+					<div className="pointer-events-none sticky bottom-0 mt-auto flex h-full w-full flex-col">
+						<Conversation className="min-h-0 min-w-0 flex-1" initial="instant">
 							<ConversationContent className="min-h-full gap-0 p-0">
 								<ConversationEmptyState
+									// Centred in the free space above the composer (Kvasir P7-5).
+									className="absolute inset-0"
 									title={mode === "practice" ? "New practice session" : "New session"}
 									description={
 										mode === "practice"

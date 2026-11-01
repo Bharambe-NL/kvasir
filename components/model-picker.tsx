@@ -34,7 +34,7 @@ export function catalogLimits(catalog: Pick<ModelCatalogResponse, "models">): Ma
  * bind the STRONG SLOT (reads the raw models section, GET /api/settings;
  * writes PUT /api/settings/models via composeSlotModel — the same seam
  * the settings Agent section and the SetupDialog write): picking there IS
- * changing the new-session default. Unpicked reads "—" (the
+ * changing the new-session default. Unpicked reads "No model" (the
  * no-factory-fallback language: the UI never presents a default model).
  */
 export function ModelControl({ chatId, onModelChange }: { chatId?: string; onModelChange?: (model: string | undefined) => void }) {
@@ -45,6 +45,9 @@ export function ModelControl({ chatId, onModelChange }: { chatId?: string; onMod
 	const [session, setSession] = useState<{ settings?: ChatSettings }>();
 	const [open, setOpen] = useState<"model" | "thinking" | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	// The models section has been read (or failed to read): only then can
+	// an empty pick honestly say "No model" (Kvasir P7-5).
+	const [modelsRead, setModelsRead] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	// The record read — BOTH mount and the cross-surface signal land
@@ -66,9 +69,10 @@ export function ModelControl({ chatId, onModelChange }: { chatId?: string; onMod
 		fetch("/api/settings")
 			.then((r) => r.json() as Promise<{ settings: { models?: ModelsSettings } | null }>)
 			.then((body) => setModels(body.settings?.models ?? undefined))
+			.then(() => setModelsRead(true))
 			.catch(() => {
 				/* the record fetch failing leaves the control read-only
-				   ("—" triggers, closed menus) — same posture as a
+				   (blank triggers, closed menus) — same posture as a
 				   catalog failure */
 			});
 	}, [chatId]);
@@ -95,6 +99,8 @@ export function ModelControl({ chatId, onModelChange }: { chatId?: string; onMod
 			} : undefined
 		: strong;
 	const effectiveId = override?.model?.id;
+	// Known to have no model: both reads are in and neither names one.
+	const noModel = modelsRead && (!chatId || session !== undefined) && !effectiveId;
 	const effectiveProvider = override?.model?.provider;
 	useEffect(() => {
 		onModelChange?.(effectiveProvider && effectiveId ? `${effectiveProvider}:${effectiveId}` : undefined);
@@ -290,10 +296,14 @@ export function ModelControl({ chatId, onModelChange }: { chatId?: string; onMod
 				// graph no longer bleeds through these pills.
 				className="flex items-center gap-1.5 rounded-full border bg-card/85 px-2.5 py-1 shadow-lg backdrop-blur transition-colors hover:border-border hover:bg-muted"
 			>
-				<span className="text-card-foreground">{effectiveId ? prettyModel(effectiveId) : "—"}</span>
+				<span className="min-w-[3ch] text-card-foreground">{effectiveId ? prettyModel(effectiveId) : noModel ? "No model" : ""}</span>
 				<span aria-hidden className="text-xs text-muted-foreground">▾</span>
 			</button>
 			</Hint>
+			{/* No model picked: no thinking level to show (Kvasir P7-5), so the
+			    pill stays hidden rather than showing an empty dash. While the
+			    reads are in flight it stays, blank, so nothing jumps. */}
+			{!noModel && (
 			<Hint
 				// "Thinking" + its real shortcut via the registry (owner interlude
 				// 2026-09-25): ⇧⇥ cycles the level, so "Thinking (⇧⇥)" —
@@ -320,12 +330,13 @@ export function ModelControl({ chatId, onModelChange }: { chatId?: string; onMod
 			>
 				{/* Just the level — the button reads like the model button reads
 				   the model name (owner, stats-control round 1). */}
-				<span className="text-card-foreground">
-					{effectiveLevel === undefined ? "—" : (THINKING_LABEL[effectiveLevel] ?? effectiveLevel)}
+				<span className="min-w-[3ch] text-card-foreground">
+					{effectiveLevel === undefined ? "" : (THINKING_LABEL[effectiveLevel] ?? effectiveLevel)}
 				</span>
 				<span aria-hidden className="text-xs text-muted-foreground">▾</span>
 			</button>
 			</Hint>
+			)}
 
 			{/* The shared dropdown body (extracted 2026-09-20): the agent
 			    settings' slot selects and the setup dialog use the exact same
