@@ -2,18 +2,29 @@
  * THE COMPOSITION ROOT for storage — the single place concrete store
  * adapters are wired. Everything else (core, services, agents) codes against
  * the port types in core/ports.ts and receives instances through this
- * module. Swapping the fs adapter for SQLite later changes exactly this
- * file (and the adapter implementations in src/store/).
+ * module. Kvasir P6-1 (D108): the stores run over SQLite when
+ * data/kvasir.db exists and over the files otherwise (src/store/active.ts).
  */
 
-import { chatStore } from "../store/chats.ts";
-import { graphStore } from "../store/graph.ts";
-import { jobStore } from "../store/jobs.ts";
-import { learnerStore } from "../store/learner.ts";
+import { activeBackend } from "../store/active.ts";
+import { chatStore as fileChatStore, createChatStore } from "../store/chats.ts";
+import { createGraphStore, graphStore as fileGraphStore } from "../store/graph.ts";
+import { createJobStore, jobStore as fileJobStore } from "../store/jobs.ts";
+import { createLearnerStore, learnerStore as fileLearnerStore } from "../store/learner.ts";
 import { settingsStore } from "../store/settings.ts";
 import { resolveSettings, type EffectiveSettings } from "../core/settings-resolution.ts";
 import type { GraphReader } from "../core/ports.ts";
 import { syncCustomProvider } from "./custom-provider.ts";
+// On files, the stores are the adapter modules' own singletons (the same
+// objects as before P6-1); on SQLite, new stores over the database.
+const backend = activeBackend();
+const onFiles = backend.kind === "files";
+if (!onFiles) console.info("[stores] using data/kvasir.db");
+const chatStore = onFiles ? fileChatStore : createChatStore(backend);
+const graphStore = onFiles ? fileGraphStore : createGraphStore(backend);
+const jobStore = onFiles ? fileJobStore : createJobStore(backend);
+const learnerStore = onFiles ? fileLearnerStore : createLearnerStore(backend);
+
 /** The wired adapters. Satisfies core/graph.ts's GraphDeps structurally. */
 export const stores = {
 	chatStore,

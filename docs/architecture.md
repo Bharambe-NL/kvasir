@@ -163,6 +163,8 @@ flowchart TB
 
 Storage is **per-entity semantic ports**, never one generic interface: `ChatStore`, `GraphStore`, `JobStore`, `LearnerStore` (`src/core/ports.ts` — types only). The fs adapters (`src/store/{chats,graph,jobs,learner}.ts`) implement them and contain persistence and nothing else. `GraphReader` (`Pick<GraphStore, "readNodes" | "readChains">`) is the only graph access the Memory system receives: `stores.ts` builds it from the live graph store, so Memory code never holds a graph write method. One more adapter (`src/store/render-settings.ts`) is a portless free function re-exported through the server barrel — a deliberate pragmatic bypass, documented here so nobody mistakes it for the pattern.
 
+**Two storage backends** (Kvasir P6-1, D106 to D111). The four adapters hold the store logic (shape guards, version stamps, merge rules, events) and keep raw JSON through a `StoreBackend` (`src/store/backend.ts`): append-only ledgers, records by id (chats, jobs, document units) and single documents (sources, positions). `fileBackend` (`src/store/file-backend.ts`) is the data folder layout below. `sqliteBackend` (`src/store/sqlite/`) keeps the same JSON in `data/kvasir.db` through Node's built-in `node:sqlite`: one table per ledger with `seq` for append order, `chats`, `jobs`, `document_units` and `singles`, each with indexed key columns; WAL journal, `PRAGMA user_version` as the schema version. `src/store/active.ts` picks SQLite when `data/kvasir.db` exists (D108); `stores.ts` uses it, keeping the file singletons on files. Settings, prompt overrides, render settings, `graph/format.json` and `auth.json` stay files on both. `npm run migrate:sqlite` and `npm run migrate:files` (`src/store/migrate.ts`, `scripts/migrate-store.ts`) move a data folder between them, checking both sides read the same and moving the old side into `data/pre-sqlite-<stamp>/` or `data/pre-files-<stamp>/` (D109). `tests/store-contract/` runs every port case against both backends (D111). Details: `docs/sqlite.md`.
+
 **Idioms.** Graph evidence lives in **append-only JSONL ledgers** (corrupt-line-tolerant reads; strict shape guards drop invalid lines, never guess). Chats, jobs, positions, sources, and the settings blobs are whole-file read-modify-write JSON. All writes are synchronous, single-process (atomicity rides the Node event loop). Merge/dedup/derivation semantics are **reader-side, in core** — the store never decides.
 
 - **`src/server/stores.ts` is THE composition root for storage**: it instantiates the adapters and hands the port objects to everything else (chat-handler, job runner, extraction pipeline, practice pipeline, graph/positions/chats routes, turn services). It is the single place a storage decision (JSON vs SQLite, local vs remote) gets re-made.
@@ -598,7 +600,7 @@ Every place the architecture is designed to be cut — the "one file" a future c
 
 | Seam | File | What it swaps |
 |---|---|---|
-| Storage decision (JSON→SQLite, remote) | `src/server/stores.ts` | the adapters, once |
+| Storage decision (files or SQLite, remote) | `src/store/active.ts` (picked by `data/kvasir.db`, P6-1) + `src/server/stores.ts` | the `StoreBackend` under all four stores; a remote store is a third backend |
 | LLM engine / model per role | settings `models` slots + `src/agent/models.ts` (`piEngineFor`) | provider wiring, one place |
 | Turn composition | `src/server/chat-handler.ts` | what a turn consists of |
 | Extraction trigger | `src/server/turn-service.ts` (`triggerExtraction`) | when the Library runs |
@@ -636,4 +638,4 @@ Each of these was implemented, lived in real data, and was replaced; the replace
 
 ## 14. Deliberately deferred
 
-Structured logging (§10); SQLite/remote storage (drop-in behind the ports, §3); multi-scale cluster hierarchy (Louvain's dendrogram idea, parked); the anchored calibration rubric; alternative extraction triggers beyond the coverage seam (session end, idle); retroactive bootstrap of the POC sessions (vision §1 consolidation). When any of these land, this doc changes with the commit that lands them — it describes the system, not an intention.
+Structured logging (§10); remote storage (a third `StoreBackend`, §3; SQLite landed in P6-1); multi-scale cluster hierarchy (Louvain's dendrogram idea, parked); the anchored calibration rubric; alternative extraction triggers beyond the coverage seam (session end, idle); retroactive bootstrap of the POC sessions (vision §1 consolidation). When any of these land, this doc changes with the commit that lands them — it describes the system, not an intention.

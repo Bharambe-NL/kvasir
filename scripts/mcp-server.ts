@@ -16,21 +16,25 @@ console.debug = console.error;
 
 process.env.KV_DATA_DIR ||= defaultDataDir();
 
-const { graphStore } = await import("../src/store/graph.ts");
-const { learnerStore } = await import("../src/store/learner.ts");
-const { chatStore } = await import("../src/store/chats.ts");
+const { activeBackend } = await import("../src/store/active.ts");
+const { createGraphStore } = await import("../src/store/graph.ts");
+const { createLearnerStore } = await import("../src/store/learner.ts");
+const { createChatStore } = await import("../src/store/chats.ts");
 const { PATHS } = await import("../config.ts");
+// The same choice as the app (D108); a database is opened read-only.
+const backend = activeBackend({ readOnly: true });
+const graphStore = createGraphStore(backend);
+const learnerStore = createLearnerStore(backend);
+const chatStore = createChatStore(backend);
 const { createKvasirMcpServer } = await import("../src/mcp/server.ts");
 const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
 type ChatSummary = import("../src/core/contracts.ts").ChatSummary;
 
-/** Chats without creating the chats folder (chatStore.listChats may). */
+/** Chats by id and record, without building the sidebar summary. */
 function listChatsReadOnly(): ChatSummary[] {
-	if (!fs.existsSync(PATHS.chats)) return [];
-	return fs
-		.readdirSync(PATHS.chats)
-		.filter((f) => f.endsWith(".json"))
-		.map((f) => chatStore.getChat(f.slice(0, -5)))
+	return backend
+		.recordIds("chats")
+		.map((id) => chatStore.getChat(id))
 		.filter((c): c is NonNullable<typeof c> => c !== null)
 		.map((c) => ({ id: c.id, title: c.title, createdAt: c.createdAt, updatedAt: c.updatedAt }) as ChatSummary);
 }
@@ -59,4 +63,4 @@ const server = createKvasirMcpServer(
 	version,
 );
 await server.connect(new StdioServerTransport());
-console.error(`[kvasir-mcp] serving ${PATHS.data} (read-only)`);
+console.error(`[kvasir-mcp] serving ${PATHS.data}${backend.kind === "sqlite" ? " from kvasir.db" : ""} (read-only)`);
