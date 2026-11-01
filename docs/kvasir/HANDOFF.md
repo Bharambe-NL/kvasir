@@ -11,13 +11,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P7 Look and feel: opened 2026-11-01, before P3 (D121). Milestone 5, tracking issue #69, task issues #64 to #68 (P7-1 to P7-5). Self-merge allowed for PRs that need no review (D122).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: P7-3 Colour themes (#66) is ready and waiting for Sagar's review of the theme sheet (`p7-3-themes.jpg` in the build-pack folder).
-- Branch: `p7/color-themes`
-- PR: #75, linked to #66
+- Task: none in progress. P7-3 merged via #75; next is `/kv-task P7-4` (the app symbol).
+- Branch: `main`
+- PR: none open
 
 ## Done
 
-- P7-3 built on #75, waiting for review: theme blocks, `--highlight`, region tokens, E-ink rules and canvas rings, Theme and Highlight colour rows, contrast tests per theme and mode. It also fixes a P7-2 bug: the settings PUT validator refused mode `system` and dropped `lightBackground`, so neither saved; `tests/appearance-settings-route.test.ts` now covers the route. Known: Kvasir dark's red on cards is 4.46:1 (today's palette, kept). D132 (theme on top of Mode), D133 (Kvasir, Sepia, Forest, E-ink), D134 (one custom highlight), D135 (`--highlight`), D136 (E-ink greys plus shape), D137 (`theme` and `highlight` settings), D138 (region tokens). Plan approved on #66.
+- P7-3 merged via #75 (themes approved by Sagar): theme blocks, `--highlight`, region tokens, E-ink rules and canvas rings, Theme and Highlight colour rows, contrast tests per theme and mode. It also fixes a P7-2 bug: the settings PUT validator refused mode `system` and dropped `lightBackground`, so neither saved; `tests/appearance-settings-route.test.ts` now covers the route. Known: Kvasir dark's red on cards is 4.46:1 (today's palette, kept). D132 (theme on top of Mode), D133 (Kvasir, Sepia, Forest, E-ink), D134 (one custom highlight), D135 (`--highlight`), D136 (E-ink greys plus shape), D137 (`theme` and `highlight` settings), D138 (region tokens). Plan approved on #66.
 - P7-2 merged via #73 (light screens approved by Sagar): `light-dark()` tokens and the mode class, server-rendered mode, per-mode backgrounds, the live Mode select, the canvas and Mermaid following the scheme, the Electron first paint, contrast tests. D128 (Dark, Light, System; default Dark), D129 (warm paper palette), D130 (a background per mode), D131 (`mode` gains `system`, new `lightBackground`). Plan approved on #65.
 - P7-1 merged via #71 (approved by Sagar): tokens in `app/globals.css`, 86 palette classes in 22 files swapped, heat colours resolved for the canvas, the guard `tests/no-hardcoded-colors.test.ts`. Screenshots before and after match except six named spots. D123 (palette classes count as hard-coded), D124 (token names), D125 (a test guards against hard-coded colours), D126 (today's shades kept, main and soft), D127 (`--paper` and `--ink-bright`). Plan approved on #64. Sagar's e-ink theme idea and the cluster region colours are noted on #66 for P7-3.
 - P7 opened: D119 (gates block no phase), D120 (P1 real-use check later), D121 (P7 Look and feel, before P3), D122 (P7 self-merge). Brief `docs/kvasir/phases/P7-look-and-feel.md`.
@@ -58,7 +58,8 @@ Updated by Claude Code at the end of each session. Read this first.
 4. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 5. Optional for Sagar: move his app data to SQLite with the app closed (`docs/sqlite.md`).
 6. Optional for Sagar: turn on encryption in his own app (Settings > Security; `docs/encryption.md`). Save the recovery key.
-7. P7-3 colour themes (`/kv-task P7-3`; the e-ink preset and the cluster region colours are noted on #66), then P7-4 and P7-5; then P3, P4 and P5.
+7. P7-4 app symbol (`/kv-task P7-4`), then P7-5 polish pass; then P3, P4 and P5.
+   - Open for Sagar from P7-3: Kvasir dark's red error text on cards is 4.46:1 (just under 4.5:1); fixing it means a slightly lighter red in Kvasir dark. Listed as a known exception in `tests/color-themes.test.tsx`.
 8. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
 9. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.
 10. Follow-ups from the P2 gate: a proposition re-cited by the newest version still shows "Outdated" when an older citation is outdated; a lesson citation showed " [blocked]" once while streaming (not reproduced).
