@@ -40,12 +40,13 @@ export type TurnSender = (utterance: string, signal: AbortSignal) => AsyncIterab
 export const DEFAULT_VOICE = "aura-2-thalia-en";
 
 /** Deepgram's listen socket for a voice session: like dictation's, plus
- *  interim results for partials. Endpointing marks the end of an
- *  utterance (speech_final). */
+ *  interim results for partials. A pause of about 1.5 seconds ends an
+ *  utterance (D168): endpointing at 1000 ms sets speech_final, and the
+ *  UtteranceEnd message at 1500 ms catches the ends endpointing misses. */
 export function deepgramVoiceListenUrl(language: string): string {
 	return "wss://api.deepgram.com/v1/listen" +
 		"?model=nova-3&encoding=linear16&sample_rate=16000&channels=1" +
-		"&smart_format=true&punctuate=true&interim_results=true&endpointing=300" +
+		"&smart_format=true&punctuate=true&interim_results=true&endpointing=1000&utterance_end_ms=1500" +
 		`&language=${encodeURIComponent(language)}`;
 }
 
