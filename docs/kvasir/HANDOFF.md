@@ -12,9 +12,9 @@ Updated by Claude Code at the end of each session. Read this first.
   - P3 Voice tutor and drive mode: opened 2026-11-01. Milestone 6, tracking issue #88, task issues #82 to #87 (P3-1 to P3-6). Release tags now count up (D147): P3's gate takes the next minor after the latest release. Self-merge allowed for PRs that need no review (D148).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: none in progress. Next is P3-4 turn-taking (`/kv-task P3-4`).
-- Branch: none
-- PR: none open
+- Task: P3-4 turn-taking, plan approved on #85 (D165 to D171).
+- Branch: `p3/turn-taking`
+- PR: draft, see below
 
 ## Done
 
@@ -66,7 +66,7 @@ Updated by Claude Code at the end of each session. Read this first.
 4. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 5. Optional for Sagar: move his app data to SQLite with the app closed (`docs/sqlite.md`).
 6. Optional for Sagar: turn on encryption in his own app (Settings > Security; `docs/encryption.md`). Save the recovery key.
-7. P3: P3-4 turn-taking (`/kv-task P3-4`), then P3-5 and P3-6. P3-4's manual test log is the first live audio run: it also covers the Aura-2 token check and the P3-3 finding (a teacher question referring to something never said aloud). The first live audio run (and the Aura-2 token check) comes with P3-4's manual test log. Then P4 (after P3) and P5 (D119: gates block nothing).
+7. P3: P3-4 turn-taking (`/kv-task P3-4`), then P3-5 and P3-6. P3-4's manual test log is the first live audio run: it also covers the Aura-2 token check and the P3-3 finding (a teacher question referring to something never said aloud). Then P4 (after P3) and P5 (D119: gates block nothing).
    - Open for Sagar from P7-3: Kvasir dark's red error text on cards is 4.46:1 (just under 4.5:1); fixing it means a slightly lighter red in Kvasir dark. Listed as a known exception in `tests/color-themes.test.tsx`.
 8. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
 9. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.
