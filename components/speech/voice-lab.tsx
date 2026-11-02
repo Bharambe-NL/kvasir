@@ -81,11 +81,11 @@ export function VoiceLab() {
 				<button type="button" className="rounded border px-4 py-2" onClick={running ? stop : start}>
 					{running ? "Stop" : "Start"}
 				</button>
-				<span className="font-mono text-label" data-testid="voice-state">{state}</span>
+				<span className="text-label" data-testid="voice-state">{state}</span>
 				{chatId && <a className="text-label underline" href={`/chat/${chatId}`}>Open the chat</a>}
 			</div>
 			<p className="min-h-6 text-body italic">{partial}</p>
-			<ol className="flex flex-col gap-1 font-mono text-label">
+			<ol className="flex flex-col gap-1 text-label tabular-nums">
 				{lines.map((l, i) => (
 					<li key={i}>
 						{(l.at / 1000).toFixed(1).padStart(6)}s {l.who.padEnd(6)} {l.text}
