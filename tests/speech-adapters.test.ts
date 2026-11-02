@@ -70,7 +70,7 @@ describe("Deepgram SpeechIn", () => {
 		const started = speechIn.start({ onPartial: (t) => partials.push(t), onFinal: (t) => finals.push(t) });
 		await tick();
 		const ws = made[0]!;
-		assert.match(ws.url, /^wss:\/\/api\.deepgram\.com\/v1\/listen\?model=nova-3&.*interim_results=true&endpointing=300&language=en$/);
+		assert.match(ws.url, /^wss:\/\/api\.deepgram\.com\/v1\/listen\?model=nova-3&.*interim_results=true&endpointing=1000&utterance_end_ms=1500&language=en$/);
 		assert.deepEqual(ws.protocols, ["bearer", "tok"]);
 		ws.emit("open");
 		await started;
@@ -90,6 +90,27 @@ describe("Deepgram SpeechIn", () => {
 		assert.deepEqual(ws.json("CloseStream").length, 1);
 		assert.equal(ws.closedWith, 1000);
 		assert.ok(frames.stopped, "the microphone stops");
+	});
+
+	it("UtteranceEnd ends an utterance that endpointing missed, and never sends it twice (D168)", async () => {
+		const { made, open } = sockets();
+		const finals: string[] = [];
+		const speechIn = createDeepgramSpeechIn({ language: "en", mintToken: async () => "tok", openSocket: open, startCapture: async () => () => {} });
+		const started = speechIn.start({ onFinal: (t) => finals.push(t) });
+		await tick();
+		const ws = made[0]!;
+		ws.emit("open");
+		await started;
+		const utteranceEnd = JSON.stringify({ type: "UtteranceEnd", last_word_end: 2.1 });
+		ws.emit("message", { data: results("the outsourcing", true) });
+		ws.emit("message", { data: results("register", true) });
+		ws.emit("message", { data: utteranceEnd });
+		assert.deepEqual(finals, ["the outsourcing register"]);
+		ws.emit("message", { data: results("yes", true, true) });
+		ws.emit("message", { data: utteranceEnd });
+		assert.deepEqual(finals, ["the outsourcing register", "yes"], "an UtteranceEnd after speech_final sends nothing");
+		ws.emit("message", { data: JSON.stringify({ type: "SpeechStarted" }) });
+		assert.equal(finals.length, 2);
 	});
 
 	it("an unexpected close is reported", async () => {

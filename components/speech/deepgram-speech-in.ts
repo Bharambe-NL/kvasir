@@ -1,7 +1,8 @@
 /**
  * SpeechIn on Deepgram's listen socket (Kvasir P3-2, D157): microphone
  * audio as 16 kHz linear16 frames, interim words as partials, one onFinal
- * per utterance (Deepgram's speech_final, from endpointing). A new adapter
+ * per utterance (Deepgram's speech_final from endpointing, or its
+ * UtteranceEnd message when endpointing missed the end, D168). A new adapter
  * beside dictation (components/dictation.tsx), reusing its capture worklet
  * and token route; dictation is unchanged.
  */
@@ -45,6 +46,10 @@ export function createDeepgramSpeechIn(deps: DeepgramSpeechInDeps): SpeechIn {
 				try {
 					msg = JSON.parse(ev.data) as ResultsMessage;
 				} catch {
+					return;
+				}
+				if (msg.type === "UtteranceEnd") {
+					if (finals.length) handlers.onFinal(finals.splice(0).join(" "));
 					return;
 				}
 				if (msg.type !== "Results") return;
