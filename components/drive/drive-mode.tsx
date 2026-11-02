@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	DRIVE_TEXT, driveErrorKind, driveStateWord, runVoiceLoop, visualsLabel, visualsWaiting,
-	type DrivePhase, type VoiceLoop,
+	type DrivePhase, type VoiceLoop, type VoiceState,
 } from "@/src/core";
 import { createChatTurnSender } from "@/components/speech/chat-turn-sender";
 import { createDeepgramSpeechIn } from "@/components/speech/deepgram-speech-in";
@@ -27,26 +27,24 @@ type DriveError = ReturnType<typeof driveErrorKind>;
 
 const awake = (on: boolean) => void window.lh?.drive?.awake(on).catch(() => {});
 
-export function DriveMode({ chatId: initialChatId }: { chatId: string | null }) {
+export interface DriveLoopContext {
+	onState: (state: VoiceState) => void;
+	onError: (err: Error) => void;
+	speechOut: DeepgramSpeechOut;
+}
+
+/** The drive screen's controls, shared by a voice chat and the voice
+ *  review (P3-6, D183): Start, Pause and Resume by the big button, Space
+ *  and the media key (D175), End, keep awake (D176) and the tones (D177).
+ *  `begin` builds the session's loop; `onListening` runs after each turn. */
+export function useDriveSession(begin: (ctx: DriveLoopContext) => Promise<VoiceLoop>, onListening?: () => void) {
 	const [phase, setPhase] = useState<DrivePhase>("ready");
 	const [error, setError] = useState<DriveError | null>(null);
-	const [visuals, setVisuals] = useState(0);
-	const [chatId, setChatId] = useState(initialChatId);
 	const loopRef = useRef<VoiceLoop | null>(null);
 	const outRef = useRef<DeepgramSpeechOut | null>(null);
-	const chatRef = useRef(initialChatId);
 	const { open: openSettings } = useSettingsDialog();
-
-	const countVisuals = useCallback(async () => {
-		const id = chatRef.current;
-		if (!id) return;
-		try {
-			const res = await fetch(`/api/chats/${encodeURIComponent(id)}`);
-			if (res.ok) setVisuals(visualsWaiting(((await res.json()) as { messages?: unknown[] }).messages ?? []));
-		} catch {
-			// The count waits for the next turn.
-		}
-	}, []);
+	const listeningRef = useRef(onListening);
+	listeningRef.current = onListening;
 
 	const fail = useCallback((err: unknown) => {
 		setError(driveErrorKind(err));
@@ -57,32 +55,14 @@ export function DriveMode({ chatId: initialChatId }: { chatId: string | null }) 
 		setPhase("starting");
 		setError(null);
 		try {
-			let id = chatRef.current;
-			if (!id) {
-				const res = await fetch("/api/chats", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ voice: true }),
-				});
-				if (!res.ok) throw new Error(`create chat ${res.status}`);
-				id = ((await res.json()) as { id: string }).id;
-				chatRef.current = id;
-				setChatId(id);
-				// Same screen, real address: a reload or the sidebar finds it.
-				window.history.replaceState(null, "", `/drive/${id}`);
-			}
-			const sendTurn = createChatTurnSender(id);
 			const speechOut = createDeepgramSpeechOut({ voice: await readSpeakVoice() });
 			outRef.current = speechOut;
-			loopRef.current = await runVoiceLoop({
-				speechIn: createDeepgramSpeechIn({ language: "en" }),
+			loopRef.current = await begin({
 				speechOut,
-				sendTurn,
-				openQuestion: sendTurn.openQuestion,
 				onState: (s) => {
 					if (s === "stopped") return;
 					setPhase(s);
-					if (s === "listening") void countVisuals();
+					if (s === "listening") listeningRef.current?.();
 				},
 				onError: (err) => {
 					fail(err);
@@ -92,13 +72,12 @@ export function DriveMode({ chatId: initialChatId }: { chatId: string | null }) 
 			});
 			awake(true);
 			void playTone("start");
-			void countVisuals();
 		} catch (err) {
 			loopRef.current = null;
 			setPhase("ready");
 			fail(err);
 		}
-	}, [countVisuals, fail]);
+	}, [begin, fail]);
 
 	const toggle = useCallback(async () => {
 		const loop = loopRef.current;
@@ -170,21 +149,77 @@ export function DriveMode({ chatId: initialChatId }: { chatId: string | null }) 
 		awake(false);
 	}, []);
 
-	const running = loopRef.current !== null && phase !== "ended";
+	return {
+		phase,
+		error,
+		fail,
+		end,
+		running: loopRef.current !== null && phase !== "ended",
+		onToggle: () => void toggle(),
+		onEnd: () => void end(),
+		onAddKey: () => openSettings("keys", DEEPGRAM_KEY_ID),
+	};
+}
+
+export function DriveMode({ chatId: initialChatId }: { chatId: string | null }) {
+	const [visuals, setVisuals] = useState(0);
+	const [chatId, setChatId] = useState(initialChatId);
+	const chatRef = useRef(initialChatId);
+
+	const countVisuals = useCallback(async () => {
+		const id = chatRef.current;
+		if (!id) return;
+		try {
+			const res = await fetch(`/api/chats/${encodeURIComponent(id)}`);
+			if (res.ok) setVisuals(visualsWaiting(((await res.json()) as { messages?: unknown[] }).messages ?? []));
+		} catch {
+			// The count waits for the next turn.
+		}
+	}, []);
+
+	const begin = useCallback(async ({ speechOut, onState, onError }: DriveLoopContext) => {
+		let id = chatRef.current;
+		if (!id) {
+			const res = await fetch("/api/chats", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ voice: true }),
+			});
+			if (!res.ok) throw new Error(`create chat ${res.status}`);
+			id = ((await res.json()) as { id: string }).id;
+			chatRef.current = id;
+			setChatId(id);
+			// Same screen, real address: a reload or the sidebar finds it.
+			window.history.replaceState(null, "", `/drive/${id}`);
+		}
+		const sendTurn = createChatTurnSender(id);
+		const loop = await runVoiceLoop({
+			speechIn: createDeepgramSpeechIn({ language: "en" }),
+			speechOut,
+			sendTurn,
+			openQuestion: sendTurn.openQuestion,
+			onState,
+			onError,
+		});
+		void countVisuals();
+		return loop;
+	}, [countVisuals]);
+
+	const { phase, error, running, onToggle, onEnd, onAddKey } = useDriveSession(begin, () => void countVisuals());
 	return <DriveView
 		phase={phase}
 		error={error}
 		visuals={visuals}
 		chatId={chatId}
 		running={running}
-		onToggle={() => void toggle()}
-		onEnd={() => void end()}
-		onAddKey={() => openSettings("keys", DEEPGRAM_KEY_ID)}
+		onToggle={onToggle}
+		onEnd={onEnd}
+		onAddKey={onAddKey}
 	/>;
 }
 
 /** The drive screen itself, from plain props. */
-export function DriveView({ phase, error, visuals, chatId, running, onToggle, onEnd, onAddKey }: {
+export function DriveView({ phase, error, visuals, chatId, running, onToggle, onEnd, onAddKey, hint = DRIVE_TEXT.ready, corner }: {
 	phase: DrivePhase;
 	error: DriveError | null;
 	visuals: number;
@@ -193,10 +228,14 @@ export function DriveView({ phase, error, visuals, chatId, running, onToggle, on
 	onToggle: () => void;
 	onEnd: () => void;
 	onAddKey: () => void;
+	/** The line under Start; the voice review has its own. */
+	hint?: string;
+	/** The top-right line in place of the visuals count ("3 of 20"). */
+	corner?: string;
 }) {
 	const bigLabel = !running ? DRIVE_TEXT.start : phase === "paused" ? DRIVE_TEXT.resume : DRIVE_TEXT.pause;
 	const word = driveStateWord(phase);
-	const waiting = visualsLabel(visuals);
+	const waiting = corner ?? visualsLabel(visuals);
 
 	return (
 		<div data-testid="drive-mode" className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-background px-6 py-10 text-foreground">
@@ -207,7 +246,7 @@ export function DriveView({ phase, error, visuals, chatId, running, onToggle, on
 
 			<div className="flex flex-col items-center gap-6 text-center">
 				<p data-testid="drive-state" aria-live="polite" className="font-title text-[clamp(3rem,12vw,7rem)] leading-none">{word}</p>
-				{phase === "ready" && !error && <p data-testid="drive-hint" className="max-w-md text-body text-muted-foreground">{DRIVE_TEXT.ready}</p>}
+				{phase === "ready" && !error && <p data-testid="drive-hint" className="max-w-md text-body text-muted-foreground">{hint}</p>}
 				{error && (
 					<p role="alert" data-testid="drive-error" className="max-w-md text-body text-destructive">
 						{error === "noKey" ? <>

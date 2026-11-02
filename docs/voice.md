@@ -40,7 +40,7 @@ Drive mode (P3-5, D173 to D180) is the screen for a voice session with eyes off 
 - **The screen:** full screen, one large state word (Listening, Thinking, Speaking, Paused, Ended), one big button, a small End button and a Transcript link to the written chat (`components/drive/drive-mode.tsx`; the words are `DRIVE_TEXT` in `src/core/drive.ts`).
 - **The big button (D175):** pauses and resumes, as do the Space bar and the play/pause media key (through the Media Session handlers). It also resumes the silence pause.
 - **Screen off (D176):** while a session runs, `lh.drive.awake(true)` asks Electron (`electron/drive-awake.cjs`) for an app-suspension blocker and turns off background throttling. The display may still dim, sleep or lock. Pause, End and closing the window release it.
-- **Tones (D177):** rising on start and resume, falling on pause and end, a low double tone on an error (`components/speech/tones.ts`, Web Audio).
+- **Tones (D177):** rising on start and resume, falling on pause and end, a low double tone on an error (`components/speech/tones.ts`, Web Audio). The voice review adds one soft note per saved rating (D186).
 - **Visuals (D178):** the demo and visual tools still run in a voice session. The voice prompt tells the tutor never to mention them aloud; they wait in the written transcript, and the screen shows "N visuals to view later" (`visualsWaiting`).
 - **Errors:** no Deepgram key (with a link to the key in Settings), no microphone, or a lost connection. A lost connection pauses the session; Resume tries again.
 
@@ -48,7 +48,19 @@ Drive mode (P3-5, D173 to D180) is the screen for a voice session with eyes off 
 
 Settings > Providers > Speech has a Voice row (D179, D180): Thalia (the default), Athena, Harmonia, Draco, Odysseus or Pandora, with Play sample. It is stored as `speech.voice` and saved through `PUT /api/settings/speech`; an unknown value reads as the default.
 
+## Voice review
+
+The voice review (P3-6, D182 to D186) is the P1 review queue on the drive screen. "Review by voice" on `/review` opens `/drive/review` (D183) while cards are due.
+
+- **The script:** `createReviewTurnSender` in `src/core/voice-review.ts` is the loop's turn sender. No model is called (D182). Start speaks first (`runVoiceLoop`'s `speakFirst`): the count and the first question. He answers aloud and the stored answer is read (D184). He then says a rating word and the next question follows. A fallback card is read as "Recall: <name>."
+- **Ratings (D185):** "again", "hard", "good" or "easy", or "one" to "four", anywhere in a short reply (`ratingFromWords`). No match, or two different ratings, gets "Again, hard, good or easy?". Negation is not handled: "not easy" counts as easy.
+- **Saving:** each rating goes to `POST /api/review`, the review page's route, so the daily limits (D041), exclusions and generated questions all apply. A soft tone marks each saved rating (D186). A failed save plays the error tone and asks for the rating again.
+- **Turn-taking:** barge-in, the end of turn, Pause and Resume work as in a voice chat. Two words over the question count as the answer, and two words over the answer count as the rating. Silence repeats the question, or the rating ask, after 20 seconds, then pauses (D169).
+- **The end:** "That's all <N> cards for today." and the session ends. The corner shows the card's place ("3 of 20").
+
 ## Tests
+
+`tests/voice-review.test.ts` clears the golden data's 20-card queue by voice through the real review route (the P3-6 "Done when"); `tests/drive-review.test.tsx` covers its screen.
 
 `tests/drive-mode.test.tsx`, `tests/drive-awake.test.ts`, `tests/drive-tones.test.ts` and `tests/speech-voice-setting.test.ts` cover drive mode.
 

@@ -4,13 +4,14 @@
  * The review session (P1-5, the Memory system's page). One card at a time:
  * read the cue or scenario, think, reveal with Space or Enter, rate with 1
  * to 4 (Again, Hard, Good, Easy). The next card follows. Fully keyboard
- * driven (D044): no typed answers. Refetches on "reviews-changed", so a
+ * driven (D044): no typed answers. "Review by voice" opens the same queue
+ * on the drive screen (P3-6, D183). Refetches on "reviews-changed", so a
  * question generated in the background replaces the name fallback (D042).
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { formatInterval, type ReviewQueueView, type ReviewRating } from "@/src/core";
+import { formatInterval, VOICE_REVIEW_TEXT, type ReviewQueueView, type ReviewRating } from "@/src/core";
 import { Button } from "@/components/ui/button";
 import { useServerEvent } from "@/components/server-events";
 
@@ -142,6 +143,11 @@ export function ReviewSession() {
 					<span className="tabular-nums">{due}</span> due · <span className="tabular-nums">{stats.newLeft}</span> new left today
 				</p>
 				<p className="text-sm text-muted-foreground" data-testid="review-retention">{retentionLine}</p>
+				{current && (
+					<Button asChild variant="outline" size="sm" className="mt-2 self-start">
+						<Link href="/drive/review" data-testid="review-voice">{VOICE_REVIEW_TEXT.button}</Link>
+					</Button>
+				)}
 			</header>
 
 			{!current ? (
