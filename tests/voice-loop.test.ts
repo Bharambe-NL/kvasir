@@ -20,6 +20,7 @@ import type { PiEngine } from "../src/agent/models.ts";
 
 const streamRoute = await import("../app/api/chats/[id]/stream/route.ts");
 const recordRoute = await import("../app/api/chats/[id]/route.ts");
+const abortRoute = await import("../app/api/activity/abort/route.ts");
 
 // The key-presence turn gate reads the environment (as in chat-flow).
 process.env.OPENROUTER_API_KEY ??= "test-key-presence-gate";
@@ -51,11 +52,13 @@ function scripted(replies: string[]) {
 }
 
 /** fetch, routed to the real handlers in this process. */
-function routedFetch(engine: PiEngine): typeof fetch {
+function routedFetch(engine: PiEngine, calls: string[] = []): typeof fetch {
 	const factory: Parameters<typeof handleChatRequest>[1] = (opts) => createTeacherAgent(undefined, { engine, messages: opts.messages, promptProfile: "voice" });
 	return (async (input: string, init?: RequestInit) => {
+		calls.push(input);
 		const req = new Request(`http://kvasir.test${input}`, init);
 		if (input === "/api/chat") return handleChatRequest(req, factory);
+		if (input === "/api/activity/abort") return abortRoute.POST(req);
 		const m = /^\/api\/chats\/([^/]+)(\/stream)?$/.exec(input);
 		if (!m) throw new Error(`unrouted ${input}`);
 		const ctx = { params: Promise.resolve({ id: decodeURIComponent(m[1]!) }) };
@@ -75,6 +78,9 @@ class FauxSpeechIn implements SpeechIn {
 	say(utterance: string) {
 		this.handlers!.onFinal(utterance);
 	}
+	hear(partial: string) {
+		this.handlers!.onPartial?.(partial);
+	}
 }
 
 class FauxSpeechOut implements SpeechOut {
@@ -89,6 +95,11 @@ class FauxSpeechOut implements SpeechOut {
 	}
 	stop() {
 		this.stops++;
+		this.release();
+	}
+	/** Let held sentences finish playing. */
+	release() {
+		this.hold = false;
 		for (const r of this.waiting.splice(0)) r();
 	}
 }
@@ -149,21 +160,6 @@ describe("the voice loop, end to end with faux speech", () => {
 		assert.ok(prompts.every((p) => p.startsWith(voice)), "the teacher ran on the voice profile");
 	});
 
-	it("an utterance while the tutor is speaking is dropped until P3-4's barge-in", async () => {
-		const { engine } = scripted([REPLIES[0]!]);
-		const chat = configuredChat("Voice loop busy");
-		const speechIn = new FauxSpeechIn();
-		const speechOut = new FauxSpeechOut();
-		speechOut.hold = true;
-		const heard: string[] = [];
-		const loop = await runVoiceLoop({ speechIn, speechOut, sendTurn: createChatTurnSender(chat.id, routedFetch(engine)), onHeard: (u) => heard.push(u) });
-		speechIn.say(SAID[0]!);
-		await until(() => speechOut.spoken.length === 1, "the first sentence");
-		speechIn.say("Wait, one moment.");
-		assert.deepEqual(heard, [SAID[0]]);
-		await loop.stop();
-	});
-
 	it("stop() mid-reply cuts the remaining sentences and stops both sides", async () => {
 		const { engine } = scripted([REPLIES[0]!]);
 		const chat = configuredChat("Voice loop stop");
@@ -183,6 +179,83 @@ describe("the voice loop, end to end with faux speech", () => {
 	});
 });
 
+describe("barge-in (P3-4, D166, D167)", () => {
+	it("two heard words over the tutor cut it off, and what he said gets the next reply", async () => {
+		const { engine } = scripted([REPLIES[0]!, "Sure. Take a moment."]);
+		const chat = configuredChat("Barge-in speaking");
+		const speechIn = new FauxSpeechIn();
+		const speechOut = new FauxSpeechOut();
+		speechOut.hold = true;
+		const heard: string[] = [];
+		const states: VoiceState[] = [];
+		const errors: Error[] = [];
+		const loop = await runVoiceLoop({ speechIn, speechOut, sendTurn: createChatTurnSender(chat.id, routedFetch(engine)), onHeard: (u) => heard.push(u), onState: (s) => states.push(s), onError: (e) => errors.push(e) });
+		speechIn.say(SAID[0]!);
+		await until(() => speechOut.spoken.length === 1, "the first sentence");
+		speechIn.hear("wait one");
+		assert.equal(speechOut.stops, 1, "speech stops at the second word");
+		speechOut.hold = false;
+		speechIn.say("Wait, one moment.");
+		await until(() => speechOut.spoken.includes("Take a moment.") && states.at(-1) === "listening", "the reply to the barge-in");
+		await loop.stop();
+		assert.deepEqual(errors, []);
+		assert.deepEqual(heard, [SAID[0], "Wait, one moment."]);
+		assert.deepEqual(speechOut.spoken, ["Here is the core rule.", "Sure.", "Take a moment."], "the rest of the first reply is never spoken");
+		const users = chatStore.getChat(chat.id)!.messages.filter((m) => m.role === "user");
+		assert.equal(users.length, 2);
+	});
+
+	it("a cough or a single word does not cut the tutor off", async () => {
+		const { engine } = scripted([REPLIES[0]!]);
+		const chat = configuredChat("Barge-in one word");
+		const speechIn = new FauxSpeechIn();
+		const speechOut = new FauxSpeechOut();
+		speechOut.hold = true;
+		const heard: string[] = [];
+		const states: VoiceState[] = [];
+		const loop = await runVoiceLoop({ speechIn, speechOut, sendTurn: createChatTurnSender(chat.id, routedFetch(engine)), onHeard: (u) => heard.push(u), onState: (s) => states.push(s) });
+		speechIn.say(SAID[0]!);
+		await until(() => speechOut.spoken.length === 1, "the first sentence");
+		speechIn.hear("hmm");
+		speechIn.say("Hmm.");
+		assert.equal(speechOut.stops, 0);
+		speechOut.release();
+		await until(() => states.at(-1) === "listening", "the reply to finish");
+		await loop.stop();
+		assert.deepEqual(heard, [SAID[0]]);
+		assert.deepEqual(speechOut.spoken, sentences(REPLIES[0]!), "the whole reply is spoken");
+	});
+
+	it("cutting in while the reply streams aborts the turn on the server; the record keeps the reply so far", async () => {
+		const LONG = "The first part is short. " + Array.from({ length: 60 }, (_, i) => `word${i}`).join(" ") + ". The end.";
+		const faux = createFauxCore({ tokensPerSecond: 60 });
+		faux.setResponses([fauxAssistantMessage([fauxText(LONG)]), fauxAssistantMessage([fauxText("Go ahead.")])]);
+		const engine: PiEngine = { model: faux.getModel(), streamFn: faux.streamSimple };
+		const chat = configuredChat("Barge-in streaming");
+		const speechIn = new FauxSpeechIn();
+		const speechOut = new FauxSpeechOut();
+		const states: VoiceState[] = [];
+		const errors: Error[] = [];
+		const calls: string[] = [];
+		const loop = await runVoiceLoop({ speechIn, speechOut, sendTurn: createChatTurnSender(chat.id, routedFetch(engine, calls)), onState: (s) => states.push(s), onError: (e) => errors.push(e) });
+		speechIn.say(SAID[0]!);
+		await until(() => speechOut.spoken.length === 1, "the first sentence");
+		speechIn.hear("hold on");
+		speechIn.say("Hold on, a question.");
+		await until(() => speechOut.spoken.includes("Go ahead.") && states.at(-1) === "listening", "the reply to the barge-in");
+		await loop.stop();
+		assert.deepEqual(errors, []);
+		assert.ok(calls.includes("/api/activity/abort"), "the running turn was aborted on the server");
+		assert.deepEqual(speechOut.spoken, ["The first part is short.", "Go ahead."]);
+		const record = chatStore.getChat(chat.id)!;
+		const replies = record.messages.filter((m) => m.role === "assistant").map(replyTextOf);
+		assert.equal(replies.length, 2);
+		assert.ok(replies[0]!.startsWith("The first part is short.") && !replies[0]!.endsWith("The end."), "the cut reply is kept up to where it stopped");
+		assert.equal(replies[1], "Go ahead.");
+		assert.deepEqual(record.messages.filter((m) => m.role === "user").length, 2);
+	});
+});
+
 describe("the chat turn sender", () => {
 	it("reads the reply from the record when the turn settled before the stream attached", async () => {
 		const sse = (body: string) => new Response(new Blob([body]).stream(), { headers: { "Content-Type": "text/event-stream" } });
@@ -197,6 +270,52 @@ describe("the chat turn sender", () => {
 		for await (const t of createChatTurnSender("chat_x", fetchFn)("Hi", new AbortController().signal)) out.push(t);
 		assert.deepEqual(out, ["Hello there."]);
 		assert.deepEqual(calls, ["/api/chats/chat_x", "/api/chat", "/api/chats/chat_x/stream", "/api/chats/chat_x"], "the record is read once at the start (an open question), then as the fallback");
+	});
+
+	it("an aborted turn is aborted on the server, and the next send waits until it has settled (D167)", async () => {
+		const calls: string[] = [];
+		let releaseSettle: (() => void) | null = null;
+		const settled = new Promise<void>((r) => (releaseSettle = r));
+		let streams = 0;
+		const fetchFn = (async (url: string, init?: RequestInit) => {
+			calls.push(url);
+			if (url === "/api/chat") return new Response(null, { status: 200 });
+			if (url === "/api/activity/abort") return Response.json({ ok: true });
+			if (url.endsWith("/stream")) {
+				streams++;
+				if (streams === 1) {
+					// The live turn: one sentence, then held open until aborted.
+					const signal = init?.signal;
+					return new Response(new ReadableStream({
+						start(c) {
+							c.enqueue(new TextEncoder().encode('data: {"type":"message_update","message":{"role":"assistant","timestamp":1,"content":[{"type":"text","text":"Part one. "}]}}\n\n'));
+							signal?.addEventListener("abort", () => c.error(new DOMException("aborted", "AbortError")));
+						},
+					}));
+				}
+				// The settle read after the abort ends once the server says so.
+				return new Response(new ReadableStream({ async start(c) { await settled; c.enqueue(new TextEncoder().encode("data: [DONE]\n\n")); c.close(); } }));
+			}
+			return Response.json({ messages: [] });
+		}) as typeof fetch;
+		const send = createChatTurnSender("chat_abort", fetchFn);
+		const first = new AbortController();
+		const it1 = send("One.", first.signal)[Symbol.asyncIterator]();
+		assert.equal((await it1.next()).value, "Part one. ");
+		first.abort();
+		await it1.next().catch(() => {});
+		const second = (async () => {
+			const out: string[] = [];
+			for await (const t of send("Two.", new AbortController().signal)) out.push(t);
+			return out;
+		})();
+		await new Promise((r) => setTimeout(r, 20));
+		assert.ok(calls.includes("/api/activity/abort"));
+		assert.equal(calls.filter((c) => c === "/api/chat").length, 1, "no second POST while the aborted turn settles");
+		releaseSettle!();
+		await second;
+		assert.equal(calls.filter((c) => c === "/api/chat").length, 2);
+		assert.equal(calls.filter((c) => c === "/api/chats/chat_abort").length >= 2, true, "the record is read again after the abort");
 	});
 
 	it("a refused turn is an error the loop reports", async () => {

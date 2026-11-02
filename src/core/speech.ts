@@ -8,9 +8,10 @@
  *   TurnSender  one chat turn: the reply's new text as it streams
  *
  * runVoiceLoop joins them: listen, send the final utterance, speak each
- * finished sentence while the reply streams (D155), listen again. Silence
- * handling and barge-in are P3-4; until then an utterance that arrives
- * while the tutor is thinking or speaking is dropped.
+ * finished sentence while the reply streams (D155), listen again.
+ * Turn-taking (P3-4, D165 to D169): the microphone stays on; two heard
+ * words while the tutor thinks or speaks cut it off and become the next
+ * turn; a silent open question is spoken again, then the session pauses.
  */
 
 export interface SpeechInHandlers {
@@ -177,12 +178,38 @@ export class ReplyTextTracker {
 
 // ─── The voice loop ─────────────────────────────────────────────────────────
 
-export type VoiceState = "listening" | "thinking" | "speaking" | "stopped";
+export type VoiceState = "listening" | "thinking" | "speaking" | "paused" | "stopped";
+
+/** Barge-in (D166): this many heard words while the tutor thinks or speaks
+ *  cut it off; fewer (a cough, a "hmm") do not. */
+export const BARGE_IN_WORDS = 2;
+/** Silence with a question open (D169): the question again after this
+ *  long, then a pause this much later. */
+export const NUDGE_AFTER_MS = 20_000;
+export const PAUSE_AFTER_MS = 60_000;
+/** Spoken by the app, not the model, when a silent session pauses (D169). */
+export const PAUSE_LINE = "I'll pause here. Say anything when you're ready to go on.";
+
+/** setTimeout and clearTimeout, injectable for a fake clock. */
+export interface VoiceTimers {
+	set(fn: () => void, ms: number): unknown;
+	clear(handle: unknown): void;
+}
+const realTimers: VoiceTimers = {
+	set: (fn, ms) => setTimeout(fn, ms),
+	clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+};
+
+const heardWords = (text: string) => text.split(/\s+/).filter(Boolean).length;
 
 export interface VoiceLoopOptions {
 	speechIn: SpeechIn;
 	speechOut: SpeechOut;
 	sendTurn: TurnSender;
+	/** The open spoken question's text after a turn, if any; silence
+	 *  handling runs only while one is open. */
+	openQuestion?: () => string | null;
+	timers?: VoiceTimers;
 	onState?: (state: VoiceState) => void;
 	/** Each utterance heard and each sentence spoken, in order. */
 	onHeard?: (utterance: string) => void;
@@ -196,12 +223,57 @@ export interface VoiceLoop {
 }
 
 export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
+	const timers = opts.timers ?? realTimers;
 	let state: VoiceState = "listening";
 	let turn: AbortController | null = null;
+	/** The running turn (or nudge), settled or not; the next turn waits on it. */
+	let current: Promise<void> = Promise.resolve();
+	let queued = 0;
+	let nudging = false;
+	let silence: unknown = null;
 	const set = (next: VoiceState) => {
 		if (state === "stopped" || state === next) return;
 		state = next;
 		opts.onState?.(next);
+	};
+	/** The state now, read after an await (narrowing would keep the old one). */
+	const now = (): VoiceState => state;
+
+	const quiet = () => {
+		if (silence !== null) timers.clear(silence);
+		silence = null;
+	};
+	/** After a turn: with a question open, the question again after 20 s,
+	 *  then the pause line 60 s later (D169). */
+	const armSilence = () => {
+		quiet();
+		const question = opts.openQuestion?.();
+		if (!question) return;
+		silence = timers.set(() => {
+			silence = null;
+			current = current.then(async () => {
+				if (state !== "listening") return;
+				nudging = true;
+				set("speaking");
+				opts.onSpoken?.(question);
+				await opts.speechOut.speak(question);
+				nudging = false;
+				if (now() !== "speaking" || queued > 0) return;
+				set("listening");
+				silence = timers.set(() => {
+					silence = null;
+					current = current.then(async () => {
+						if (state !== "listening") return;
+						nudging = true;
+						set("speaking");
+						opts.onSpoken?.(PAUSE_LINE);
+						await opts.speechOut.speak(PAUSE_LINE);
+						nudging = false;
+						if (now() === "speaking" && queued === 0) set("paused");
+					});
+				}, PAUSE_AFTER_MS);
+			});
+		}, NUDGE_AFTER_MS);
 	};
 
 	const runTurn = async (utterance: string) => {
@@ -231,17 +303,43 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 			if (!controller.signal.aborted) opts.onError?.(err instanceof Error ? err : new Error(String(err)));
 		} finally {
 			if (turn === controller) turn = null;
-			set("listening");
+			if (queued === 0) {
+				set("listening");
+				if (!controller.signal.aborted) armSilence();
+			}
 		}
 	};
 
+	/** Cut the tutor off (D167): stop speech and abort the running turn. */
+	const bargeIn = () => {
+		turn?.abort();
+		opts.speechOut.stop();
+	};
+	const busy = () => state === "thinking" || state === "speaking";
+
 	opts.onState?.("listening");
 	await opts.speechIn.start({
+		onPartial: (text) => {
+			if (state === "stopped") return;
+			if (heardWords(text) > 0) quiet();
+			if (busy() && heardWords(text) >= BARGE_IN_WORDS) bargeIn();
+		},
 		onFinal: (utterance) => {
 			const said = utterance.trim();
-			if (!said || state !== "listening") return; // P3-4 brings barge-in
+			if (!said || state === "stopped") return;
+			quiet();
+			if (busy()) {
+				// A short sound while the tutor speaks is not a turn (D166),
+				// except over the app's own nudge, which it answers.
+				if (heardWords(said) < BARGE_IN_WORDS && !nudging) return;
+				bargeIn();
+			}
 			opts.onHeard?.(said);
-			void runTurn(said);
+			queued++;
+			current = current.then(() => {
+				queued--;
+				return state === "stopped" ? undefined : runTurn(said);
+			});
 		},
 		onError: (err) => opts.onError?.(err),
 	});
@@ -250,6 +348,7 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 		async stop() {
 			if (state === "stopped") return;
 			state = "stopped";
+			quiet();
 			turn?.abort();
 			opts.speechOut.stop();
 			await opts.speechIn.stop();
