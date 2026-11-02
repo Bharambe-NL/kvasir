@@ -51,6 +51,19 @@ These rules come from Sagar's own validated voice sessions. Encode them as a tea
 | P3-5 | `p3/drive-mode-ui` | Drive mode screen | Usable with eyes off the screen for 30 minutes |
 | P3-6 | `p3/voice-review` | Voice mode for P1 reviews | A due queue can be cleared by voice |
 
+## P3-4 manual test log
+
+One live voice session on `/dev/voice` (`npm run dev`), run by Sagar with real audio. Results pending.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | The Aura-2 speak socket accepts the short-lived token (open from P3-2) | pending |
+| 2 | A turn goes about 1.5 s after he stops; a short thinking pause mid-answer is not cut off | pending |
+| 3 | Two words spoken over the tutor stop it and get an answer; a cough or "hmm" does not | pending |
+| 4 | Silence with a question open: the question again at about 20 s, the pause line at about 80 s, speech resumes | pending |
+| 5 | Stop ends the session cleanly (microphone off, speech off) | pending |
+| 6 | The teacher refers to nothing never said aloud (the P3-3 "three-part test" finding) | pending |
+
 ## Gate acceptance checks
 
 1. A 30-minute voice session on a DORA article runs with no screen interaction after start.
