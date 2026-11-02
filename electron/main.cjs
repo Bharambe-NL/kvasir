@@ -24,10 +24,11 @@
  *     would shadow every settings-page key change until restart.
  */
 
-const { app, BrowserWindow, Menu, ipcMain, nativeTheme, safeStorage, session, shell } = require("electron");
+const { app, BrowserWindow, Menu, ipcMain, nativeTheme, powerSaveBlocker, safeStorage, session, shell } = require("electron");
 const { createChatGPT, fileStore } = require("./chatgpt.cjs");
 const { attachChatGPTChild, trustedSender, chatGPTControl } = require("./chatgpt-ipc.cjs");
 const { revealTarget } = require("./export-reveal.cjs");
+const { createDriveAwake } = require("./drive-awake.cjs");
 const { createEncryption } = require("./encryption.cjs");
 const { createSubscriptions, loadSubscriptionSDK } = require("./subscriptions.cjs");
 const { attachSubscriptionChild, subscriptionControl } = require("./subscription-ipc.cjs");
@@ -795,6 +796,14 @@ async function main() {
 
 	// Show in Finder for an export folder (Kvasir P6-3): paths inside the
 	// export root only.
+	// Drive mode (Kvasir P3-5, D176): keep the session running with the screen off.
+	const driveAwake = createDriveAwake(powerSaveBlocker);
+	ipcMain.handle("lh:drive:awake", (event, on) => {
+		if (!trustedAppWindows.has(BrowserWindow.fromWebContents(event.sender)) || !trustedSender(event, new URL(url).origin, BrowserWindow)) throw new Error("Untrusted desktop request.");
+		driveAwake.set(event.sender, on === true);
+		return true;
+	});
+
 	ipcMain.handle("lh:exports:reveal", (event, target) => {
 		if (!trustedAppWindows.has(BrowserWindow.fromWebContents(event.sender)) || !trustedSender(event, new URL(url).origin, BrowserWindow)) throw new Error("Untrusted desktop request.");
 		const real = revealTarget(target);

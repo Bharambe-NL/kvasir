@@ -8,7 +8,7 @@ import { EXCLUDE_LABEL, INCLUDE_LABEL, useReviewExclusions } from "@/components/
 import { MenuShell } from "@/components/menu-shell";
 import { DeleteSessionDialog } from "@/components/delete-session-dialog";
 import type { ChatDeleteMode } from "@/src/core";
-import { DumbbellIcon, LayersIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import { DumbbellIcon, LayersIcon, MicIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import { ActivitySection } from "@/components/activity-dock";
 import { CoverageMenuBlock } from "@/components/extraction-coverage";
 import { LhMark } from "@/components/lh-mark";
@@ -19,7 +19,7 @@ import { Hint } from "@/components/ui/hint";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { fuzzyScore } from "@/src/core";
+import { fuzzyScore, sessionHref } from "@/src/core";
 import { useServerEvent, useServerResync } from "@/components/server-events";
 import type { ChatListItem } from "@/src/core";
 import { kbdEventForAction } from "@/src/core";
@@ -68,6 +68,9 @@ declare global {
 			getPathForFile?: (file: File) => string;
 			/** Show an export folder in Finder (Kvasir P6-3); false when refused. */
 			revealExport?: (path: string) => Promise<boolean>;
+			/** Drive mode (Kvasir P3-5, D176): keep the session running while
+			 *  the screen sleeps. */
+			drive?: { awake(on: boolean): Promise<boolean> };
 			/** Encryption at rest (Kvasir P6-6); main does the work, the key
 			 *  never reaches the window. */
 			encryption?: {
@@ -710,7 +713,8 @@ function SessionsSidebar() {
 				    half/half row): full-width rows read cleaner and give the
 				    labels room; teaching keeps the original draft route,
 				    practice carries its mode. */}
-				{/* Kvasir P7-5: more air between the doors and the session list. */}
+				{/* Kvasir P7-5: more air between the doors and the session list.
+				    Kvasir P3-5 (D173): a third door, Voice, opens drive mode. */}
 				<div className="mx-3 mb-5 flex flex-col gap-1">
 					<button
 						type="button"
@@ -731,6 +735,16 @@ function SessionsSidebar() {
 						<DumbbellIcon className="size-3" />
 						Practice
 						<span className="sr-only">create a new practice session</span>
+					</button>
+					<button
+						type="button"
+						data-testid="new-session-voice"
+						onClick={() => router.push("/drive/new")}
+						className={`flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider transition-colors hover:bg-accent hover:text-foreground ${pathname === "/drive/new" ? "bg-accent text-foreground" : "text-muted-foreground"}`}
+					>
+						<MicIcon className="size-3" />
+						Voice
+						<span className="sr-only">start a new voice session</span>
 					</button>
 					<button
 						type="button"
@@ -797,7 +811,7 @@ function SessionsSidebar() {
 									const target = shown![kbdIndex !== null && kbdIndex < n ? kbdIndex : 0];
 									if (!target) return;
 									e.preventDefault();
-									router.push(`/chat/${target.id}`);
+									router.push(sessionHref(target));
 									setKbdIndex(null);
 									e.currentTarget.blur();
 								}
@@ -857,11 +871,11 @@ function SessionsSidebar() {
 								<SessionRow
 									key={c.id}
 									chat={c}
-									active={pathname === `/chat/${c.id}`}
+									active={pathname === `/chat/${c.id}` || pathname === `/drive/${c.id}`}
 									kbdSelected={i === kbdIndex}
 									onOpen={() => {
 										setKbdIndex(null);
-										router.push(`/chat/${c.id}`);
+										router.push(sessionHref(c));
 									}}
 									onContextMenu={(e) => openContext(e, c)}
 								/>

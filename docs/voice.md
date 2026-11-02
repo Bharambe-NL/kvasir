@@ -10,7 +10,7 @@ The voice loop (P3-2) joins three ports in `src/core/speech.ts`:
 - `SpeechOut` speaks: one sentence at a time, stoppable at once.
 - `TurnSender` sends an utterance as a chat turn and yields the reply's new text as it streams.
 
-`runVoiceLoop` listens, sends what he said, and speaks each finished sentence while the reply is still streaming (D155), then listens again. Its states are listening, thinking, speaking, paused and stopped.
+`runVoiceLoop` listens, sends what he said, and speaks each finished sentence while the reply is still streaming (D155), then listens again. Its states are listening, thinking, speaking, paused and stopped. `pause()` and `resume()` (P3-5, D175) pause by hand: speech stops, a running turn is aborted with its reply kept, and the microphone goes off until resume.
 
 | Adapter | File | Provider |
 |---|---|---|
@@ -32,11 +32,25 @@ Voice sessions are hands-free (P3-4, D165). The microphone stays on for the whol
 
 The constants are `BARGE_IN_WORDS`, `NUDGE_AFTER_MS`, `PAUSE_AFTER_MS` and `PAUSE_LINE` in `src/core/speech.ts`. `tests/turn-taking.test.ts` checks the silence rules on a fake clock.
 
-### The dev voice page
+## Drive mode
 
-`/dev/voice` (D171) runs a live voice session for testing: `npm run dev`, open `http://localhost:3000/dev/voice`, press Start. It creates a voice chat on the default model, listens in English, and shows the state, the partial words and a timed log of every line heard and spoken. Production builds answer 404. Drive mode (P3-5) replaces it.
+Drive mode (P3-5, D173 to D180) is the screen for a voice session with eyes off the screen.
+
+- **Starting (D173, D174):** the sidebar's Voice door opens `/drive/new`. Start creates a voice chat, the address becomes `/drive/<id>`, and he says what he wants to learn. A voice session in the session list opens `/drive/<id>`, where Start resumes it. The screen listens in English.
+- **The screen:** full screen, one large state word (Listening, Thinking, Speaking, Paused, Ended), one big button, a small End button and a Transcript link to the written chat (`components/drive/drive-mode.tsx`; the words are `DRIVE_TEXT` in `src/core/drive.ts`).
+- **The big button (D175):** pauses and resumes, as do the Space bar and the play/pause media key (through the Media Session handlers). It also resumes the silence pause.
+- **Screen off (D176):** while a session runs, `lh.drive.awake(true)` asks Electron (`electron/drive-awake.cjs`) for an app-suspension blocker and turns off background throttling. The display may still dim, sleep or lock. Pause, End and closing the window release it.
+- **Tones (D177):** rising on start and resume, falling on pause and end, a low double tone on an error (`components/speech/tones.ts`, Web Audio).
+- **Visuals (D178):** the demo and visual tools still run in a voice session. The voice prompt tells the tutor never to mention them aloud; they wait in the written transcript, and the screen shows "N visuals to view later" (`visualsWaiting`).
+- **Errors:** no Deepgram key (with a link to the key in Settings), no microphone, or a lost connection. A lost connection pauses the session; Resume tries again.
+
+### The voice
+
+Settings > Providers > Speech has a Voice row (D179, D180): Thalia (the default), Athena, Harmonia, Draco, Odysseus or Pandora, with Play sample. It is stored as `speech.voice` and saved through `PUT /api/settings/speech`; an unknown value reads as the default.
 
 ## Tests
+
+`tests/drive-mode.test.tsx`, `tests/drive-awake.test.ts`, `tests/drive-tones.test.ts` and `tests/speech-voice-setting.test.ts` cover drive mode.
 
 `tests/voice-loop.test.ts` drives a full scripted session with faux speech through the real chat handler; `tests/speech-adapters.test.ts` checks the Deepgram adapters against a fake socket.
 

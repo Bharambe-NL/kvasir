@@ -45,22 +45,32 @@ const settle = async () => {
 
 class Ears implements SpeechIn {
 	handlers!: SpeechInHandlers;
+	on = false;
+	starts = 0;
 	async start(h: SpeechInHandlers) {
 		this.handlers = h;
+		this.on = true;
+		this.starts++;
 	}
-	async stop() {}
+	async stop() {
+		this.on = false;
+	}
 }
 class Mouth implements SpeechOut {
 	spoken: string[] = [];
+	stops = 0;
 	async speak(s: string) {
 		this.spoken.push(s);
 	}
-	stop() {}
+	stop() {
+		this.stops++;
+	}
 }
 
 const QUESTION = "Who keeps the responsibility when a provider runs the service?";
 
-/** Each turn replies with one sentence and leaves `question` open. */
+/** Each turn replies with one sentence and leaves `question` open. A
+ *  turn's reply can be held open with `holdReply`. */
 function session(question: string | null) {
 	const clock = new FakeClock();
 	const ears = new Ears();
@@ -68,14 +78,21 @@ function session(question: string | null) {
 	const sent: string[] = [];
 	const states: VoiceState[] = [];
 	let open: string | null = null;
-	const sendTurn: TurnSender = async function* (utterance) {
+	const aborted: string[] = [];
+	const hold = { on: false };
+	const sendTurn: TurnSender = async function* (utterance, signal) {
 		sent.push(utterance);
 		open = null;
 		yield `Reply ${sent.length}. `;
+		if (hold.on) {
+			await new Promise<void>((r) => signal.addEventListener("abort", () => r(), { once: true }));
+			aborted.push(utterance);
+			return;
+		}
 		open = question;
 	};
 	const start = () => runVoiceLoop({ speechIn: ears, speechOut: mouth, sendTurn, openQuestion: () => open, timers: clock, onState: (s) => states.push(s) });
-	return { clock, ears, mouth, sent, states, start };
+	return { clock, ears, mouth, sent, states, start, aborted, hold };
 }
 
 describe("silence with a question open (P3-4, D169)", () => {
@@ -147,5 +164,60 @@ describe("silence with a question open (P3-4, D169)", () => {
 		await settle();
 		assert.deepEqual(s.sent, ["Start.", "Firm."]);
 		await loop.stop();
+	});
+});
+
+describe("pause and resume by hand (P3-5, D175)", () => {
+	it("pause mid-reply stops speech, aborts the turn and the microphone; resume listens again", async () => {
+		const s = session(QUESTION);
+		s.hold.on = true;
+		const loop = await s.start();
+		s.ears.handlers.onFinal("Teach me Article 28.");
+		await settle();
+		assert.equal(s.states.at(-1), "speaking");
+		await loop.pause();
+		await settle();
+		assert.deepEqual(s.aborted, ["Teach me Article 28."], "the running turn is aborted");
+		assert.equal(s.mouth.stops, 1);
+		assert.equal(s.ears.on, false, "the microphone is off");
+		assert.equal(s.states.at(-1), "paused", "the aborted turn does not flip it back to listening");
+		s.ears.handlers.onFinal("late words");
+		await settle();
+		assert.deepEqual(s.sent, ["Teach me Article 28."], "nothing is sent while paused");
+		await s.clock.advance(10 * 60_000);
+		assert.equal(s.clock.armed, 0, "no silence timers while paused");
+
+		s.hold.on = false;
+		await loop.resume();
+		assert.equal(s.ears.on, true);
+		assert.equal(s.ears.starts, 2);
+		assert.equal(s.states.at(-1), "listening");
+		s.ears.handlers.onFinal("Where were we?");
+		await settle();
+		assert.deepEqual(s.sent, ["Teach me Article 28.", "Where were we?"]);
+		await loop.stop();
+	});
+
+	it("the button resumes a silence pause without restarting the microphone", async () => {
+		const s = session(QUESTION);
+		const loop = await s.start();
+		s.ears.handlers.onFinal("Go on.");
+		await settle();
+		await s.clock.advance(NUDGE_AFTER_MS + PAUSE_AFTER_MS);
+		assert.equal(s.states.at(-1), "paused");
+		await loop.resume();
+		assert.equal(s.states.at(-1), "listening");
+		assert.equal(s.ears.starts, 1);
+		await loop.stop();
+	});
+
+	it("pause and resume after stop do nothing", async () => {
+		const s = session(null);
+		const loop = await s.start();
+		await loop.stop();
+		await loop.pause();
+		await loop.resume();
+		assert.equal(s.states.at(-1), "stopped");
+		assert.equal(s.ears.starts, 1);
 	});
 });

@@ -276,6 +276,9 @@ export interface ChatSummary {
 	/** Practice sessions (2026-10-04): a posed problem with no conclude —
 	 *  the sidebar meta's "Problem waiting". Absent on teaching sessions. */
 	pendingProblem: boolean;
+	/** A voice session (P3-5, D173): rides the summary spread from the
+	 *  record; the sidebar opens it in drive mode. */
+	voice?: true;
 	/** The record's model-control settings — rides the list payload via the
 	 *  summary spread (the picker never needs it from here; the full record
 	 *  is its source). */

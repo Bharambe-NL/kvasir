@@ -15,7 +15,8 @@
  *    a paste box on a key the UI cannot make live would mislead.
  *  - OpenRouter is NOT special: one provider among 33, a row only when
  *    stored, otherwise it lives in the Add dropdown like everyone else.
- *  - Providers groups API keys, subscriptions, dictation and search.
+ *  - Providers groups API keys, subscriptions, speech (dictation and the
+ *    tutor's voice) and search.
  *    Unknown variables stay masked/read-only at the end of Model API keys.
  *
  * API: GET /api/keys (masked statuses + the providers array), PUT
@@ -41,6 +42,7 @@ import { ProviderMenuList } from "./model-menu.tsx";
 import { MenuShell } from "@/components/menu-shell";
 import { notifySettingsSaved } from "@/components/settings-signal";
 import { DictationLanguageSetting } from "@/components/dictation-language";
+import { VoiceSetting } from "@/components/settings/voice-setting";
 
 /** One pi-ai provider with plain API-key auth (the Platform seam —
  *  derived from pi-ai's own env-key table; no drift possible). */
@@ -580,8 +582,8 @@ export function KeysSection({
 				<ClaudeCodeInstallationStatus />
 			</SettingsGroup>
 
-			{(["Dictation", "Search"] as const).map((label) => <SettingsGroup key={label} label={label} testid={label === "Dictation" ? "group-dictation" : "group-search"}>
-				{toolRows.filter((status) => label === "Dictation" ? status.id === "DEEPGRAM_API_KEY" : status.id !== "DEEPGRAM_API_KEY").map((status) => (
+			{(["Speech", "Search"] as const).map((label) => <SettingsGroup key={label} label={label} testid={label === "Speech" ? "group-speech" : "group-search"}>
+				{toolRows.filter((status) => label === "Speech" ? status.id === "DEEPGRAM_API_KEY" : status.id !== "DEEPGRAM_API_KEY").map((status) => (
 					<KeyTableRow
 						key={status.id}
 						label={status.info?.label ?? status.id}
@@ -599,7 +601,7 @@ export function KeysSection({
 						testid={`key-${status.id.toLowerCase()}`}
 					/>
 				))}
-				{label === "Dictation" && <>
+				{label === "Speech" && <>
 					<DictationLanguageSetting />
 					<p data-testid="dictation-setup-hint" className="text-xs leading-relaxed text-muted-foreground/70">
 						Create a <a
@@ -609,6 +611,7 @@ export function KeysSection({
 							className="underline underline-offset-2 hover:text-foreground"
 						>Deepgram API key</a> with the Member role or higher, then add it above.
 					</p>
+					<VoiceSetting />
 				</>}
 			</SettingsGroup>)}
 

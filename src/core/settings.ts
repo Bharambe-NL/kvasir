@@ -35,6 +35,7 @@ import type { ModelRole } from "../../config.ts";
 import type { ChatSettings } from "./contracts/chat.ts";
 import type { SearchEngineId } from "./search.ts";
 import { isDictationLanguage, type DictationLanguage } from "./dictation.ts";
+import { DEFAULT_VOICE, isSpeakVoice, type SpeakVoice } from "./speech.ts";
 
 /** The schema version this code understands. Bump ONLY for breaking shape
  *  changes (a field renamed/meaning changed); pure additions never bump. */
@@ -337,6 +338,11 @@ export interface DictationSettings {
 	language?: DictationLanguage;
 }
 
+/** Speech in voice sessions (Kvasir P3-5, D180): the tutor's voice. */
+export interface SpeechSettings {
+	voice?: SpeakVoice;
+}
+
 /** Agent settings — everything about the non-conversation machinery. */
 export interface AgentSettings {
 	/** Background-role model/thinking overrides (absent role = config pin). */
@@ -482,6 +488,7 @@ export interface UserSettings {
 	version: number;
 	general?: GeneralSettings;
 	dictation?: DictationSettings;
+	speech?: SpeechSettings;
 	/** Explicit app-wide opt-in; absent/invalid is off, including older records. */
 	claudeCode?: { enabled?: boolean };
 	agent?: AgentSettings;
@@ -504,6 +511,7 @@ export interface FactorySettings {
 	version: number;
 	general: Required<GeneralSettings>;
 	dictation: Required<DictationSettings>;
+	speech: Required<SpeechSettings>;
 	appearance: {
 		mode: AppearanceMode;
 		background: string | null;
@@ -527,6 +535,7 @@ export const FACTORY_SETTINGS: FactorySettings = {
 	version: CURRENT_SETTINGS_VERSION,
 	general: { autoUpdate: true },
 	dictation: { language: "en" },
+	speech: { voice: DEFAULT_VOICE },
 	appearance: {
 		mode: "dark",
 		background: null, // the dark default lives in app/globals.css
@@ -836,6 +845,14 @@ export function sanitizeUserSettings(raw: unknown): UserSettings | null {
 		out.dictation = raw !== null && typeof raw === "object" && !Array.isArray(raw) &&
 			isDictationLanguage((raw as Record<string, unknown>).language)
 			? { language: (raw as DictationSettings).language }
+			: {};
+	}
+	if (r.speech !== undefined) {
+		// An unknown voice is dropped, so the default voice applies (D180).
+		const raw = r.speech;
+		out.speech = raw !== null && typeof raw === "object" && !Array.isArray(raw) &&
+			isSpeakVoice((raw as Record<string, unknown>).voice)
+			? { voice: (raw as SpeechSettings).voice }
 			: {};
 	}
 	if (r.claudeCode !== undefined) {

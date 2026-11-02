@@ -37,6 +37,9 @@ for (const adapter of ADAPTERS) {
 			chats.saveMessages(voice.id, [user("hi")]);
 			chats.renameChat(voice.id, "Spoken two");
 			assert.equal(chats.getChat(voice.id)!.voice, true, "fixed from birth");
+			const listed = chats.listChats();
+			assert.equal(listed.find((c) => c.id === voice.id)!.voice, true, "the sidebar sees it (P3-5, D173)");
+			assert.equal("voice" in listed.find((c) => c.id === written.id)!, false);
 		});
 
 		it("saveMessages bumps updatedAt and the list order; tree, settings and rename do not", async () => {

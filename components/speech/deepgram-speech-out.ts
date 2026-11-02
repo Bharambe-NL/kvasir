@@ -24,7 +24,11 @@ export interface DeepgramSpeechOutDeps {
 	player?: PcmPlayer;
 }
 
-export function createDeepgramSpeechOut(deps: DeepgramSpeechOutDeps = {}): SpeechOut {
+/** SpeechOut plus close(), which ends the speak socket when a session
+ *  or a voice sample is done. */
+export type DeepgramSpeechOut = SpeechOut & { close(): void };
+
+export function createDeepgramSpeechOut(deps: DeepgramSpeechOutDeps = {}): DeepgramSpeechOut {
 	const mint = deps.mintToken ?? (() => mintDeepgramToken());
 	const open = deps.openSocket ?? browserSocket;
 	const player = deps.player ?? createBrowserPlayer();
@@ -77,6 +81,16 @@ export function createDeepgramSpeechOut(deps: DeepgramSpeechOutDeps = {}): Speec
 			flushed = null;
 			void socket?.then((ws) => {
 				if (ws.readyState === OPEN) ws.send(JSON.stringify({ type: "Clear" }));
+			}).catch(() => {});
+		},
+		close() {
+			const pending = socket;
+			socket = null;
+			void pending?.then((ws) => {
+				if (ws.readyState === OPEN) {
+					ws.send(JSON.stringify({ type: "Close" }));
+					ws.close(1000);
+				}
 			}).catch(() => {});
 		},
 	};

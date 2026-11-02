@@ -36,6 +36,15 @@ describe("voice profile composition (D149)", () => {
 		assert.ok(!voice.some((p) => p.startsWith("voice/teacher/")), "never the other agent's overlay");
 	});
 
+	it("visuals may run but are never spoken of (P3-5, D178)", () => {
+		for (const kind of ["teacher", "prober"] as const) {
+			const voice = composeInstructions(kind, undefined, "voice");
+			assert.match(voice, /\*\*Nothing visual aloud\.\*\* He cannot look at the screen\./);
+			assert.match(voice, /it waits in the written transcript\. Never mention it, point to it or rely on it in what you say\./);
+			assert.doesNotMatch(voice, /say it can be looked at later/);
+		}
+	});
+
 	it("the default profile and practice are unchanged", () => {
 		for (const agent of ["prober", "teacher", "practice"] as const) {
 			assert.ok(!paths(agent).some((p) => p.startsWith("voice/")), `${agent}: no voice by default`);

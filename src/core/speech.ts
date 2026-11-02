@@ -40,6 +40,21 @@ export type TurnSender = (utterance: string, signal: AbortSignal) => AsyncIterab
 /** The default Aura-2 voice (D158). */
 export const DEFAULT_VOICE = "aura-2-thalia-en";
 
+/** The voices the Voice setting offers (P3-5, D179): six calm Aura-2
+ *  English voices, the default first. */
+export const SPEAK_VOICES = [
+	{ id: "aura-2-thalia-en", label: "Thalia" },
+	{ id: "aura-2-athena-en", label: "Athena" },
+	{ id: "aura-2-harmonia-en", label: "Harmonia" },
+	{ id: "aura-2-draco-en", label: "Draco" },
+	{ id: "aura-2-odysseus-en", label: "Odysseus" },
+	{ id: "aura-2-pandora-en", label: "Pandora" },
+] as const;
+export type SpeakVoice = (typeof SPEAK_VOICES)[number]["id"];
+export const isSpeakVoice = (v: unknown): v is SpeakVoice => SPEAK_VOICES.some((voice) => voice.id === v);
+/** Spoken by Play sample in the chosen voice (D179). */
+export const VOICE_SAMPLE = "Hello. This is how I will sound in your voice sessions.";
+
 /** Deepgram's listen socket for a voice session: like dictation's, plus
  *  interim results for partials. A pause of about 1.5 seconds ends an
  *  utterance (D168): endpointing at 1000 ms sets speech_final, and the
@@ -218,6 +233,11 @@ export interface VoiceLoopOptions {
 }
 
 export interface VoiceLoop {
+	/** Pause by hand (P3-5, D175): speech stops, a running turn is aborted
+	 *  (its reply kept as on barge-in) and the microphone goes off. */
+	pause(): Promise<void>;
+	/** Listen again after either pause (by hand, or the silence pause). */
+	resume(): Promise<void>;
 	/** Stop listening and speaking now; resolves once both have stopped. */
 	stop(): Promise<void>;
 }
@@ -231,8 +251,11 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 	let queued = 0;
 	let nudging = false;
 	let silence: unknown = null;
+	/** Paused by hand: the microphone is off and nothing runs until resume. */
+	let held = false;
 	const set = (next: VoiceState) => {
 		if (state === "stopped" || state === next) return;
+		if (held && next !== "paused") return;
 		state = next;
 		opts.onState?.(next);
 	};
@@ -317,16 +340,15 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 	};
 	const busy = () => state === "thinking" || state === "speaking";
 
-	opts.onState?.("listening");
-	await opts.speechIn.start({
+	const handlers: SpeechInHandlers = {
 		onPartial: (text) => {
-			if (state === "stopped") return;
+			if (state === "stopped" || held) return;
 			if (heardWords(text) > 0) quiet();
 			if (busy() && heardWords(text) >= BARGE_IN_WORDS) bargeIn();
 		},
 		onFinal: (utterance) => {
 			const said = utterance.trim();
-			if (!said || state === "stopped") return;
+			if (!said || state === "stopped" || held) return;
 			quiet();
 			if (busy()) {
 				// A short sound while the tutor speaks is not a turn (D166),
@@ -338,13 +360,35 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 			queued++;
 			current = current.then(() => {
 				queued--;
-				return state === "stopped" ? undefined : runTurn(said);
+				return state === "stopped" || held ? undefined : runTurn(said);
 			});
 		},
 		onError: (err) => opts.onError?.(err),
-	});
+	};
+
+	opts.onState?.("listening");
+	await opts.speechIn.start(handlers);
 
 	return {
+		async pause() {
+			if (state === "stopped" || held) return;
+			quiet();
+			set("paused");
+			held = true;
+			turn?.abort();
+			opts.speechOut.stop();
+			await opts.speechIn.stop();
+		},
+		async resume() {
+			if (state === "stopped") return;
+			if (held) {
+				await opts.speechIn.start(handlers);
+				held = false;
+				set("listening");
+			} else if (state === "paused") {
+				set("listening");
+			}
+		},
 		async stop() {
 			if (state === "stopped") return;
 			state = "stopped";
