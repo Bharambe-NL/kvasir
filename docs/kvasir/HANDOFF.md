@@ -12,13 +12,13 @@ Updated by Claude Code at the end of each session. Read this first.
   - P3 Voice tutor and drive mode: opened 2026-11-01. Milestone 6, tracking issue #88, task issues #82 to #87 (P3-1 to P3-6). Release tags now count up (D147): P3's gate takes the next minor after the latest release. Self-merge allowed for PRs that need no review (D148).
   - P6 Platform hardening: opened 2026-11-01. Milestone 4, tracking issue #53, task issues #47 to #52 (P6-1 to P6-6) and #6 (P6-7, after P6-4). Self-merge allowed (D089).
 - Gates block no other phase (D119). P1's real-use check is recorded later (D120). Order agreed: P7 first, then P3, P4 (after P3) and P5.
-- Task: P3-6 voice review, plan approved on #87 (D182 to D186). Built and green; waits for Sagar's review. Its live log is pending in the P3 brief, beside P3-4's and P3-5's.
-- Branch: `p3/voice-review`
-- PR: #98
+- Task: none. Every P3 task is merged (P3-6 via #98). Next: Sagar's live runs for the P3-4, P3-5 and P3-6 logs in the brief, then the P3 gate.
+- Branch: `main`
+- PR: none
 
 ## Done
 
-- P3-6 built on #98: "Review by voice" on `/review` opens `/drive/review` (D183). The review script (`src/core/voice-review.ts`) reads each question, reads the stored answer after his spoken answer (D184), takes a spoken rating (D182, D185) and plays a soft tone per saved rating (D186). No model is called. Both drive screens share `useDriveSession`. `tests/voice-review.test.ts` clears the golden data's 20-card queue by voice through the real review route.
+- P3-6 merged via #98 before its live log (D187): "Review by voice" on `/review` opens `/drive/review` (D183). The review script (`src/core/voice-review.ts`) reads each question, reads the stored answer after his spoken answer (D184), takes a spoken rating (D182, D185) and plays a soft tone per saved rating (D186). No model is called. Both drive screens share `useDriveSession`. `tests/voice-review.test.ts` clears the golden data's 20-card queue by voice through the real review route.
 - P3-5 merged via #97 before its live log (D181): the drive screen (`/drive/new`, `/drive/<id>`), the Voice door, pause and resume by button, Space and media key (D175), keep awake with the screen off (D176), tones (D177), visuals counted and never spoken of (D178), the Voice setting with six voices (D179, D180). `/dev/voice` is removed; the P3-4 live log now runs in drive mode.
 - P3-4 merged via #96 (pause line approved by Sagar): barge-in at two heard words with the turn aborted on the server (D166, D167), a 1.5 second end of turn (D168), the silence nudge and pause line (D169), no wake word (D170), the dev-only `/dev/voice` page (D171). Merges before its live log (D172); the log is filled in from Sagar's later run, before the P3 gate.
 - P3-3 merged via #94 (contract, store field and prompts approved by Sagar): D159 (the tutor grades), D160 (`ask_spoken` replaces every question tool in voice), D161 (`voice: true` at creation), D162 (the voice loop sends the answer), D163 (the full spoken check in the validator), D164 (two questions joined under one question mark are rejected). Plan approved on #84. Built: `ChatRecord.voice`, `ask_spoken` (`askSpokenToolFor`, `askSpokenProblems`), the spoken question guide, a spoken plan section, the voice loop speaking and answering questions, the written-window view. `npm run voice:check` now runs a voice chat on the real chat path. Live runs: 9e17eea (old script; two runs by mistake, $0.52), 01e16e1 (12 of 13, plan as a Markdown list, $0.43), cf3df1d (13 of 13, $0.36). Finding for P3-4's live log: the teacher's first question referred to "that three-part test", never said aloud.
@@ -69,7 +69,7 @@ Updated by Claude Code at the end of each session. Read this first.
 4. The P1 gate (`/kv-gate P1`) after two weeks of real review use. Record it in the roadmap and the next release notes; no `v0.1.0` tag (D088).
 5. Optional for Sagar: move his app data to SQLite with the app closed (`docs/sqlite.md`).
 6. Optional for Sagar: turn on encryption in his own app (Settings > Security; `docs/encryption.md`). Save the recovery key.
-7. P3: after #98 merges, Sagar's live runs for the P3-4, P3-5 and P3-6 logs in the brief (the first live audio: they also cover the Aura-2 token check and the P3-3 finding), then the P3 gate (`/kv-gate P3`, the next minor tag, D147). Then P4 (after P3) and P5 (D119: gates block nothing).
+7. P3: Sagar's live runs for the P3-4, P3-5 and P3-6 logs in the brief (the first live audio: they also cover the Aura-2 token check and the P3-3 finding), then the P3 gate (`/kv-gate P3`, the next minor tag, D147). Then P4 (after P3) and P5 (D119: gates block nothing).
    - Open for Sagar from P7-3: Kvasir dark's red error text on cards is 4.46:1 (just under 4.5:1); fixing it means a slightly lighter red in Kvasir dark. Listed as a known exception in `tests/color-themes.test.tsx`.
 8. P6-5 and P6-7 need the P6-4 baseline (item 2). After them, the P6 gate (`/kv-gate P6`) with the open Sagar checks: P6-2 Claude Desktop, P6-3 Obsidian and Anki.
 9. Follow-up from P6-3: a document session's name is the document's full title, so its vault frontmatter and Anki tag are long.

@@ -192,3 +192,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D184 | 2026-11-02 | After the question is read he answers aloud; when he finishes (the 1.5 second end of turn, D168) the stored answer is read. "I don't know" or "skip" works the same way. Nothing he says is graded or stored | Sagar | |
 | D185 | 2026-11-02 | A rating is "again", "hard", "good" or "easy", or "one" to "four", anywhere in a short reply. With no match, or two different ratings heard, he is asked once more | Sagar | |
 | D186 | 2026-11-02 | After a rating is saved a soft tone plays and the next question is read, with no words between. An addition to the D177 tones | Sagar | D177 |
+| D187 | 2026-11-02 | P3-6 merges before its live test log, as P3-4 and P3-5 did (D172, D181); the log stays pending in the P3 brief and is filled in from Sagar's later run, before the P3 gate | Sagar | |
