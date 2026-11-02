@@ -177,3 +177,4 @@ Agents add a row in the same PR that acts on the decision. A decision without a 
 | D169 | 2026-11-02 | Silence with a question open: after 20 seconds the question is spoken again once, from its text with no model call; after 60 more seconds the session pauses and says so; anything he says then resumes it | Sagar | |
 | D170 | 2026-11-02 | No wake word. Within a session everything he says goes to the tutor; starting a session is a button press. Answers P3 open decision 5 | Sagar | |
 | D171 | 2026-11-02 | P3-4's live audio test runs on a plain page at `/dev/voice`, present only in development builds: start a voice session, show the state and the words heard and spoken, and a Stop button. Drive mode (P3-5) replaces it | Sagar | |
+| D172 | 2026-11-02 | P3-4 merges before its live test log; the log stays pending in the P3 brief and is filled in from Sagar's later run on `/dev/voice`, before the P3 gate. P3-5 branches from `main` | Sagar | |
