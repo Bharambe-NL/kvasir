@@ -68,6 +68,9 @@ declare global {
 			getPathForFile?: (file: File) => string;
 			/** Show an export folder in Finder (Kvasir P6-3); false when refused. */
 			revealExport?: (path: string) => Promise<boolean>;
+			/** Drive mode (Kvasir P3-5, D176): keep the session running while
+			 *  the screen sleeps. */
+			drive?: { awake(on: boolean): Promise<boolean> };
 			/** Encryption at rest (Kvasir P6-6); main does the work, the key
 			 *  never reaches the window. */
 			encryption?: {

@@ -46,6 +46,8 @@ contextBridge.exposeInMainWorld("lh", {
 	// Show an export folder in Finder; main allows only paths inside the
 	// export root (Kvasir P6-3).
 	revealExport: (target) => ipcRenderer.invoke("lh:exports:reveal", target),
+	// Drive mode (Kvasir P3-5, D176): keep listening while the screen sleeps.
+	drive: { awake: (on) => ipcRenderer.invoke("lh:drive:awake", on === true) },
 	// Encryption at rest (Kvasir P6-6): the key never reaches the window;
 	// only the recovery key, once, on turning it on.
 	encryption: {
