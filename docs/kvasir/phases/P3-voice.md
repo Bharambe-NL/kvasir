@@ -77,6 +77,17 @@ A 30-minute voice session from the Voice door with eyes off the screen, run by S
 | 5 | Nothing visual is mentioned aloud; any visuals wait in the transcript | pending |
 | 6 | The chosen voice (Settings > Providers > Speech) is the one heard | pending |
 
+## P3-6 manual test log
+
+One voice review of a real due queue from "Review by voice", run by Sagar. Results pending.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | The queue is cleared by voice with no screen interaction after Start | pending |
+| 2 | Each rating word is heard as said, including "one" to "four" | pending |
+| 3 | The soft tone plays after each saved rating | pending |
+| 4 | The review page's counts match the ratings given | pending |
+
 ## Gate acceptance checks
 
 1. A 30-minute voice session on a DORA article runs with no screen interaction after start.
