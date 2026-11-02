@@ -74,3 +74,21 @@ describe("drive mode's reading of the record", () => {
 		assert.equal(driveErrorKind(new Error("Deepgram listening stopped (1011)")), "connectionLost");
 	});
 });
+
+describe("the Voice door and voice rows in the sidebar (D173)", () => {
+	it("Voice sits under Practice and opens /drive/new", async () => {
+		const { readFileSync } = await import("node:fs");
+		const source = readFileSync(new URL("../components/sidebar.tsx", import.meta.url), "utf8");
+		const practice = source.indexOf('data-testid="new-session-practice"');
+		const voice = source.indexOf('data-testid="new-session-voice"');
+		assert.ok(practice > 0 && voice > practice, "Voice comes after Practice");
+		assert.match(source.slice(voice, voice + 600), /router\.push\("\/drive\/new"\)/);
+		assert.match(source.slice(voice, voice + 800), />\s*Voice\s*<span className="sr-only">start a new voice session<\/span>/);
+	});
+
+	it("a voice session opens in drive mode, any other in the chat", async () => {
+		const { sessionHref } = await import("../src/core/drive.ts");
+		assert.equal(sessionHref({ id: "a", voice: true }), "/drive/a");
+		assert.equal(sessionHref({ id: "b" }), "/chat/b");
+	});
+});

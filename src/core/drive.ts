@@ -60,6 +60,10 @@ export function visualsWaiting(messages: readonly unknown[]): number {
 	return n;
 }
 
+/** Where a session row opens: a voice session in drive mode (D173),
+ *  anything else in the chat. */
+export const sessionHref = (chat: { id: string; voice?: true }): string => (chat.voice ? `/drive/${chat.id}` : `/chat/${chat.id}`);
+
 /** What a failure means on the drive screen. */
 export function driveErrorKind(err: unknown): "noKey" | "noMicrophone" | "connectionLost" {
 	const name = (err as { name?: string } | null)?.name;
