@@ -21,6 +21,7 @@ import type {
 	CustomModelOverride,
 	GeneralSettings,
 	DictationSettings,
+	SpeechSettings,
 	GraphSettings,
 	ModelsSettings,
 	RoleModelOverride,
@@ -28,6 +29,7 @@ import type {
 import { BACKGROUND_MODEL_ROLES, COMPACTION_THRESHOLD_FLOOR, CUSTOM_MODEL_PIN_FLOOR, EXTRACTION_CHUNK_TOKENS_FLOOR, MODEL_SLOTS } from "../core/settings.ts";
 import { WRITABLE_TOOL_KEYS } from "../core/pending.ts";
 import { isDictationLanguage } from "../core/dictation.ts";
+import { isSpeakVoice } from "../core/speech.ts";
 
 /** Parsed-or-rejected — `ok: false` carries the 400's error message. */
 export type SettingsBodyResult<T> =
@@ -423,6 +425,15 @@ export function parseDictationSettingsBody(body: unknown): SettingsBodyResult<Di
 	return { ok: true, settings: { language: raw.language } };
 }
 
+/** speech: { voice?: one of the Voice setting's six voices (D179) } */
+export function parseSpeechSettingsBody(body: unknown): SettingsBodyResult<SpeechSettings> {
+	const raw = asRecord(body);
+	if (!raw) return { ok: false, error: "Invalid JSON body" };
+	if (raw.voice === undefined) return { ok: true, settings: {} };
+	if (!isSpeakVoice(raw.voice)) return { ok: false, error: "Unsupported voice" };
+	return { ok: true, settings: { voice: raw.voice } };
+}
+
 /** The custom endpoint's per-model pins (PATCH /api/custom-provider): the
  *  whole desired map, replace-whole like every section. Strict write side — a
  *  token count must be a whole number at or above the floor (the read side
@@ -473,6 +484,7 @@ export const SETTINGS_SECTIONS = {
 	compaction: parseCompactionSettingsBody,
 	models: parseModelsSettingsBody,
 	dictation: parseDictationSettingsBody,
+	speech: parseSpeechSettingsBody,
 	claudeCode: parseClaudeCodeSettingsBody,
 } as const;
 

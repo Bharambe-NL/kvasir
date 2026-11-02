@@ -40,6 +40,21 @@ export type TurnSender = (utterance: string, signal: AbortSignal) => AsyncIterab
 /** The default Aura-2 voice (D158). */
 export const DEFAULT_VOICE = "aura-2-thalia-en";
 
+/** The voices the Voice setting offers (P3-5, D179): six calm Aura-2
+ *  English voices, the default first. */
+export const SPEAK_VOICES = [
+	{ id: "aura-2-thalia-en", label: "Thalia" },
+	{ id: "aura-2-athena-en", label: "Athena" },
+	{ id: "aura-2-harmonia-en", label: "Harmonia" },
+	{ id: "aura-2-draco-en", label: "Draco" },
+	{ id: "aura-2-odysseus-en", label: "Odysseus" },
+	{ id: "aura-2-pandora-en", label: "Pandora" },
+] as const;
+export type SpeakVoice = (typeof SPEAK_VOICES)[number]["id"];
+export const isSpeakVoice = (v: unknown): v is SpeakVoice => SPEAK_VOICES.some((voice) => voice.id === v);
+/** Spoken by Play sample in the chosen voice (D179). */
+export const VOICE_SAMPLE = "Hello. This is how I will sound in your voice sessions.";
+
 /** Deepgram's listen socket for a voice session: like dictation's, plus
  *  interim results for partials. A pause of about 1.5 seconds ends an
  *  utterance (D168): endpointing at 1000 ms sets speech_final, and the
