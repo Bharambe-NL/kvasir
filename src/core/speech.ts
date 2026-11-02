@@ -224,6 +224,9 @@ export interface VoiceLoopOptions {
 	/** The open spoken question's text after a turn, if any; silence
 	 *  handling runs only while one is open. */
 	openQuestion?: () => string | null;
+	/** Run one turn with an empty utterance before he speaks, so the app
+	 *  speaks first (the voice review, P3-6). */
+	speakFirst?: boolean;
 	timers?: VoiceTimers;
 	onState?: (state: VoiceState) => void;
 	/** Each utterance heard and each sentence spoken, in order. */
@@ -368,6 +371,7 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 
 	opts.onState?.("listening");
 	await opts.speechIn.start(handlers);
+	if (opts.speakFirst) current = current.then(() => (state === "stopped" || held ? undefined : runTurn("")));
 
 	return {
 		async pause() {
