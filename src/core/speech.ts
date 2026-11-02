@@ -218,6 +218,11 @@ export interface VoiceLoopOptions {
 }
 
 export interface VoiceLoop {
+	/** Pause by hand (P3-5, D175): speech stops, a running turn is aborted
+	 *  (its reply kept as on barge-in) and the microphone goes off. */
+	pause(): Promise<void>;
+	/** Listen again after either pause (by hand, or the silence pause). */
+	resume(): Promise<void>;
 	/** Stop listening and speaking now; resolves once both have stopped. */
 	stop(): Promise<void>;
 }
@@ -231,8 +236,11 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 	let queued = 0;
 	let nudging = false;
 	let silence: unknown = null;
+	/** Paused by hand: the microphone is off and nothing runs until resume. */
+	let held = false;
 	const set = (next: VoiceState) => {
 		if (state === "stopped" || state === next) return;
+		if (held && next !== "paused") return;
 		state = next;
 		opts.onState?.(next);
 	};
@@ -317,16 +325,15 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 	};
 	const busy = () => state === "thinking" || state === "speaking";
 
-	opts.onState?.("listening");
-	await opts.speechIn.start({
+	const handlers: SpeechInHandlers = {
 		onPartial: (text) => {
-			if (state === "stopped") return;
+			if (state === "stopped" || held) return;
 			if (heardWords(text) > 0) quiet();
 			if (busy() && heardWords(text) >= BARGE_IN_WORDS) bargeIn();
 		},
 		onFinal: (utterance) => {
 			const said = utterance.trim();
-			if (!said || state === "stopped") return;
+			if (!said || state === "stopped" || held) return;
 			quiet();
 			if (busy()) {
 				// A short sound while the tutor speaks is not a turn (D166),
@@ -338,13 +345,35 @@ export async function runVoiceLoop(opts: VoiceLoopOptions): Promise<VoiceLoop> {
 			queued++;
 			current = current.then(() => {
 				queued--;
-				return state === "stopped" ? undefined : runTurn(said);
+				return state === "stopped" || held ? undefined : runTurn(said);
 			});
 		},
 		onError: (err) => opts.onError?.(err),
-	});
+	};
+
+	opts.onState?.("listening");
+	await opts.speechIn.start(handlers);
 
 	return {
+		async pause() {
+			if (state === "stopped" || held) return;
+			quiet();
+			set("paused");
+			held = true;
+			turn?.abort();
+			opts.speechOut.stop();
+			await opts.speechIn.stop();
+		},
+		async resume() {
+			if (state === "stopped") return;
+			if (held) {
+				await opts.speechIn.start(handlers);
+				held = false;
+				set("listening");
+			} else if (state === "paused") {
+				set("listening");
+			}
+		},
 		async stop() {
 			if (state === "stopped") return;
 			state = "stopped";
