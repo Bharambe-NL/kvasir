@@ -57,7 +57,7 @@ class FauxSpeechIn implements SpeechIn {
 		this.handlers!.onFinal(utterance);
 	}
 	hear(partial: string) {
-		this.handlers!.onPartial(partial);
+		this.handlers!.onPartial?.(partial);
 	}
 }
 

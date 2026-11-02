@@ -21,6 +21,9 @@ import type { TurnSender } from "./speech.ts";
 import type { ReviewQueueItem } from "./review-view.ts";
 
 export const VOICE_REVIEW_TEXT = {
+	/** The review page's button (D183) and the screen's line under Start. */
+	button: "Review by voice",
+	ready: "Press Start to hear the first card.",
 	nothingDue: "Nothing is due right now.",
 	askRating: "Again, hard, good or easy?",
 	saveFailed: "I couldn't save that rating. Say it again.",
@@ -29,6 +32,12 @@ export const VOICE_REVIEW_TEXT = {
 /** "<N> cards due. Here is the first." (one card: "1 card due.") */
 export function openingLine(due: number): string {
 	return due === 1 ? "1 card due." : `${due} cards due. Here is the first.`;
+}
+
+/** "3 of 20": the card's place in this session, for the screen. */
+export function reviewPlace(progress: VoiceReviewProgress): string {
+	if (progress.due === 0) return progress.rated === 0 ? "" : `${progress.rated} done`;
+	return `${progress.rated + 1} of ${progress.rated + progress.due}`;
 }
 
 /** "That's all <N> cards for today." */
@@ -141,12 +150,12 @@ export function createReviewTurnSender(opts: ReviewTurnSenderOptions): ReviewTur
 		}
 	}
 
-	const sender = ((utterance: string) => send(utterance)) as ReviewTurnSender;
-	sender.openQuestion = () => {
-		if (phase === "question" && card) return spokenQuestion(card);
-		if (phase === "rating") return VOICE_REVIEW_TEXT.askRating;
-		return null;
-	};
-	sender.done = () => phase === "done";
-	return sender;
+	return Object.assign((utterance: string) => send(utterance), {
+		openQuestion: (): string | null => {
+			if (phase === "question" && card) return spokenQuestion(card);
+			if (phase === "rating") return VOICE_REVIEW_TEXT.askRating;
+			return null;
+		},
+		done: () => phase === "done",
+	});
 }

@@ -1,11 +1,12 @@
 /**
  * Drive mode's tones (Kvasir P3-5, D177), made with Web Audio, no files:
  * a soft rising tone when a session starts or resumes, a falling tone when
- * it pauses or ends, a low double tone on an error. Soft sine notes with
+ * it pauses or ends, a low double tone on an error, and (P3-6, D186) one
+ * short soft note when a voice review saves a rating. Soft sine notes with
  * short fades, so they do not startle while driving.
  */
 
-export type ToneKind = "start" | "stop" | "error";
+export type ToneKind = "start" | "stop" | "error" | "saved";
 
 export interface Note {
 	/** Hz */
@@ -20,6 +21,7 @@ export const TONES: Record<ToneKind, Note[]> = {
 	start: [{ freq: 523.25, at: 0, length: 0.14 }, { freq: 783.99, at: 0.12, length: 0.2 }],
 	stop: [{ freq: 783.99, at: 0, length: 0.14 }, { freq: 523.25, at: 0.12, length: 0.22 }],
 	error: [{ freq: 220, at: 0, length: 0.16 }, { freq: 220, at: 0.24, length: 0.16 }],
+	saved: [{ freq: 659.25, at: 0, length: 0.12 }],
 };
 
 const VOLUME = 0.12;

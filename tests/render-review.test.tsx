@@ -103,6 +103,8 @@ describe("review session, keyboard only (Done when)", () => {
 		assert.equal(text(host, "review-format"), "Cue · 1 of 2");
 		assert.equal(q(host, "review-progress")!.style.width, "0%");
 		assert.equal(q(host, "review-answer"), null, "the answer starts hidden");
+		assert.equal(q(host, "review-voice")!.getAttribute("href"), "/drive/review", "Review by voice (P3-6, D183)");
+		assert.equal(text(host, "review-voice"), "Review by voice");
 
 		await press(" ");
 		assert.equal(text(host, "review-answer"), "Answer for n_1");
@@ -165,6 +167,7 @@ describe("review session, keyboard only (Done when)", () => {
 		assert.equal(text(host, "review-next"), "Next review in 10 min");
 		assert.equal(q(host, "review-practise")!.getAttribute("href"), "/chat/new?mode=practice");
 		assert.equal(text(host, "review-practise"), "Practise instead");
+		assert.equal(q(host, "review-voice"), null, "no voice review with nothing due");
 	});
 
 	it("says nothing is scheduled yet when no card is waiting (P7-5)", async () => {

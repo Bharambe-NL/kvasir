@@ -17,6 +17,11 @@ describe("drive mode tones", () => {
 		assert.deepEqual(freqs("error"), [220, 220]);
 	});
 
+	it("saved is one short soft note (P3-6, D186)", () => {
+		assert.equal(TONES.saved.length, 1);
+		assert.ok(TONES.saved[0]!.length <= 0.15);
+	});
+
 	it("schedules one soft sine per note", async () => {
 		const oscs: { type?: string; freq: number; start?: number }[] = [];
 		const param = () => ({ value: 0, setValueAtTime() {}, linearRampToValueAtTime() {} });
