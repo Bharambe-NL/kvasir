@@ -53,7 +53,7 @@ These rules come from Sagar's own validated voice sessions. Encode them as a tea
 
 ## P3-4 manual test log
 
-One live voice session on `/dev/voice` (`npm run dev`), run by Sagar with real audio. Results pending.
+One live voice session, run by Sagar with real audio. Results pending (D172). The dev page `/dev/voice` (D171) is gone since P3-5; the run uses drive mode (the sidebar's Voice door).
 
 | # | Check | Result |
 |---|---|---|
@@ -63,6 +63,19 @@ One live voice session on `/dev/voice` (`npm run dev`), run by Sagar with real a
 | 4 | Silence with a question open: the question again at about 20 s, the pause line at about 80 s, speech resumes | pending |
 | 5 | Stop ends the session cleanly (microphone off, speech off) | pending |
 | 6 | The teacher refers to nothing never said aloud (the P3-3 "three-part test" finding) | pending |
+
+## P3-5 manual test log
+
+A 30-minute voice session from the Voice door with eyes off the screen, run by Sagar. Results pending.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | The session runs 30 minutes with no screen interaction after Start | pending |
+| 2 | The display sleeps or locks and the session keeps listening and speaking | pending |
+| 3 | The tones play on start, pause, resume and end | pending |
+| 4 | Space and the play/pause media key pause and resume | pending |
+| 5 | Nothing visual is mentioned aloud; any visuals wait in the transcript | pending |
+| 6 | The chosen voice (Settings > Providers > Speech) is the one heard | pending |
 
 ## Gate acceptance checks
 
